@@ -1,0 +1,47 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: vault
+  cloud:
+    config:
+      server:
+        vault:
+          host: ${VAULT_HOST}
+          port: 443
+          scheme: https
+          token: ${VAULT_TOKEN}
+          authentication: TOKEN
+          kv-version: 2
+          backend: MealToYou
+          profile-separator: '/'
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+      bindings:
+        springCloudBusInput:
+          destination: springCloudBus
+          group: springCloudBus
+          consumer:
+            max-attempts: 1
+        springCloudBusOutput:
+          destination: springCloudBus
+          producer:
+            required-groups: springCloudBus
+  kafka:
+    listener:
+      concurrency: 6
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+logging:
+  level:
+    root: INFO
+    kafka: trace
