@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: eureka
+  config:
+    import: "optional:configserver:http://localhost:8888"
+  cloud:
+    config:
+      discovery:
+        enabled: false
+        service-id: configserver
+  security:
+    user:
+      name: ${EUREKA_NAME}
+      password: ${EUREKA_PASSWORD}
