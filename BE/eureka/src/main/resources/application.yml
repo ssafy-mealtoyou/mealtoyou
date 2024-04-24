@@ -1,6 +1,8 @@
 spring:
   application:
     name: eureka
+  config:
+    import: ${CONFIG_IMPORT}
   cloud:
     config:
       discovery:
