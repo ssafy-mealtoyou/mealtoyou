@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class MessageProcessingAdaptor {
     private final PersonService personService;
+
     @KafkaMessageListener(topic = "requests1")
     public String processMessage1(String message) {
         return message + "1번 MSA입니다.";

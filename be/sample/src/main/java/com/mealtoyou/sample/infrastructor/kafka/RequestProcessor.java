@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class RequestProcessor {
     private final ConsumerFactory<String, String> consumerFactory;
@@ -37,25 +39,25 @@ public class RequestProcessor {
                     try {
                         kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, objectMapper.writeValueAsString(item));
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
                 },
-                error -> {
-                });
+                error -> log.error("Error processing the Mono for key: {}", key, error));
     }
 
     private void monoConvertAndSend(Mono<?> monoResult, String key) {
         monoResult.subscribe(
                 item -> {
                     try {
-                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, objectMapper.writeValueAsString(item));
+                        String message = objectMapper.writeValueAsString(item);
+                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, message);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
                 },
-                error -> {
-                });
+                error -> log.error("Error processing the Mono for key: {}", key, error));
     }
+
 
     private void registerListener(Method method, Object service) {
         KafkaMessageListener config = method.getAnnotation(KafkaMessageListener.class);

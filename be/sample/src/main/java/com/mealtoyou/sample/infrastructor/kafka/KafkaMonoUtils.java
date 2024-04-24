@@ -14,6 +14,7 @@ public class KafkaMonoUtils {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final KafkaResponseListener responseListener;
     private final ObjectMapper objectMapper;
+
     public Mono<String> sendAndReceive(String topic, Object message) {
         String requestId = UUID.randomUUID().toString();
         try {

@@ -15,6 +15,7 @@ import java.util.Arrays;
 @SuppressWarnings("unchecked")
 public class KafkaProxyCreator {
     private final AutowireCapableBeanFactory beanFactory;
+
     public <T> T createGenericService(Class<T> serviceClass) {
         Constructor<?>[] constructors = serviceClass.getConstructors();
         Constructor<?> constructor = constructors[0];

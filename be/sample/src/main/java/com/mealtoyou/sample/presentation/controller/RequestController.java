@@ -25,8 +25,8 @@ public class RequestController {
     @GetMapping("/send")
     public Mono<ResponseEntity<String>> sendRequest1(String message) {
         return kafkaMonoUtils.sendAndReceive("sample-requests1", message)
-            .map(ResponseEntity::ok)
-            .timeout(Duration.ofSeconds(30), Mono.just(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Response timed out")));
+                .map(ResponseEntity::ok)
+                .timeout(Duration.ofSeconds(30), Mono.just(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("Response timed out")));
     }
 
     @GetMapping("/send2")
