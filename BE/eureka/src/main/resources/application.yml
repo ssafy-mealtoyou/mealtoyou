@@ -1,17 +1,13 @@
 spring:
   application:
     name: eureka
-  config:
-    import: "configserver:http://localhost:8888"
   cloud:
     config:
-      profile: dev
+      discovery:
+        enabled: false
+        service-id: configserver
+      fail-fast: false
   security:
     user:
       name: ${EUREKA_NAME}
       password: ${EUREKA_PASSWORD}
-logging:
-  level:
-    org:
-      springframework:
-        web: DEBUG
