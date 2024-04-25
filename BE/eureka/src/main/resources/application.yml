@@ -2,13 +2,11 @@ spring:
   application:
     name: eureka
   config:
-    import: ${CONFIG_IMPORT}
+    import: optional:configserver:${CONFIG_IMPORT}
   cloud:
     config:
       discovery:
         enabled: false
-        service-id: configserver
-      fail-fast: false
   security:
     user:
       name: ${EUREKA_NAME}
