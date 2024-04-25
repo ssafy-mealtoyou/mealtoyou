@@ -17,6 +17,8 @@ public class User {
     @Column("user_id")
     private Long userId;
 
+    private String email;
+
     private String nickname;
 
     @Column("social_key")
@@ -44,5 +46,7 @@ public class User {
 
     @Column("withdraw_yn")
     private boolean isWithdraw;
+
+    private String role;
 
 }
