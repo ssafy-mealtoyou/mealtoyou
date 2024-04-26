@@ -50,7 +50,6 @@ public class CustomOAuth2SuccessHandler extends RedirectServerAuthenticationSucc
         String email = oAuth2User.getAttribute("email");
 
         Mono<GeneratedToken> monoGeneratedToken = generateTokenByEmail(email);
-
         return monoGeneratedToken.flatMap(generatedToken ->
                 handleTokens(response, generatedToken.getAccessToken(), generatedToken.getRefreshToken()));
     }
@@ -76,13 +75,14 @@ public class CustomOAuth2SuccessHandler extends RedirectServerAuthenticationSucc
                 }).subscribeOn(Schedulers.boundedElastic())
                 .then(Mono.defer(() -> {
                     // 리다이렉트할 URL 생성
-                    String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:8082/google/callback")
+                    String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:8080/user-service/google/callback")
                             .build()
                             .encode(StandardCharsets.UTF_8)
                             .toUriString();
 
                     // 리다이렉트
                     response.getHeaders().set(HttpHeaders.LOCATION, targetUrl);
+                    response.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
                     response.setStatusCode(HttpStatus.FOUND);
                     return response.setComplete();
                 }));
