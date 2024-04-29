@@ -38,6 +38,11 @@ dependencies {
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
 
     testImplementation 'org.mockito:mockito-core:4.8.0'
+    testImplementation 'io.projectreactor:reactor-test'
+
+    // Spring Boot Starter Validation for validation support
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 }
 
 tasks.named('test') {
