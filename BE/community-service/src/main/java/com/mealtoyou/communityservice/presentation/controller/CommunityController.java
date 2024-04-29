@@ -20,7 +20,8 @@ public class CommunityController {
     private final CommunityService communityService;
 
     @PostMapping("/communities")
-    public Mono<Community> createCommunity(@RequestHeader("Authorization") String token, @Valid @RequestBody CreateCommunityDto createCommunityDto) {
+    public Mono<Community> createCommunity(@RequestHeader("Authorization") String token,
+                                           @Valid @RequestBody CreateCommunityDto createCommunityDto) {
         Long userId = jwtTokenProvider.getUserId(token);
         return communityService.createCommunity(createCommunityDto, userId);
     }
