@@ -44,7 +44,7 @@ fun MainPage() {
                 ) {
                     FoodBox()
                     MyTodayReport()
-                    MyInfo()
+                    MyStage()
                     MyFeedBack()
                 }
             }
