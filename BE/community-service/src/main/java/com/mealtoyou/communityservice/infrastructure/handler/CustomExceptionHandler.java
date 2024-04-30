@@ -1,5 +1,6 @@
-package com.mealtoyou.communityservice.infrastructure.exception;
+package com.mealtoyou.communityservice.infrastructure.handler;
 
+import com.mealtoyou.communityservice.infrastructure.exception.CommunityAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
