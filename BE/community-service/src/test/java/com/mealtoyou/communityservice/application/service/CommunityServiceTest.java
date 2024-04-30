@@ -3,6 +3,7 @@ package com.mealtoyou.communityservice.application.service;
 import com.mealtoyou.communityservice.application.dto.CreateCommunityDto;
 import com.mealtoyou.communityservice.domain.model.Community;
 import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
+import com.mealtoyou.communityservice.domain.repository.UserCommunityRepository;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
@@ -16,9 +17,10 @@ public class CommunityServiceTest {
     public void testCreateCommunity() {
         // Create a mock of the CommunityRepository
         CommunityRepository communityRepository = mock(CommunityRepository.class);
+        UserCommunityRepository userCommunityRepository = mock(UserCommunityRepository.class);
 
         // Create an instance of the CommunityService with the mock repository
-        CommunityService communityService = new CommunityService(communityRepository);
+        CommunityService communityService = new CommunityService(communityRepository, userCommunityRepository);
 
         // Create a dummy CreateCommunityDto and user ID
         CreateCommunityDto createCommunityDto = new CreateCommunityDto(

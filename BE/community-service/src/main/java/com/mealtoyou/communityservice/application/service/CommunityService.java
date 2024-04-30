@@ -2,13 +2,13 @@ package com.mealtoyou.communityservice.application.service;
 
 import com.mealtoyou.communityservice.application.dto.CreateCommunityDto;
 import com.mealtoyou.communityservice.domain.model.Community;
+import com.mealtoyou.communityservice.domain.model.UserCommunity;
 import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
+import com.mealtoyou.communityservice.domain.repository.UserCommunityRepository;
 import com.mealtoyou.communityservice.infrastructure.exception.CommunityAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class CommunityService {
 
     private final CommunityRepository communityRepository;
+    private final UserCommunityRepository userCommunityRepository;
 
     public Mono<Community> createCommunity(CreateCommunityDto createCommunityDto, Long userId) {
         return communityRepository.findByLeaderId(userId)
@@ -34,7 +35,16 @@ public class CommunityService {
                             .dailyGoalSteps(createCommunityDto.dailyGoalSteps())
                             .weeklyMinGoal(createCommunityDto.weeklyMinGoal())
                             .build();
-                    return communityRepository.save(community);
+                    return communityRepository.save(community)
+                            .flatMap(savedCommunity -> {
+                                UserCommunity userCommunity = UserCommunity.builder()
+                                        .userId(userId)
+                                        .communityId(savedCommunity.getCommunityId())
+                                        .build();
+                                log.info(savedCommunity.getCommunityId().toString());
+                                return userCommunityRepository.save(userCommunity)
+                                        .thenReturn(savedCommunity);
+                            });
                 }));
     }
 
