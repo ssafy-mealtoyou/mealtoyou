@@ -1,13 +1,13 @@
-package com.example.mealtoyou.ui.theme.main
+package com.example.mealtoyou.ui.theme.main.stage
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,38 +20,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.shared.CircleProgressBar
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar
 
 @Composable
-fun ProgressColumn(progress: Float, color: Color, text: String) {
-    Column {
-        VerticalProgressBar(progress = progress, color = color, 40.dp, 80.dp)
-        Spacer(Modifier.height(4.dp))
+fun WeightProgress(value: Float, text: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        CircleProgressBar(value, 80.dp)
+        Spacer(modifier = Modifier.height(9.dp))
         Text(
             text = text,
             fontWeight = FontWeight.SemiBold,
             fontFamily = Pretend,
+            lineHeight = 20.sp,
             fontSize = 12.sp,
-            color = Color(0xFF323743),
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            color = Color(0xFF323743)
         )
     }
 }
 
 @Composable
-fun TodayReportBox() {
-    val items = listOf(
-        0.66f to Pair(Color(0xFF6D31ED), "식단"),
-        0.50f to Pair(Color(0xFFFFD317), "영양"),
-        0.70f to Pair(Color(0xFF15ABFF), "수분"),
-        0.85f to Pair(Color(0xFF62CD14), "활동"),
-        0.54f to Pair(Color(0xFFF9623E), "수면")
-    )
-
+fun Challenge(modifier: Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .height(165.dp)
-            .fillMaxWidth()
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(8.dp),
@@ -61,35 +53,38 @@ fun TodayReportBox() {
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(Modifier.padding(10.dp)) {
             Text(
-                text = "내 하루 요약",
-                fontSize = 12.sp,
-                fontFamily = Pretend,
+                text = "목표 달성치",
                 fontWeight = FontWeight.SemiBold,
+                fontFamily = Pretend,
+                lineHeight = 20.sp,
+                fontSize = 12.sp,
                 color = Color(0xFF9095A1)
             )
-            Spacer(Modifier.height(8.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Spacer(Modifier.weight(1f)) // 레이아웃의 좌우 균형을 위해
-                items.forEach { (progress, details) ->
-                    ProgressColumn(progress = progress, color = details.first, text = details.second)
-                    Spacer(Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
+            Row {
+                WeightProgress(value = 0.7f, "몸무게")
+                Spacer(modifier = Modifier.width(24.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    VerticalProgressBar(
+                        progress = 0.7f,
+                        color = Color(0xFF6D31ED),
+                        width = 29.dp,
+                        height = 80.dp
+                    )
+                    Spacer(modifier = Modifier.height(9.dp))
+                    Text(
+                        text = "D-12",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = Pretend,
+                        lineHeight = 20.sp,
+                        fontSize = 12.sp,
+                        color = Color(0xFF323743)
+                    )
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun MyTodayReport() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp)
-            .padding(end = 20.dp)
-            .padding(bottom = 20.dp)
-    ) {
-        TodayReportBox()
+        }
     }
 }
