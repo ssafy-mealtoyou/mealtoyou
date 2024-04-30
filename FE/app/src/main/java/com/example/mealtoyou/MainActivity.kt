@@ -26,8 +26,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.mealtoyou.ui.theme.diet.DietPage
+import com.example.mealtoyou.ui.theme.group.GroupPage
+import com.example.mealtoyou.ui.theme.group.MyPage
 import com.example.mealtoyou.ui.theme.login.LoginPage
 import com.example.mealtoyou.ui.theme.main.MainPage
+import com.example.mealtoyou.ui.theme.report.ReportPage
 import com.example.mealtoyou.ui.theme.shared.BottomNavigationBar
 
 class MainActivity : ComponentActivity() {
@@ -66,12 +70,27 @@ class MainActivity : ComponentActivity() {
             }
         ) { innerPadding ->
             Surface(modifier = Modifier.padding(innerPadding)) {
-                NavHost(navController = navController, startDestination = "login") {
+                NavHost(
+                    navController = navController,
+                    startDestination = "login"
+                ) {
                     composable("login") {
                         LoginPage(navController)
                     }
                     composable("mainPage") {
                         MainPage()
+                    }
+                    composable("분석") {
+                        ReportPage()
+                    }
+                    composable("식단") {
+                        DietPage()
+                    }
+                    composable("그룹") {
+                        GroupPage()
+                    }
+                    composable("마이") {
+                        MyPage()
                     }
                 }
             }

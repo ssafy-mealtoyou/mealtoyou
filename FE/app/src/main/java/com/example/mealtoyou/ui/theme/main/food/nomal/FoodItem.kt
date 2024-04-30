@@ -1,4 +1,4 @@
-package com.example.mealtoyou.ui.theme.main.food
+package com.example.mealtoyou.ui.theme.main.food.nomal
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

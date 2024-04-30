@@ -14,11 +14,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.main.food.nomal.FoodItems
+import com.example.mealtoyou.ui.theme.main.food.nomal.NutrientInfo
+import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationBox
+import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationHeader
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun FoodBox() {
@@ -27,15 +37,18 @@ fun FoodBox() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
     ) {
-        DateLabel("TUES 11 JUL")
+        DateLabel()
         RecommendationBox()
     }
 }
 
 @Composable
-fun DateLabel(text: String) {
+fun DateLabel() {
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("EEEE dd MMM", Locale.ENGLISH)
+    val dateString = formatter.format(today).uppercase(Locale.ROOT)
     Text(
-        text = text,
+        text = dateString,
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
         fontFamily = Pretend,
@@ -64,19 +77,3 @@ fun NormalContent(showTemp: MutableState<Boolean>, selectedItem: MutableState<St
     }
 }
 
-@Composable
-fun Temp(selectedItem: String, showTemp: MutableState<Boolean>) {
-    Column {
-        Text("Selected Item: $selectedItem")
-        Button(
-            onClick = { showTemp.value = false },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
-            shape = RoundedCornerShape(12),
-            modifier = Modifier
-                .width(100.dp)
-                .height(40.dp)
-        ) {
-            Text("돌아가기", color = Color.White)
-        }
-    }
-}

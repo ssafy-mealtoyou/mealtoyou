@@ -24,7 +24,13 @@ fun LoginPage(navController: NavHostController) {
             MainImage()
             MainIcon()
             GoogleButton(
-                onClick = { navController.navigate("mainPage") },
+                onClick = {
+                    navController.navigate("mainPage") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                    }
+                },
             )
         }
     }
