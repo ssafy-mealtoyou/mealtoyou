@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.example.mealtoyou.ui.theme.main.feedback.MyFeedBack
+import com.example.mealtoyou.ui.theme.main.food.FoodBox
+import com.example.mealtoyou.ui.theme.main.report.MyTodayReport
+import com.example.mealtoyou.ui.theme.main.stage.MyStage
 import com.example.mealtoyou.ui.theme.shared.MainBar
 
 @Composable

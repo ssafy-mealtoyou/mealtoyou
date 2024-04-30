@@ -36,8 +36,8 @@ fun MainBar(text:String) {
             text = text,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 5.dp), // 가운데 상단 정렬
-            fontSize = 24.sp,
+                .padding(top = 8.dp), // 가운데 상단 정렬
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF171A1F),
             fontFamily = Pretend
@@ -48,7 +48,7 @@ fun MainBar(text:String) {
             contentDescription = "Avatar",
             modifier = Modifier
                 .align(Alignment.TopEnd) // 오른쪽 상단 정렬
-                .padding(end = 20.dp)
+                .padding(end = 18.dp)
         )
     }
 
