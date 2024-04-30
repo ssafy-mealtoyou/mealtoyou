@@ -1,9 +1,9 @@
 package com.mealtoyou.communityservice.application.service;
 
-import com.mealtoyou.communityservice.application.dto.CreateCommunityDto;
 import com.mealtoyou.communityservice.domain.model.Community;
 import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
 import com.mealtoyou.communityservice.domain.repository.UserCommunityRepository;
+import com.mealtoyou.communityservice.presentation.request.CreateCommunityRequest;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public class CommunityServiceTest {
         CommunityService communityService = new CommunityService(communityRepository, userCommunityRepository);
 
         // Create a dummy CreateCommunityDto and user ID
-        CreateCommunityDto createCommunityDto = new CreateCommunityDto(
+        CreateCommunityRequest createCommunityRequest = new CreateCommunityRequest(
                 "제목",
                 30,
                 100,
@@ -35,27 +35,27 @@ public class CommunityServiceTest {
         // Create a dummy Community object to return from the repository
         Community savedCommunity = Community.builder()
                 .leaderId(userId)
-                .title(createCommunityDto.title())
+                .title(createCommunityRequest.title())
                 .cntUsers(1)
                 .startDate(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusDays(createCommunityDto.period()))
-                .dailyGoalCalories(createCommunityDto.dailyGoalCalories())
-                .dailyGoalSteps(createCommunityDto.dailyGoalSteps())
-                .weeklyMinGoal(createCommunityDto.weeklyMinGoal())
+                .endDate(LocalDateTime.now().plusDays(createCommunityRequest.period()))
+                .dailyGoalCalories(createCommunityRequest.dailyGoalCalories())
+                .dailyGoalSteps(createCommunityRequest.dailyGoalSteps())
+                .weeklyMinGoal(createCommunityRequest.weeklyMinGoal())
                 .build();
 
         // Mock the repository's save method to return the dummy Community
         when(communityRepository.save(any(Community.class))).thenReturn(Mono.just(savedCommunity));
 
         // Call the method to be tested
-        Mono<Community> result = communityService.createCommunity(createCommunityDto, userId);
+        Mono<Community> result = communityService.createCommunity(createCommunityRequest, userId);
 
         // Assert that the result matches the expected Community
         result.subscribe(community -> {
             // Assert the community properties here
             assert community.getCommunityId() != null;
             assert community.getLeaderId().equals(userId);
-            assert community.getTitle().equals(createCommunityDto.title());
+            assert community.getTitle().equals(createCommunityRequest.title());
             // Add more assertions for other properties if needed
         });
     }
