@@ -2,6 +2,7 @@ package com.mealtoyou.foodservice.controller;
 
 import com.mealtoyou.foodservice.application.dto.FoodDto;
 import com.mealtoyou.foodservice.application.dto.ResponseFoodDto;
+import com.mealtoyou.foodservice.application.service.ElasticsearchService;
 import com.mealtoyou.foodservice.application.service.FoodService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api")
 public class FoodController {
     private final FoodService foodService;
+    private final ElasticsearchService elasticsearchService;
 
     @GetMapping("/foods")
     public Mono<ResponseEntity<Flux<FoodDto>>> foodSearch(@RequestParam String keyword, String message){
@@ -28,6 +30,7 @@ public class FoodController {
 
     @GetMapping("/food/{id}")
     public Mono<ResponseEntity<ResponseFoodDto>> foodInfo(@PathVariable String id,String message){
+        elasticsearchService.multiSearch(0.0,0.0,0.0);
         return null;
     }
 

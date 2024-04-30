@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchClient;
+import org.springframework.data.elasticsearch.core.ReactiveElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -17,6 +20,7 @@ import reactor.core.publisher.Mono;
 public class ElasticsearchService {
 
     private final ReactiveElasticsearchClient reactiveElasticsearchClient;
+    private final ReactiveElasticsearchOperations reactiveElasticsearchOperations;
 
     public Mono<List<Food>> fuzzySearch(String approximateName){
         Supplier<Query> supplier= ElasticsearchUtil.createSupplierQuery(approximateName);
@@ -30,6 +34,16 @@ public class ElasticsearchService {
                 List<Food> foodList=hitList.stream().map(Hit::source).toList();
                 return Mono.just(foodList);
             });
+    }
+
+    public Mono<List<Food>> multiSearch(Double protein, Double fat, Double carbohydrate){
+        Flux<SearchHit<Food>> proteinResponse = reactiveElasticsearchOperations.search(ElasticsearchUtil.createNativeQuery("protein",protein), Food.class);
+        Flux<SearchHit<Food>> fatResponse = reactiveElasticsearchOperations.search(ElasticsearchUtil.createNativeQuery("fat",fat), Food.class);
+        Flux<SearchHit<Food>> carbohydrateResponse = reactiveElasticsearchOperations.search(ElasticsearchUtil.createNativeQuery("carbohydrate",carbohydrate), Food.class);
+
+        //        response.subscribe(foodSearchHit -> {Food food=foodSearchHit.getContent();
+//            System.out.println(food.toString());});
+        return null;
     }
 
 
