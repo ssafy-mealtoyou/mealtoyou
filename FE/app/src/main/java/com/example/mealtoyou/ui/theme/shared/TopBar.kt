@@ -25,7 +25,7 @@ fun MainBar(text:String) {
             .padding(bottom = 10.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.icon_main), // 이 부분에 실제 리소스 ID를 사용하세요.
+            painter = painterResource(id = R.drawable.icon_main),
             contentDescription = "Main Icon",
             modifier = Modifier
                 .align(Alignment.TopStart) // 왼쪽 상단 정렬
@@ -44,7 +44,7 @@ fun MainBar(text:String) {
         )
 
         Image(
-            painter = painterResource(id = R.drawable.avatar), // 이 부분에 실제 리소스 ID를 사용하세요.
+            painter = painterResource(id = R.drawable.avatar),
             contentDescription = "Avatar",
             modifier = Modifier
                 .align(Alignment.TopEnd) // 오른쪽 상단 정렬

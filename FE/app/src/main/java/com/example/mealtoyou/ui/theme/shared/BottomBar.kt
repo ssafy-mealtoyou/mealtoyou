@@ -69,7 +69,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            // navController.navigate(route)
+                            navController.navigate(route)
                         }
                     },
                     icon = {

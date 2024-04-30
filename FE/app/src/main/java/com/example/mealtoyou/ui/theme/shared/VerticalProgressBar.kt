@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun VerticalProgressBar(progress: Float, color: Color, width: Dp, height: Dp) {  // progress는 0.0 (0%)에서 1.0 (100%) 사이의 값
+fun VerticalProgressBar(progress: Float, color: Color, width: Dp, height: Dp) {
     Box(
         modifier = Modifier
             .height(height)
@@ -26,12 +26,12 @@ fun VerticalProgressBar(progress: Float, color: Color, width: Dp, height: Dp) { 
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val drawHeight = size.height * progress
-            if (drawHeight > 0) {  // 높이가 0 이상일 때만 그림
+            if (drawHeight > 0) {
                 drawRoundRect(
                     color = color,
                     topLeft = Offset(x = 0f, y = size.height - drawHeight),
                     size = Size(width = size.width, height = drawHeight),
-                    cornerRadius = CornerRadius(x = 10f, y = 10f)  // 모서리 반경 적용
+                    cornerRadius = CornerRadius(x = 18f, y = 18f)
                 )
             }
         }
