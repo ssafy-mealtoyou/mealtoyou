@@ -51,7 +51,9 @@ fun FoodItems(showTemp: MutableState<Boolean>, selectedItem: MutableState<String
         Row {
             Spacer(Modifier.weight(1f))
             Button(
-                onClick = { showTemp.value = true },
+                onClick = {
+
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
                 shape = RoundedCornerShape(12),
                 modifier = Modifier
