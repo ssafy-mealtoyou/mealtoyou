@@ -19,8 +19,7 @@ import lombok.val;
 public class ElasticsearchUtil {
 
 	public static Supplier<Query> createSupplierQuery(String approximateName) {
-		Supplier<Query> supplier = () -> Query.of(q -> q.fuzzy(createFuzzyQuery(approximateName)));
-		return supplier;
+		return () -> Query.of(q -> q.fuzzy(createFuzzyQuery(approximateName)));
 	}
 
 	public static FuzzyQuery createFuzzyQuery(String approximateName) {
