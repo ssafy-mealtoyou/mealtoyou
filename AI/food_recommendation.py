@@ -1,8 +1,43 @@
 import numpy as np
 import pandas as pd
+import openai
 from pydantic import BaseModel
 from scipy.optimize import differential_evolution
+from config import Config
 
+
+# openai API 키 인증
+openai.api_key = Config.OPENAI_API_KEY
+model = "gpt-3.5-turbo"
+
+# 기본 역할 설정
+messages = [{"role": "system", "content": "영양사가 되었습니다."}]
+
+def check_food_combinations(foods):
+  """
+  주어진 음식 조합이 어울리는지를 GPT-3.5 Turbo 모델에 물어봅니다.
+  """
+  query = f"음식 조합: {', '.join(foods)}. 이 조합이 사람들이 일반적으로 먹는 식사 조합인가? 그냥 OX로 대답해줘"
+  print(query)
+  try:
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "system", "content": query}]
+    )
+    return response['choices'][0]['message']['content'].strip()
+  except Exception as e:
+    print("API 호출 중 에러 발생:", str(e))
+    return "모델 호출에 실패했습니다."
+
+
+# 입력 받을 기본적인 모델 생성
+class Input(BaseModel):
+  user_type: str
+  partner_type: str
+  situation_type: str
+  Relationship: str
+class QuestionInput(BaseModel):
+  question: str
 
 class NutrientInfo(BaseModel):
   calories: float
@@ -103,6 +138,9 @@ def get_food_recommendations(nutrient_info):
       nutrients = selected_food[['에너지(㎉)', '탄수화물(g)', '단백질(g)', '지방(g)']].apply(pd.to_numeric, errors='coerce').fillna(0).values
       total_nutrients_summary += nutrients
 
+    combination_check = check_food_combinations(selected_foods)
+    print("음식 조합 검증 결과:", combination_check)
+    print(selected_foods)
 
     # 선택된 음식들과 총 영양소 출력
     print("Selected foods:", selected_foods)
@@ -118,6 +156,7 @@ def get_food_recommendations(nutrient_info):
       selected_food_idx = int(result.x[i])
       selected_food = category_data[cat].iloc[selected_food_idx]
       print(f"Selected {cat}: {selected_food['식품명']}, Quantity: {selected_food['1회제공량']/to*total}(g/mg)")
+
     return FoodRecommendations(selected_foods= selected_foods,total_nutrients=(total_nutrients_summary/to * total).tolist())
   else:
     print("Optimization failed:", result.message)
