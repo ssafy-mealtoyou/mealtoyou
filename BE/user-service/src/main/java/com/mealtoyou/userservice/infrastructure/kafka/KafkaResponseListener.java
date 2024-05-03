@@ -1,15 +1,14 @@
 package com.mealtoyou.userservice.infrastructure.kafka;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor

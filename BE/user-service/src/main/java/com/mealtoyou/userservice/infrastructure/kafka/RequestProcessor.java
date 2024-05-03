@@ -1,10 +1,11 @@
 package com.mealtoyou.userservice.infrastructure.kafka;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -12,16 +13,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -35,11 +33,11 @@ public class RequestProcessor {
     private final KafkaProxyCreator kafkaProxyCreator;
     private final ObjectMapper objectMapper;
 
-    private void fluxConvertAndSend(Flux<?> fluxResult, String key) {
+    private void fluxConvertAndSend(Flux<?> fluxResult, KafkaKey key) {
         fluxResult.collectList().subscribe(
                 item -> {
                     try {
-                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, objectMapper.writeValueAsString(item));
+                        kafkaTemplate.send(key.getKafkaResponseTopic(), key.getUuid(), objectMapper.writeValueAsString(item));
                     } catch (JsonProcessingException e) {
                         log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
@@ -47,12 +45,12 @@ public class RequestProcessor {
                 error -> log.error("Error processing the Mono for key: {}", key, error));
     }
 
-    private void monoConvertAndSend(Mono<?> monoResult, String key) {
+    private void monoConvertAndSend(Mono<?> monoResult, KafkaKey key) {
         monoResult.subscribe(
                 item -> {
                     try {
                         String message = objectMapper.writeValueAsString(item);
-                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, message);
+                        kafkaTemplate.send(key.getKafkaResponseTopic(), key.getUuid(), message);
                     } catch (JsonProcessingException e) {
                         log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
@@ -73,14 +71,15 @@ public class RequestProcessor {
             String key = record.key();
             try {
                 Object result = method.invoke(service, message);
+                KafkaKey kafkaKey = objectMapper.readValue(key, KafkaKey.class);
                 if (result instanceof String stringResult) {
-                    kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, stringResult);
+                    kafkaTemplate.send(kafkaKey.getKafkaResponseTopic(), kafkaKey.getUuid(), stringResult);
                 } else if (result instanceof Flux<?> fluxResult) {
-                    fluxConvertAndSend(fluxResult, key);
+                    fluxConvertAndSend(fluxResult, kafkaKey);
                 } else if (result instanceof Mono<?> monoResult) {
-                    monoConvertAndSend(monoResult, key);
+                    monoConvertAndSend(monoResult, kafkaKey);
                 }
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         });
