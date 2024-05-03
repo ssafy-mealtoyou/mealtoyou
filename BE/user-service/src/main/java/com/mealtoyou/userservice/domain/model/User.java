@@ -2,11 +2,15 @@ package com.mealtoyou.userservice.domain.model;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+
+import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 
 @Table("users")
 @Getter
@@ -32,9 +36,11 @@ public class User {
 
     private double weight;
 
+    @Setter
     @Column("intermittent_fasting_yn")
     private boolean isIntermittentFasting;
 
+    @Setter
     @Column("user_image_url")
     private String userImageUrl;
 
@@ -48,5 +54,16 @@ public class User {
     private boolean isWithdraw;
 
     private String role;
+
+    public void updateUserInfo(UserInfoRequestDto u) {
+        this.nickname = u.nickname();
+        this.gender = u.gender();
+        this.age = u.age();
+        this.height = u.height();
+        this.weight = u.weight();
+        // this.isIntermittentFasting = u.isIntermittentFasting();
+        // this.goalWeight = u.goalWeight();
+        // this.goalEndDate = u.goalEndDate();
+    }
 
 }
