@@ -6,6 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
+import com.mealtoyou.userservice.domain.model.User;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,5 +33,10 @@ public class UserService {
 				return userRepository.save(user);
 			})
 			.map(UserInfoResponseDto::fromEntity);
+	}
+
+	public Mono<Double> getHeight(Long userId) {
+		return userRepository
+			.findById(userId).map(User::getHeight);
 	}
 }
