@@ -16,7 +16,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
@@ -35,15 +34,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -57,24 +56,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.DrawModifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.compose.ui.window.DialogProperties
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
@@ -84,12 +82,11 @@ import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 import java.text.DecimalFormat
-import kotlin.math.roundToInt
 
 
 @Composable
 fun IncrementDecrementButtons() {
-    var quantity by remember { mutableStateOf(0.9) } // 초기값 설정
+    var quantity by remember { mutableDoubleStateOf(1.0) } // 초기값 설정
 
     // DecimalFormat을 사용하여 소숫점 첫 번째 자리에서 반올림
     val df = DecimalFormat("#.#")
@@ -242,6 +239,133 @@ fun Modifier.dashedBorder(
 })
 
 @Composable
+private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: Boolean) {
+    var showDialog by remember { mutableStateOf(false) }
+    var textState by remember { mutableStateOf("") }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                // 다이얼로그 외부를 탭할 때 호출됩니다
+                showDialog = false
+            },
+            title = {
+                Text(text = "Modal Title")
+            },
+            text = {
+                Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
+                    Text("Enter your text below:")
+                    BasicTextField(
+                        value = textState,
+                        onValueChange = { textState = it },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        modifier = Modifier.background(Color.White)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false // 확인 버튼을 클릭할 때 다이얼로그를 닫습니다
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog = false // 취소 버튼을 클릭할 때 다이얼로그를 닫습니다
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            },
+            properties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            )
+        )
+    }
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        if (imageBoolean) {
+            Box(
+                modifier = Modifier
+                    .height(260.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.sample_food),
+                    contentDescription = "Sample Food Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(66.dp)
+                .dashedBorder(
+                    color = Color(0xFF565D6D),
+                    strokeWidth = 2f,
+                    dashLength = 10f,
+                    gapLength = 10f
+                )
+                .clickable { showDialog = true },
+            contentAlignment = Alignment.Center  // 상하좌우 가운데 정렬
+
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically  // Row 내부 요소를 수직으로 가운데 정렬
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.plus),
+                    contentDescription = "Add Icon",
+                    modifier = Modifier.size(28.dp)
+                )
+                Text(
+                    text = "검색해서 추가하기",
+                    color = Color(0xFF323743),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 8.dp)  // 텍스트와 이미지 사이의 간격 추가
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        SwipeFoodItems() // 스크롤 가능한 아이템 리스트를 호출
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = { setContent("default") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED))
+            ) {
+                Text(
+                    "등록하기", fontSize = 16.sp, color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun AddDiet() {
     val (content, setContent) = remember { mutableStateOf("default") }
 
@@ -252,80 +376,19 @@ fun AddDiet() {
                     iconId = R.drawable.camera,
                     onItemClicked = { setContent("photo") })
                 Spacer(modifier = Modifier.height(20.dp))
-                Item(text = "직접 등록하기", iconId = R.drawable.search, onItemClicked = {})
+                Item(text = "직접 등록하기", iconId = R.drawable.search,
+                    onItemClicked = {
+                        setContent("no-photo")
+                    })
             }
         }
 
+        "no-photo" -> {
+            FoodBottomSheetContent(setContent, false)
+        }
+
         "photo" -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .height(260.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.sample_food),
-                        contentDescription = "Sample Food Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(66.dp)
-                        .dashedBorder(
-                            color = Color(0xFF565D6D),
-                            strokeWidth = 2f,
-                            dashLength = 10f,
-                            gapLength = 10f
-                        ), contentAlignment = Alignment.Center  // 상하좌우 가운데 정렬
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically  // Row 내부 요소를 수직으로 가운데 정렬
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.plus),
-                            contentDescription = "Add Icon",
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Text(
-                            text = "직접 추가하기",
-                            color = Color(0xFF323743),
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 8.dp)  // 텍스트와 이미지 사이의 간격 추가
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                SwipeFoodItems() // 스크롤 가능한 아이템 리스트를 호출
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Button(
-                        onClick = { setContent("default") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED))
-                    ) {
-                        Text(
-                            "등록하기", fontSize = 16.sp, color = Color.White
-                        )
-                    }
-                }
-            }
+            FoodBottomSheetContent(setContent, true)
         }
     }
 }
