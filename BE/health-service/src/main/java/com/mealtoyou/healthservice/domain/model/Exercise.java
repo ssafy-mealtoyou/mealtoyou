@@ -12,7 +12,7 @@ import lombok.Getter;
 
 @Table("exercise")
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class Exercise {
 	@Id
 	@Column("exercise_id")  // 데이터베이스에서의 정확한 컬럼 이름 지정
