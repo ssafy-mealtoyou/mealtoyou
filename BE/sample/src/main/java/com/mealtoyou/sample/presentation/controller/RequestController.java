@@ -38,7 +38,8 @@ public class RequestController {
 
     private Mono<String> processRequestChain(String initialMessage) {
         return kafkaMonoUtils.sendAndReceive("sample-requests1", initialMessage)
-                .flatMap(firstResult -> kafkaMonoUtils.sendAndReceive("sample-requests2", firstResult));
+                .flatMap(firstResult -> kafkaMonoUtils.sendAndReceive("sample-requests2", firstResult))
+                .flatMap(firstResult -> kafkaMonoUtils.sendAndReceive("sample-requests1", firstResult));
     }
 
     @GetMapping("/people")
