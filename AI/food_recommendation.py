@@ -115,7 +115,8 @@ def get_food_recommendations(nutrient_info):
   # 목표 영양소 설정
   # targets = {'에너지(㎉)': nutrient_info.calories, '탄수화물(g)': nutrient_info.carbs, '단백질(g)': nutrient_info.protein, '지방(g)': nutrient_info.fat}
   targets = {'calories': nutrient_info.calories, 'carbs': nutrient_info.carbs, 'protein': nutrient_info.protein, 'fat': nutrient_info.fat}
-  target = np.array([1500,120,53,15])
+  target = np.array([nutrient_info.calories,nutrient_info.carbs,nutrient_info.protein,nutrient_info.fat])
+  # target = np.array([1500,120,53,15])
   total = sum(targets.values())
   # 목표 비율
   target_ratio = np.array([value / total for value in targets.values()])
