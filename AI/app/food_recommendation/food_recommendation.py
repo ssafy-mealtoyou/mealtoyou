@@ -95,7 +95,7 @@ def objective(selections, category_data, target,total, active_categories):
 def get_food_recommendations(nutrient_info):
   # 데이터 불러오기
   print(1)
-  df = pd.read_excel('updated_data.xlsx')
+  df = pd.read_excel('app/food_recommendation/updated_data.xlsx')
 
   # 선택된 칼럼들로 새로운 DataFrame 생성
   df_nutrients = df[
