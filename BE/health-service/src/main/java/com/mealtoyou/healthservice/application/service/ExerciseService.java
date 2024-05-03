@@ -47,30 +47,9 @@ public class ExerciseService {
 			.onErrorResume(e -> Mono.error(new RuntimeException("Error saving exercise data", e))); // 에러 처리
 	}
 
-		// System.out.println(userId);
-		// try {
-		//
-		// 	Exercise exercise = Exercise.builder()
-		// 		.userId(userId)
-		// 		.steps(exerciseDto.getSteps())
-		// 		.caloriesBurned(exerciseDto.getCaloriesBurned())
-		// 		.stepStartDate((LocalDate)exerciseDto.getStepStartDate())
-		// 		.caloriesStartDate((LocalDate)exerciseDto.getCaloriesStartDate())
-		// 		.build();
-		// 	System.out.println(exercise.getSteps() + " " + exercise.getCaloriesBurned() + " " + exercise.getStepStartDate());
-		// 	// return exerciseCustomRepository.upsertExercise(exercise)
-		// 	// 	.thenReturn("Exercise data saved successfully");
-		// 	return exerciseRepository.upsertExercise(exercise.getUserId(),exercise.getSteps(),exercise.getCaloriesBurned(),exercise.getStepStartDate(),exercise.getCaloriesStartDate())
-		// 		.thenReturn("Exercise data saved successfully");
-		// 	// return exerciseRepository.save(exercise)
-		// 	// 	.thenReturn("Exercise data saved successfully");
-		// } catch (Exception e) {
-		// 	return Mono.error(new RuntimeException("Error saving exercise data", e));
-		// }
-
-	public Flux<ExerciseDto> readExerciseData(String token) {
+	public Flux<ExerciseDto> readExerciseData(String token, Integer day) {
 		Long userId = jwtTokenProvider.getUserId(token);
-		Flux<Exercise> exerciseFlux = exerciseRepository.findAllByUserId(userId);
+		Flux<Exercise> exerciseFlux = exerciseRepository.findAllByUserId(userId,day);
 		return exerciseFlux
 			.map(exercise -> ExerciseDto.builder()
 				.steps(exercise.getSteps())
