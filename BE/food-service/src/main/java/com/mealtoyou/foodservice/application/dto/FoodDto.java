@@ -9,6 +9,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class FoodDto {
+	private Long id;
 	private String code;
 	private String name;
 	private String origin;
@@ -51,6 +52,7 @@ public class FoodDto {
 
 	public static FoodDto toDto(Food food) {
 		return FoodDto.builder()
+			.id(food.getId())
 			.code(food.getCode())
 			.name(food.getName())
 			.origin(food.getOrigin())

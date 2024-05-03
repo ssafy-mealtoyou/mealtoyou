@@ -12,6 +12,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public class Food {
+	private Long id;
 	private String code;
 	private String name;
 	private String origin;
@@ -60,8 +61,8 @@ public class Food {
 	@Field(name = "total_fatty_acids(g)")
 	@JsonProperty("total_fatty_acids(g)")
 	private Double totalFattyAcids;
-	@Field(name = "wate(g)r")
-	@JsonProperty("wate(g)r")
+	@Field(name = "water(g)")
+	@JsonProperty("water(g)")
 	private Double water;
 	@Field(name = "ash(g)")
 	@JsonProperty("ash(g)")

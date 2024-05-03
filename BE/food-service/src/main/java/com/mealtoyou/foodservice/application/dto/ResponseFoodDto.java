@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ResponseFoodDto {
+	private Long id;
 	private String code;
 	private String name;
 	private String origin;
