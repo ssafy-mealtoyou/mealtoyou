@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.shared.CloseButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -119,17 +120,6 @@ private fun DetailHeader(selectedItem: String, showTemp: MutableState<Boolean>) 
         Spacer(modifier = Modifier.weight(1f))
         CloseButton(showTemp)
     }
-}
-
-@Composable
-private fun CloseButton(showTemp: MutableState<Boolean>) {
-    Image(
-        painter = painterResource(id = R.drawable.xbutton),
-        contentDescription = "x button",
-        modifier = Modifier
-            .size(24.dp)
-            .clickable { showTemp.value = false }
-    )
 }
 
 @Composable
