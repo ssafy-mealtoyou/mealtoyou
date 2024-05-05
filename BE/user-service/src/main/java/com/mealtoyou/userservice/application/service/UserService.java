@@ -4,7 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
+import com.mealtoyou.userservice.application.dto.request.UserInbodyRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
+import com.mealtoyou.userservice.application.dto.request.UserIntermittentFastingRequestDto;
+import com.mealtoyou.userservice.application.dto.request.UserWeightRequestDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.domain.model.User;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
@@ -38,5 +42,17 @@ public class UserService {
 	public Mono<Double> getHeight(Long userId) {
 		return userRepository
 			.findById(userId).map(User::getHeight);
+	}
+
+	public void updateFasting(long userId, UserIntermittentFastingRequestDto requestDto) {
+	}
+
+	public void updateGoal(long userId, UserGoalRequestDto requestDto) {
+	}
+
+	public void updateWeight(long userId, UserWeightRequestDto requestDto) {
+	}
+
+	public void updateInbody(long userId, UserInbodyRequestDto requestDto) {
 	}
 }
