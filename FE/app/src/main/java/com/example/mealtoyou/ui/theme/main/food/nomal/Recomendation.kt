@@ -20,18 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.main.food.NormalContent
 import com.example.mealtoyou.ui.theme.main.food.detail.FoodDetail
 
 @Composable
-fun RecommendationBox() {
+fun RecommendationBox(editable: Boolean) {
+    val height = if (editable) 450.dp else 400.dp
+
     Box(
         modifier = Modifier
-            .height(450.dp)
+            .height(height)
             .fillMaxWidth()
-            .padding(bottom = 20.dp, top = 8.dp)
+            .padding(bottom = 20.dp, top = 8.dp, start = 20.dp, end = 20.dp)
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(8.dp),
@@ -41,20 +42,20 @@ fun RecommendationBox() {
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White)
     ) {
-        RecommendationContent()
+        RecommendationContent(editable)
     }
 }
 
 @Composable
-fun RecommendationContent() {
+fun RecommendationContent(editable: Boolean) {
     val showTemp = remember { mutableStateOf(false) }
     val selectedItem = remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (showTemp.value) {
-            FoodDetail(selectedItem.value, showTemp)
+            FoodDetail(selectedItem.value, showTemp, editable)
         } else {
-            NormalContent(showTemp, selectedItem)
+            NormalContent(showTemp, selectedItem, editable)
         }
     }
 }

@@ -2,7 +2,6 @@ package com.example.mealtoyou.ui.theme.main.food.detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -89,7 +88,7 @@ private fun ActionButton(
 
 
 @Composable
-fun FoodDetail(selectedItem: String, showTemp: MutableState<Boolean>) {
+fun FoodDetail(selectedItem: String, showTemp: MutableState<Boolean>, editable: Boolean) {
     val isLoading = remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -99,7 +98,7 @@ fun FoodDetail(selectedItem: String, showTemp: MutableState<Boolean>) {
             LoadingSpinner()
         } else {
             DetailHeader(selectedItem, showTemp)
-            ContentBody()
+            ContentBody(editable)
         }
     }
 
@@ -176,7 +175,7 @@ private fun OverlayImage(text: String) {
 }
 
 @Composable
-private fun ContentBody() {
+private fun ContentBody(editable: Boolean) {
     Column {
         Spacer(modifier = Modifier.height(10.dp))
         Row {
@@ -218,7 +217,9 @@ private fun ContentBody() {
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        Buttons()
+        if (editable) {
+            Buttons()
+        }
     }
 }
 

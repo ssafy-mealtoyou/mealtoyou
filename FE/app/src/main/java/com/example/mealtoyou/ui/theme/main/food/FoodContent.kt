@@ -13,7 +13,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.main.food.nomal.FoodItems
 import com.example.mealtoyou.ui.theme.main.food.nomal.NutrientInfo
@@ -28,10 +27,9 @@ fun FoodBox() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
     ) {
         DateLabel()
-        RecommendationBox()
+        RecommendationBox(true)
     }
 }
 
@@ -46,6 +44,7 @@ fun DateLabel() {
         fontWeight = FontWeight.Bold,
         fontFamily = Pretend,
         color = Color(0xff565d6d),
+        modifier = Modifier.padding(start = 20.dp)
     )
 }
 
@@ -64,12 +63,13 @@ fun CalorieInfo(calories: String) {
 fun NormalContent(
     showTemp: MutableState<Boolean>,
     selectedItem: MutableState<String>,
+    editable: Boolean,
 ) {
     Column(Modifier.padding(12.dp)) {
         RecommendationHeader()
         CalorieInfo("862kcal")
         NutrientInfo()
-        FoodItems(showTemp, selectedItem)
+        FoodItems(showTemp, selectedItem, editable)
     }
 }
 

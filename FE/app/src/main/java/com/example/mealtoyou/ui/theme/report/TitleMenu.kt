@@ -31,10 +31,10 @@ fun TitleMenu(titleMenuPointer: Int, onPointerSelected: (Int) -> Unit) {
         TitleButton(text = "운동", pointer = 1, selectedPointer = titleMenuPointer) {
             onPointerSelected(1)
         }
-        Spacer(modifier = Modifier.width(12.dp))
-        TitleButton(text = "수면", pointer = 2, selectedPointer = titleMenuPointer) {
-            onPointerSelected(2)
-        }
+//        Spacer(modifier = Modifier.width(12.dp))
+//        TitleButton(text = "수면", pointer = 2, selectedPointer = titleMenuPointer) {
+//            onPointerSelected(2)
+//        }
     }
     Spacer(modifier = Modifier.height(12.dp))
 
