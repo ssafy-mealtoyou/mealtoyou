@@ -1,8 +1,4 @@
-import numpy as np
-import pandas as pd
 from fastapi import FastAPI
-from pydantic import BaseModel
-from scipy.optimize import differential_evolution
 from food_recommendation import get_food_recommendations, NutrientInfo
 from other_foods_recommendation import get_otherFoods,Info
 

@@ -25,12 +25,7 @@ def calculate_score(row, diff):
 
 
 def get_otherFoods(info):
-  df = pd.read_excel('updated_data.xlsx')
-
-  # 선택된 칼럼들로 새로운 DataFrame 생성
-  df_nutrients = df[
-    ['종류','카테고리2','카테고리', '식품명', '1회제공량', '내용량_단위', '총내용량(g)', '총내용량(mL)', '식품대분류',
-     '에너지(㎉)', '탄수화물(g)', '단백질(g)', '지방(g)', '총당류(g)', '나트륨(㎎)']].copy()
+  df_nutrients = pd.read_excel('food_nutrition.xlsx')
   # 데이터 유형 변환
   df_nutrients['에너지(㎉)'] = pd.to_numeric(df_nutrients['에너지(㎉)'], errors='coerce')
   df_nutrients['탄수화물(g)'] = pd.to_numeric(df_nutrients['탄수화물(g)'], errors='coerce')
@@ -46,7 +41,7 @@ def get_otherFoods(info):
     'fat': info.target_fat - info.now_fat
   }
 
-  # '종류' 필터링
+  # 같은 종류의 음식만 확인
   filtered_df = df_nutrients[df_nutrients['종류'] == info.kind]
 
   # 각 음식에 대한 점수 및 차이 계산
