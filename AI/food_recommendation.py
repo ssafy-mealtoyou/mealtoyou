@@ -107,8 +107,6 @@ def objective(selections, category_data, target,total, active_categories):
   if not common_categories:
     # 공통 카테고리가 없으면 높은 비용을 반환
     return 10000
-
-
   # 모든 영양소의 총합
   total_sum = np.sum(total_nutrients)
   # 각 영양소의 비율 계산
