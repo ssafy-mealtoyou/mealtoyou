@@ -30,6 +30,8 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -73,4 +75,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // The view calendar library
+    implementation("com.kizitonwose.calendar:view:2.5.1")
+    // The compose calendar library
+    implementation("com.kizitonwose.calendar:compose:2.5.1")
+
 }
