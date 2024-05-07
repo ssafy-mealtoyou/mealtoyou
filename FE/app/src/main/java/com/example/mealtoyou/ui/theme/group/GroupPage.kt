@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.DietBox
 import com.example.mealtoyou.ui.theme.shared.MainBar
 
@@ -79,13 +80,14 @@ private fun InfoRow() {
 @Composable
 private fun InfoColumn(title: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = title, fontSize = 10.sp, textAlign = TextAlign.Center)
+        Text(text = title, fontSize = 10.sp, textAlign = TextAlign.Center, color = Color(0xFF323743))
         Text(
             text = value,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             lineHeight = 26.sp,
             textAlign = TextAlign.Center
+            , color = Color(0xFF323743)
         )
     }
 }
@@ -103,17 +105,17 @@ private fun ContentRows() {
 private fun FirstContent() {
     Column {
         Text("일일 목표", fontSize = 12.sp, color = Color(0xFF9095A1), lineHeight = 20.sp)
-        Text("이번 주는 3회 남았어요.", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text("이번 주는 3회 남았어요.", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF323743))
         Spacer(modifier = Modifier.weight(1f))
         Row {
             Column {
                 Text("걸음 수", fontSize = 12.sp, color = Color(0xFF9095A1), lineHeight = 20.sp)
-                Text("9,281 걸음", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text("9,281 걸음", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF323743))
             }
             Spacer(modifier = Modifier.weight(1f))
             Column {
                 Text("소모 칼로리", fontSize = 12.sp, color = Color(0xFF9095A1), lineHeight = 20.sp)
-                Text("428 kcal", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text("428 kcal", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF323743))
             }
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -131,9 +133,9 @@ private fun FirstContent() {
                     clip = true,
                     ambientColor = Color(0xFF171A1F).copy(alpha = 0.15f),
                     spotColor = Color(0xFF171A1F).copy(alpha = 0.15f)
-                )
+                ),
         ) {
-            Text(text = "일일 목표 인증")
+            Text(text = "일일 목표 인증", fontFamily = Pretend, color = Color.White)
         }
     }
 }
