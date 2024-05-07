@@ -40,7 +40,7 @@ fun GroupPage() {
     ) {
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.verticalScroll(scrollState)) {
-            MainBar(text = "살까기 그룹")
+            MainBar(text = "다이어트 그룹")
             InfoSection()
             ContentRows()
             DietBox()

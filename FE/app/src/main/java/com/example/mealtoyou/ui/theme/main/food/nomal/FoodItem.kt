@@ -133,6 +133,7 @@ fun FoodItemSearch() {
         Row {
             Box(
                 modifier = shadowModifier()
+                    .padding(10.dp)
                     .weight(1f)
                     .height(70.dp)
                     .fillMaxWidth()
@@ -221,6 +222,7 @@ fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
                 modifier = shadowModifier()
                     .weight(1f)
                     .height(70.dp)
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.Transparent)
@@ -522,6 +524,7 @@ fun Item(text: String, iconId: Int, onItemClicked: () -> Unit) {
         modifier = shadowModifier()
             .fillMaxWidth()
             .height(165.dp)
+            .padding(10.dp)
             .clickable(onClick = onItemClicked), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(1f))

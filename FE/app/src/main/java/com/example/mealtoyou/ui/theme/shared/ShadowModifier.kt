@@ -16,12 +16,11 @@ import androidx.compose.ui.unit.dp
 fun shadowModifier(): Modifier {
     return Modifier
         .shadow(
-            elevation = 2.dp,
+            elevation = 5.dp,  // 그림자 높이 증가
             shape = RoundedCornerShape(8.dp),
-            ambientColor = Color(0xFF171A1F),
-            spotColor = Color(0xFF171A1F)
+            ambientColor = Color.Black,  // 상단 그림자를 조금 더 진하게
+            spotColor = Color(0xFF171A1F)  // 하단 그림자를 조금 더 연하게
         )
         .clip(RoundedCornerShape(8.dp))
         .background(Color.White)
-        .padding(10.dp)
 }
