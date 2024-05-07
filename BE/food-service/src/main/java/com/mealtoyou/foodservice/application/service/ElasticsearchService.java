@@ -29,7 +29,6 @@ public class ElasticsearchService {
 		Supplier<Query> supplier = ElasticsearchUtil.createSupplierQuery(approximateName);
 		Mono<ResponseBody<Food>> response = reactiveElasticsearchClient.search(
 			s -> s.index("food").query(supplier.get()), Food.class);
-
 		return response.flatMap(
 			responseBody -> {
 				List<Hit<Food>> hitList = responseBody.hits().hits();
@@ -41,13 +40,13 @@ public class ElasticsearchService {
 	public Mono<List<Food>> ratioNutrient(Double protein, Double fat, Double carbohydrate) {
 		Flux<SearchHit<Food>> response = reactiveElasticsearchOperations.search(
 			ElasticsearchUtil.createNativeQueryThree(protein, fat, carbohydrate), Food.class);
-		System.out.println(
-			"elasticsearch native query" + ElasticsearchUtil.createNativeQueryThree(protein, fat, carbohydrate)
-				.toString());
-		response.subscribe(foodSearchHit -> {
-			Food food = foodSearchHit.getContent();
-			System.out.println(food.toString());
-		});
+		// // System.out.println(
+		// // 	"elasticsearch native query" + ElasticsearchUtil.createNativeQueryThree(protein, fat, carbohydrate)
+		// // 		.toString());
+		// response.subscribe(foodSearchHit -> {
+		// 	Food food = foodSearchHit.getContent();
+		// 	System.out.println(food.toString());
+		// });
 		return response.map(SearchHit::getContent).collectList();
 	}
 

@@ -6,8 +6,5 @@ spring:
   cloud:
     config:
       profile: dev
-  data:
-    elasticsearch:
-      repositories:
-        enabled: true
-      url: localhost:9200
+  profiles:
+    include: oauth
