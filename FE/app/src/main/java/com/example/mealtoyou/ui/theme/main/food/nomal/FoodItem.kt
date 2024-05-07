@@ -388,7 +388,8 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
             Text(
                 text = "음식 검색",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
             OutlinedTextField(
                 value = textState.value,  // 현재 텍스트 상태
