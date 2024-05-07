@@ -10,6 +10,6 @@ import lombok.Getter;
 public class SupplementResponseDto {
 	private Long supplementId;
 	private String name;
-	private Boolean takedYn;
+	private Boolean takenYn;
 	private LocalDateTime alertTime;
 }

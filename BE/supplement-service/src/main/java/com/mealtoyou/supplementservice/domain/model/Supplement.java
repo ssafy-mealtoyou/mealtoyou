@@ -25,6 +25,6 @@ public class Supplement {
 	@Column("alert_time")
 	private LocalDateTime alertTime;
 
-	@Column("taked_yn")
-	private Boolean takedYn;
+	@Column("taken_yn")
+	private Boolean takenYn;
 }

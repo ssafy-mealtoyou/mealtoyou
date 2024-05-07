@@ -26,20 +26,20 @@ public class SupplementService {
 			.flatMap(dto -> supplementRepository.findByUserIdAndName(userId, dto.getName())
 				.flatMap(existingSupplement -> {
 					// 존재하는 Supplement 업데이트
-					existingSupplement.toBuilder()
+					Supplement updatedSupplement = existingSupplement.toBuilder()
 						.userId(userId)
-						.takedYn(dto.getTakedYn())
+						.takenYn(dto.getTakenYn())
 						.alertTime(dto.getAlertTime())
 						.name(existingSupplement.getName())
 						.build();
-					return supplementRepository.save(existingSupplement);
+					return supplementRepository.save(updatedSupplement);
 				})
 				.switchIfEmpty(Mono.defer(() -> {
 
 					Supplement newSupplement = Supplement.builder()
 						.userId(userId)
 						.name(dto.getName())
-						.takedYn(dto.getTakedYn())
+						.takenYn(dto.getTakenYn())
 						.alertTime(dto.getAlertTime())
 						.build();
 					return supplementRepository.save(newSupplement);
@@ -56,8 +56,14 @@ public class SupplementService {
 			.map(supplement -> SupplementResponseDto.builder()
 				.supplementId(supplement.getSupplementId())
 				.name(supplement.getName())
-				.takedYn(supplement.getTakedYn())
+				.takenYn(supplement.getTakenYn())
 				.alertTime(supplement.getAlertTime())
 				.build());
+	}
+
+	public Mono<String> deleteSupplement(String token, Long id) {
+		return supplementRepository.deleteById(id)
+			.then(Mono.just("Supplement deleted successfully"))
+			.onErrorResume(e -> Mono.just("Failed to delete supplement: " + e.getMessage()));
 	}
 }

@@ -8,6 +8,6 @@ import lombok.Getter;
 @Builder
 public class SupplementRequestDto {
 	private String name;
-	private Boolean takedYn;
+	private Boolean takenYn;
 	private LocalDateTime alertTime;
 }
