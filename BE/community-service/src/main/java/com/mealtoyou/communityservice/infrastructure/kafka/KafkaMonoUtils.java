@@ -1,6 +1,7 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealtoyou.sample.infrastructor.kafka.KafkaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

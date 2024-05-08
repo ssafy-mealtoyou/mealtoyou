@@ -1,5 +1,6 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
+import com.mealtoyou.sample.infrastructor.kafka.KafkaMessageListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.cglib.proxy.Enhancer;

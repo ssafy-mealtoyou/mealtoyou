@@ -5,8 +5,6 @@ import com.mealtoyou.communityservice.infrastructure.kafka.KafkaMessageEnable;
 import com.mealtoyou.communityservice.infrastructure.kafka.KafkaMessageListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 @KafkaMessageEnable
@@ -23,13 +21,4 @@ public class MessageProcessingAdaptor {
         return message + "2번 MSA입니다.";
     }
 
-//    @KafkaMessageListener(topic = "getPerson")
-//    public Flux<Person> personFlux(String message) {
-//        return personService.getAllPeople();
-//    }
-//
-//    @KafkaMessageListener(topic = "insertPerson")
-//    public Mono<Person> personMono(String message) {
-//        return personService.createPerson(Person.builder().name("bono bono").build());
-//    }
 }
