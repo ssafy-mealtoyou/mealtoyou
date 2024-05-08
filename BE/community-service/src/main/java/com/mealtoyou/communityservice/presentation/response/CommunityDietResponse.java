@@ -2,8 +2,10 @@ package com.mealtoyou.communityservice.presentation.response;
 
 import java.util.List;
 
-public record CommunityDiet(
+public record CommunityDietResponse(
         String nickname,
+
+        Integer totalCalories,
 
         Integer carbohydratePer,
 
