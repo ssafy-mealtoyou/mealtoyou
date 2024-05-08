@@ -36,6 +36,7 @@ public class BodyService {
 				return bodyRepository.findByUserIdandMeasuredDate(userId,measuredDate)
 					.flatMap(existingBody -> {
 						Body updatedBody = existingBody.toBuilder()
+							.userId(userId)
 							.bodyFat(formattedBodyFat)
 							.weight(formattedWeight)
 							.skeletalMuscle(formattedSkeletalMuscle)
