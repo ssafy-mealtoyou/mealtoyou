@@ -50,3 +50,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+application-oauth.yml
+mealtoyou.json
