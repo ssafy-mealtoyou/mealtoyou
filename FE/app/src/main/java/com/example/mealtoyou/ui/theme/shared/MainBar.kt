@@ -25,7 +25,7 @@ fun MainBar(text:String) {
             .padding(bottom = 10.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.icon_main), // 이 부분에 실제 리소스 ID를 사용하세요.
+            painter = painterResource(id = R.drawable.icon_main),
             contentDescription = "Main Icon",
             modifier = Modifier
                 .align(Alignment.TopStart) // 왼쪽 상단 정렬
@@ -36,19 +36,19 @@ fun MainBar(text:String) {
             text = text,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 5.dp), // 가운데 상단 정렬
-            fontSize = 24.sp,
+                .padding(top = 8.dp), // 가운데 상단 정렬
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF171A1F),
             fontFamily = Pretend
         )
 
         Image(
-            painter = painterResource(id = R.drawable.avatar), // 이 부분에 실제 리소스 ID를 사용하세요.
+            painter = painterResource(id = R.drawable.avatar),
             contentDescription = "Avatar",
             modifier = Modifier
                 .align(Alignment.TopEnd) // 오른쪽 상단 정렬
-                .padding(end = 20.dp)
+                .padding(end = 18.dp)
         )
     }
 

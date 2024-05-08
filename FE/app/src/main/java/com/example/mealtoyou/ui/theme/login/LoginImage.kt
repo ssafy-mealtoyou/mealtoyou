@@ -23,8 +23,8 @@ fun MainImage() {
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = halfScreenHeight),
-            contentScale = ContentScale.Crop,  // 이미지의 비율을 유지하면서 필요한 부분만 보여주기 위해 잘라냄
-            alignment = Alignment.BottomCenter  // 이미지를 하단 중심으로 정렬하여 상단이 자동으로 잘리게 함
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.BottomCenter
         )
     }
 }

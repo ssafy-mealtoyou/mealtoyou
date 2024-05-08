@@ -1,4 +1,4 @@
-package com.mealtoyou.communityservice.infrastructure.kafka;
+package com.mealtoyou.sample.infrastructor.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
