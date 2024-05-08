@@ -26,12 +26,12 @@ public record UserCommunityResponse(
 
         Integer caloriesBurned,
 
-        List<CommunityDiet> communityDietList,
+        List<CommunityDietResponse> communityDietList,
 
         List<String> recentMessageList
 ) {
     public static UserCommunityResponse toEntity(Community community, List<String> recentChatContents,
-                                                 List<CommunityDiet> sharedMenuList, Integer weeklyRemainGoal,
+                                                 List<CommunityDietResponse> sharedMenuList, Integer weeklyRemainGoal,
                                                  Integer steps, Integer caloriesBurned) {
         return new UserCommunityResponse(
                 community.getTitle(),
