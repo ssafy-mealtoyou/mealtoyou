@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 
@@ -18,8 +19,8 @@ fun MyStage() {
             .padding(end = 20.dp)
             .padding(bottom = 20.dp)
     ) {
-        DrugInfo(Modifier.weight(8f))
+        DrugInfo(Modifier.weight(8f), Color.White, false)
         Spacer(Modifier.weight(1f))
-        Challenge(Modifier.weight(8f))
+        Challenge(Modifier.weight(8f), Color.White, false)
     }
 }

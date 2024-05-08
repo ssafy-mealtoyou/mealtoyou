@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.mealtoyou.ui.theme.diet.DietPage
+import com.example.mealtoyou.ui.theme.group.ChatScreen
 import com.example.mealtoyou.ui.theme.group.GroupPage
 import com.example.mealtoyou.ui.theme.group.MyPage
 import com.example.mealtoyou.ui.theme.login.LoginPage
@@ -56,7 +57,7 @@ class MainActivity : ComponentActivity() {
     fun MainScreen(navController: NavHostController) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
-        val showBottomBar = currentRoute != "login"
+        val showBottomBar = currentRoute != "login" && currentRoute != "chat"
         Scaffold(
             bottomBar = {
                 if (showBottomBar) {
@@ -87,10 +88,13 @@ class MainActivity : ComponentActivity() {
                         DietPage()
                     }
                     composable("그룹") {
-                        GroupPage()
+                        GroupPage(navController)
                     }
                     composable("마이") {
                         MyPage()
+                    }
+                    composable("chat") {
+                        ChatScreen()
                     }
                 }
             }
