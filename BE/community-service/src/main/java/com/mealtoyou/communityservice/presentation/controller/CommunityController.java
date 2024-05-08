@@ -51,8 +51,8 @@ public class CommunityController {
     }
 
     @PostMapping("/communities/goals")
-    public Mono<String> dailyGoalCheck(@RequestHeader("Authorization") String token) {
-
+    public Mono<String> dailyGoalCheck(@RequestHeader("Authorization") String token, int steps, int caloriesBurned) {
+        return communityService.dailyGoalCheck(getUserId(token), steps, caloriesBurned);
     }
 
     public Long getUserId(String token) {
