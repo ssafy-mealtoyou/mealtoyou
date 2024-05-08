@@ -26,7 +26,9 @@ public class ExerciseService {
 			.flatMap(existingExercise -> {
 				// 데이터가 있으면 업데이트
 				Exercise updatedExercise = existingExercise.toBuilder()
+					.userId(userId)
 					.steps(exerciseDto.getSteps())
+					.stepStartDate(stepStartDate)
 					.caloriesBurned(exerciseDto.getCaloriesBurned())
 					.caloriesStartDate(exerciseDto.getCaloriesStartDate())
 					.build();
