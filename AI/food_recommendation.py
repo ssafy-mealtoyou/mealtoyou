@@ -3,6 +3,7 @@ import pandas as pd
 import openai
 from pydantic import BaseModel
 from scipy.optimize import differential_evolution
+from database import SessionLocal, FoodCombination
 from config import Config
 
 
@@ -163,6 +164,8 @@ def get_food_recommendations(nutrient_info, max_attempts=10):
           selected_food_idx = int(result.x[i])
           selected_food = category_data[cat].iloc[selected_food_idx]
           print(f"Selected {cat}: {selected_food['식품명']}, Quantity: {selected_food['1회제공량']/to*total}(g/mg)")
+
+        store_food_data(selected_foods,scaled_total_nutrients[0],scaled_total_nutrients[1],scaled_total_nutrients[2],scaled_total_nutrients[3])
         return FoodRecommendations(selected_foods=selected_foods, total_nutrients=scaled_total_nutrients)
       else:
         print("Combination not suitable, retrying...")
@@ -170,3 +173,31 @@ def get_food_recommendations(nutrient_info, max_attempts=10):
       print("Optimization failed:", result.message)
     attempt += 1
   return None  # Re
+
+
+def store_food_data(food_names, total_calories, carbs, protein, fat):
+
+  # 각 영양소의 비율 계산 (총 영양소 칼로리 대비)
+  calories_ratio = round(total_calories / (total_calories+carbs+protein+fat),6)
+  carb_ratio = round(carbs / (total_calories+carbs+protein+fat),6)
+  protein_ratio = round(protein / (total_calories+carbs+protein+fat), 6)
+  fat_ratio = round(fat / (total_calories+carbs+protein+fat), 6)
+
+  # # DB에 저장할 음식 데이터
+  food_combination = FoodCombination(
+      food_names=food_names,
+      total_calories_ratio=calories_ratio,
+      carbs_ratio=carb_ratio,
+      protein_ratio=protein_ratio,
+      fat_ratio=fat_ratio
+  )
+  # 데이터베이스 세션을 생성하여 데이터 저장
+  session = SessionLocal()
+  try:
+    session.add(food_combination)
+    session.commit()
+  except Exception as e:
+    print("데이터 저장 중 오류 발생:", str(e))
+    session.rollback()
+  finally:
+    session.close()

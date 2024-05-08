@@ -1,8 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-
-from database import SessionLocal, Exercise, UserHealth
+from database import SessionLocal, Exercise, UserHealth, FoodCombination
 from food_recommendation import get_food_recommendations, NutrientInfo
 from other_foods_recommendation import get_otherFoods, Info
 
@@ -17,6 +16,7 @@ def get_db():
     db.close()
 
 
+#테스트용 나중에 지우기
 @app.get("/")
 async def root():
   return {"message": "Hello World"}
@@ -24,10 +24,38 @@ async def root():
 
 # 음식 추천 api
 @app.post("/recommendations")
-def get_recommendations(nutrient_info: NutrientInfo):
-  print('321321')
-  scheduled_recommendation()
-  return get_food_recommendations(nutrient_info)
+def get_recommendations(nutrient_info: NutrientInfo, db: Session = Depends(get_db)):
+  sum = nutrient_info.calories+ nutrient_info.carbs+ nutrient_info.protein+ nutrient_info.fat
+  # 먼저 RDB에서 내가 원하는 목표값과 비슷한 조합이 있는지 확인
+  existing_combination = find_combination_in_db(
+      db, nutrient_info.calories/sum, nutrient_info.carbs/sum, nutrient_info.protein/sum, nutrient_info.fat/sum
+  )
+  # 기존 조합이 있을 경우
+  if existing_combination :
+    return {
+      "selected_foods": existing_combination.food_names,
+      "total_nutrients": [
+        existing_combination.total_calories_ratio,
+        existing_combination.carbs_ratio,
+        existing_combination.protein_ratio,
+        existing_combination.fat_ratio
+      ],
+      "nutrients": [
+        nutrient_info.calories,
+        nutrient_info.carbs,
+        nutrient_info.protein,
+        nutrient_info.fat
+      ],
+      "total": [
+        existing_combination.total_calories_ratio*sum,
+        existing_combination.carbs_ratio*sum,
+        existing_combination.protein_ratio*sum,
+        existing_combination.fat_ratio*sum
+      ],
+    }
+  else:
+    # 기존 조합이 없는 경우 새로운 조합 생성
+    return get_food_recommendations(nutrient_info)
 
 
 # 음식 수정 api
@@ -81,10 +109,6 @@ def scheduled_recommendation(split_factor=None):
       user_id, current_weight = user
       user_health_data = db.query(UserHealth).filter(UserHealth.user_id == user_id).first()
 
-      if not user_health_data:
-        print(f"Error: Could not find user health data for user {user_id}")
-        continue
-
       target_weight = user_health_data.weight
       # 목표에 따른 영양소 비율 계산
       carb_ratio, protein_ratio, fat_ratio = get_nutrient_ratios(current_weight, target_weight)
@@ -127,9 +151,16 @@ scheduler.add_job(scheduled_recommendation, 'cron', hour=17, minute=50, args=[No
 
 # 스케줄러 시작
 scheduler.start()
-# 7800
-# 1100
-# 최소 칼로리 500
-# 아니면 이상으로하고
 
-## 기초대사량, 소모 칼로리, 섭취 칼로리, 현재 몸무게, 목표 몸무게, 목표 기간
+
+# RDB에서 특정 비율의 음식 조합을 찾는 함수
+def find_combination_in_db(db, target_calories, target_carbs, target_protein, target_fat, tolerance=0.5):
+  results = db.query(FoodCombination).filter(
+      (FoodCombination.total_calories_ratio.between(target_calories * (1 - tolerance), target_calories * (1 + tolerance))) &
+      (FoodCombination.carbs_ratio.between(target_carbs * (1 - tolerance), target_carbs * (1 + tolerance))) &
+      (FoodCombination.protein_ratio.between(target_protein * (1 - tolerance), target_protein * (1 + tolerance))) &
+      (FoodCombination.fat_ratio.between(target_fat * (1 - tolerance), target_fat * (1 + tolerance)))
+  ).first()
+
+  return results
+
