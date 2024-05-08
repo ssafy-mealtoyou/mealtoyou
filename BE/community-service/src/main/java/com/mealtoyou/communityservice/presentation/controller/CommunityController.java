@@ -5,11 +5,13 @@ import com.mealtoyou.communityservice.application.service.JwtTokenProvider;
 import com.mealtoyou.communityservice.domain.model.Community;
 import com.mealtoyou.communityservice.presentation.request.CreateCommunityRequest;
 import com.mealtoyou.communityservice.presentation.request.UpdateCommunityRequest;
+import com.mealtoyou.communityservice.presentation.response.CommunityResponse;
 import com.mealtoyou.communityservice.presentation.response.UserCommunityResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -29,7 +31,7 @@ public class CommunityController {
     }
 
     // 커뮤니티 조회
-    @GetMapping("/communities")
+    @GetMapping("/communities/my")
     public Mono<UserCommunityResponse> getUserCommunityInfo(@RequestHeader("Authorization") String token) {
         Long userId = jwtTokenProvider.getUserId(token);
         return communityService.getUserCommunityInfo(getUserId(token));
@@ -40,6 +42,17 @@ public class CommunityController {
     public Mono<Community> updateCommunity(@RequestHeader("Authorization") String token,
                                            @Valid @RequestBody UpdateCommunityRequest updateCommunityRequest) {
         return communityService.updateCommunity(updateCommunityRequest, getUserId(token));
+    }
+
+    // 전체 그룹 조회
+    @GetMapping("/communities")
+    public Flux<CommunityResponse> getCommunityList(int page, int size) {
+        return communityService.getCommunityList(page, size);
+    }
+
+    @PostMapping("/communities/goals")
+    public Mono<String> dailyGoalCheck(@RequestHeader("Authorization") String token) {
+
     }
 
     public Long getUserId(String token) {

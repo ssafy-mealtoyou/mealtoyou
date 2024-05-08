@@ -6,13 +6,17 @@ import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
 import com.mealtoyou.communityservice.domain.repository.UserCommunityRepository;
 import com.mealtoyou.communityservice.infrastructure.exception.CommunityAlreadyExistsException;
 import com.mealtoyou.communityservice.infrastructure.exception.EmptyCommunityException;
+import com.mealtoyou.communityservice.infrastructure.kafka.KafkaMonoUtils;
 import com.mealtoyou.communityservice.presentation.request.CreateCommunityRequest;
 import com.mealtoyou.communityservice.presentation.request.UpdateCommunityRequest;
 import com.mealtoyou.communityservice.presentation.response.CommunityDiet;
+import com.mealtoyou.communityservice.presentation.response.CommunityResponse;
 import com.mealtoyou.communityservice.presentation.response.UserCommunityResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -26,6 +30,7 @@ public class CommunityService {
 
     private final CommunityRepository communityRepository;
     private final UserCommunityRepository userCommunityRepository;
+    private final KafkaMonoUtils kafkaMonoUtils;
 
     public Mono<Community> createCommunity(CreateCommunityRequest createCommunityRequest, Long userId) {
         return communityRepository.findByLeaderId(userId)
@@ -93,7 +98,15 @@ public class CommunityService {
                 });
     }
 
+    public Flux<CommunityResponse> getCommunityList(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return communityRepository.findAllByOrderByCommunityIdAsc(pageRequest)
+                .map(CommunityResponse::toEntity);
+    }
+
+
     private List<String> getRecentChatContents(Long communityId) {
+
         return List.of("Chat 1", "Chat 2", "Chat 3");
     }
 
