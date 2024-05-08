@@ -44,7 +44,7 @@ fun Drug(drug: Int) {
 }
 
 @Composable
-fun DrugInfo(modifier: Modifier) {
+fun DrugInfo(modifier: Modifier, color: Color, setupAble: Boolean) {
     Box(
         modifier = modifier
             .height(165.dp)
@@ -55,17 +55,28 @@ fun DrugInfo(modifier: Modifier) {
                 spotColor = Color(0xFF171A1F)
             )
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.White)
+            .background(color)
     ) {
         Column(Modifier.padding(10.dp)) {
-            Text(
-                text = "영양제",
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = Pretend,
-                lineHeight = 20.sp,
-                color = Color(0xFF9095A1),
-                fontSize = 12.sp,
-            )
+            Row {
+                Text(
+                    text = "영양제",
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = Pretend,
+                    lineHeight = 20.sp,
+                    color = Color(0xFF9095A1),
+                    fontSize = 12.sp,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (setupAble) {
+                    Image(
+                        painter = painterResource(id = R.drawable.gear),
+                        contentDescription = "gear",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
             Text(
                 text = "66% 완료",
                 fontWeight = FontWeight.SemiBold,

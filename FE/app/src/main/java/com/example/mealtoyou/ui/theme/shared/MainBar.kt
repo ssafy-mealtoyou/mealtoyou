@@ -17,7 +17,7 @@ import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
 
 @Composable
-fun MainBar(text:String) {
+fun MainBar(text: String, infoImg: Boolean) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,14 +42,15 @@ fun MainBar(text:String) {
             color = Color(0xFF171A1F),
             fontFamily = Pretend
         )
-
-        Image(
-            painter = painterResource(id = R.drawable.avatar),
-            contentDescription = "Avatar",
-            modifier = Modifier
-                .align(Alignment.TopEnd) // 오른쪽 상단 정렬
-                .padding(end = 18.dp)
-        )
+        if (infoImg) {
+            Image(
+                painter = painterResource(id = R.drawable.avatar),
+                contentDescription = "Avatar",
+                modifier = Modifier
+                    .align(Alignment.TopEnd) // 오른쪽 상단 정렬
+                    .padding(end = 18.dp)
+            )
+        }
     }
 
 }
