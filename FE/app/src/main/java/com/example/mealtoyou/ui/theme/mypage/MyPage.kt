@@ -3,9 +3,6 @@ package com.example.mealtoyou.ui.theme.group
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,16 +32,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.health.connect.client.HealthConnectClient
 import com.example.mealtoyou.R
+import com.example.mealtoyou.handler.HealthEventHandler
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.main.stage.Challenge
-import com.example.mealtoyou.ui.theme.main.stage.Drug
 import com.example.mealtoyou.ui.theme.main.stage.DrugInfo
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 
 @Composable
-fun MyPage() {
+fun MyPage(healthEventHandler: HealthEventHandler, healthConnectClient: HealthConnectClient) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
@@ -147,7 +145,7 @@ fun MyPage() {
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Button(
-                                    onClick = { },
+                                    onClick = {healthEventHandler.readHealthData()},
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(
