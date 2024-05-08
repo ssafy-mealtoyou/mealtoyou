@@ -1,31 +1,54 @@
 package com.example.mealtoyou.ui.theme.main.stage
 
+import android.util.Log
+import android.widget.NumberPicker
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.group.StopEatEdit
+import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.CircleProgressBar
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar
+import java.util.Calendar
 
 @Composable
 fun WeightProgress(value: Float, text: String) {
@@ -41,6 +64,161 @@ fun WeightProgress(value: Float, text: String) {
             color = Color(0xFF323743)
         )
     }
+}
+
+
+@Composable
+fun DatePicker(
+    selectedDay: Int,
+    selectedMonth: Int,
+    selectedYear: Int,
+    onDateChanged: (Int, Int, Int) -> Unit
+) {
+    val months =
+        listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        // Day
+        AndroidView(
+            modifier = Modifier.weight(1f),
+            factory = { context ->
+                NumberPicker(context).apply {
+                    minValue = 1
+                    maxValue =
+                        31  // Simplification for example; real implementation should consider the selected month/year
+                    value = selectedDay
+                    setOnValueChangedListener { _, _, newVal ->
+                        onDateChanged(newVal, selectedMonth, selectedYear)
+                    }
+                }
+            }
+        )
+
+        // Month
+        AndroidView(
+            modifier = Modifier.weight(1f),
+            factory = { context ->
+                NumberPicker(context).apply {
+                    minValue = 0
+                    maxValue = 11
+                    displayedValues = months.toTypedArray()
+                    value = selectedMonth
+                    setOnValueChangedListener { _, _, newVal ->
+                        onDateChanged(selectedDay, newVal, selectedYear)
+                    }
+                }
+            }
+        )
+
+        // Year
+        AndroidView(
+            modifier = Modifier.weight(1f),
+            factory = { context ->
+                NumberPicker(context).apply {
+                    minValue = 1900
+                    maxValue = 2100
+                    value = selectedYear
+                    setOnValueChangedListener { _, _, newVal ->
+                        onDateChanged(selectedDay, selectedMonth, newVal)
+                    }
+                }
+            }
+        )
+    }
+}
+@Composable
+private fun NumberTextField() {
+    val text = remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val textStyle = TextStyle(
+        color = Color(0xFF171A1F),
+        fontSize = 16.sp,
+        lineHeight = 50.sp,
+        textAlign = TextAlign.Center,
+    )
+
+    BasicTextField(
+        value = text.value,
+        onValueChange = { newText -> text.value = newText },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(46.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        textStyle = textStyle,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Number // 숫자 키보드로 변경
+        ),
+        keyboardActions = KeyboardActions(onDone = {
+            keyboardController?.hide() // 키보드 숨김 처리
+        }),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFF3F4F6))
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 11.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()  // Row를 Box의 높이만큼 채우도록 설정
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    innerTextField()
+                    Spacer(modifier = Modifier.width(8.dp))  // 'innerTextField'와 'kg' 텍스트 사이의 간격 추가
+                    Text(text = "kg", color = Color.Black)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ChallengeSetup() {
+    val calendar = Calendar.getInstance()
+    val currentYear = calendar.get(Calendar.YEAR)
+    val currentMonth = calendar.get(Calendar.MONTH)
+    val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+    Column {
+        Text(text = "목표 몸무게", color = Color(0xFF9095A1))
+        Spacer(modifier = Modifier.height(12.dp))
+        NumberTextField()
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(text = "기간 설정", color = Color(0xFF9095A1))
+        DatePicker(
+            selectedDay = currentDay,
+            selectedMonth = currentMonth,
+            selectedYear = currentYear
+        ) { day, month, year ->
+            Log.d("DatePicker", "Selected date: $year-${month + 1}-$day")
+        }
+        Button(
+            onClick = { },
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(
+                    0xFF6D31ED
+                )
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+            modifier = Modifier
+                .height(46.dp)
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = "등록",
+                fontFamily = Pretend,
+                color = Color.White
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -60,7 +238,7 @@ fun Challenge(modifier: Modifier, color: Color, setupAble: Boolean) {
         Column(Modifier.padding(10.dp)) {
             Row {
                 Text(
-                    text = "목표 달성치",
+                    text = if (!setupAble) "목표 달성치" else "목표 설정",
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = Pretend,
                     lineHeight = 20.sp,
@@ -69,10 +247,18 @@ fun Challenge(modifier: Modifier, color: Color, setupAble: Boolean) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (setupAble) {
+                    var addSheet by remember {
+                        mutableStateOf(false)
+                    }
+                    if (addSheet) {
+                        BottomSheet(closeSheet = { addSheet = false }, { ChallengeSetup() })
+                    }
                     Image(
                         painter = painterResource(id = R.drawable.gear),
                         contentDescription = "gear",
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { addSheet = true }
                     )
                 }
             }

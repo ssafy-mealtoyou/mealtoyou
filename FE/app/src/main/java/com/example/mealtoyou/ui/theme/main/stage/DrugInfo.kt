@@ -2,27 +2,51 @@ package com.example.mealtoyou.ui.theme.main.stage
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.group.AddWeight
+import com.example.mealtoyou.ui.theme.shared.BottomSheet
+import java.util.UUID
 
 @Composable
 fun Drug(drug: Int) {
@@ -42,6 +66,107 @@ fun Drug(drug: Int) {
         )
     }
 }
+
+@Composable
+private fun NumberTextField(modifier: Modifier) {
+    val text = remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val textStyle = TextStyle(
+        color = Color(0xFF171A1F),
+        fontSize = 16.sp,
+        lineHeight = 50.sp,
+        textAlign = TextAlign.Center,
+    )
+
+    BasicTextField(
+        value = text.value,
+        onValueChange = { newText -> text.value = newText },
+        singleLine = true,
+        modifier = modifier
+            .height(46.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        textStyle = textStyle,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done,
+        ),
+        keyboardActions = KeyboardActions(onDone = {
+            keyboardController?.hide() // 키보드 숨김 처리
+        }),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFF3F4F6))
+                    .fillMaxWidth()
+                    .padding(horizontal = 11.dp, vertical = 0.dp), // 가로 패딩만 적용
+                contentAlignment = Alignment.Center // Box 내부에서 요소들을 중앙에 배치
+            ) {
+                innerTextField()
+            }
+        }
+    )
+}
+
+@Composable
+fun AddDrug() {
+    var fields = remember { mutableStateListOf<UUID>() }
+
+    Column {
+        Text(text = "영양제 관리", fontSize = 16.sp, color = Color(0xff171A1F), fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(16.dp))
+        LazyColumn {
+            items(items = fields, key = { it }) { fieldId ->
+                Text(text = "이름", fontSize = 14.sp, color = Color(0xff9095A1))
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    NumberTextField(Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Image(
+                        painter = painterResource(id = R.drawable.minusred),
+                        contentDescription = "Google Icon",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                fields.remove(fieldId)
+                            }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+        Row {
+            Spacer(modifier = Modifier.weight(1f))
+            Image(
+                painter = painterResource(id = R.drawable.pluspupple),
+                contentDescription = "Google Icon",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable {
+                        if (fields.size < 3) {
+                            fields.add(UUID.randomUUID())
+                        }
+                    }
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.height(13.dp))
+        Button(
+            onClick = {
+                if (fields.size < 3) {
+                    fields.add(UUID.randomUUID())
+                }
+            },
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
+            modifier = Modifier
+                .height(46.dp)
+                .fillMaxWidth(),
+        ) {
+            Text("등록", color = Color.White)
+        }
+    }
+}
+
 
 @Composable
 fun DrugInfo(modifier: Modifier, color: Color, setupAble: Boolean) {
@@ -69,10 +194,18 @@ fun DrugInfo(modifier: Modifier, color: Color, setupAble: Boolean) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (setupAble) {
+                    var addSheet by remember {
+                        mutableStateOf(false)
+                    }
+                    if (addSheet) {
+                        BottomSheet(closeSheet = { addSheet = false }, { AddDrug() })
+                    }
                     Image(
                         painter = painterResource(id = R.drawable.gear),
                         contentDescription = "gear",
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { addSheet = true }
                     )
                 }
             }
