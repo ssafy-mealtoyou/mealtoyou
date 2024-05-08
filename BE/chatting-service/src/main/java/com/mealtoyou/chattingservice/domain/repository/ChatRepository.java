@@ -14,4 +14,7 @@ public interface ChatRepository extends ReactiveMongoRepository<Chat, ObjectId> 
 
     Flux<Chat> findByGroupIdOrderByTimestampDesc(Long groupId);
 
+    @Query("{ 'groupId': ?0 }")
+    Flux<Chat> findTop3ByGroupIdOrderByTimestampDesc(Long groupId, Pageable pageable);
+
 }

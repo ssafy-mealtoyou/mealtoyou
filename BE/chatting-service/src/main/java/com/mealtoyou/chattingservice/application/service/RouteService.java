@@ -25,7 +25,7 @@ public class RouteService {
                 .flatMap(savedChat -> {
                     // Send the chat message to Kafka as JSON
                     String jsonChat = convertChatToJson(savedChat);
-                    kafkaTemplate.send("group-chat-topic", jsonChat);
+//                    kafkaTemplate.send("group-chat-topic", jsonChat);
                     // Finish by returning the saved chat
                     return Mono.just(savedChat);
                 });
