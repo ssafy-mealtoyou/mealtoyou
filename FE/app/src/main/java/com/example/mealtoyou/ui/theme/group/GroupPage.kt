@@ -101,7 +101,7 @@ fun GroupPage(navController: NavHostController) {
 }
 
 @Composable
-fun CustomTextField() {
+private fun CustomTextField() {
     val text = remember { mutableStateOf("") }
     val textStyle = TextStyle(
         color = Color(0xFF6F7279),
