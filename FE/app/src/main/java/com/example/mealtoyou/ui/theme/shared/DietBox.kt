@@ -27,7 +27,7 @@ import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationContent
 @Composable
 fun DietBox() {
     val pagerState = rememberPagerState(
-        pageCount = { 10 }  // 총 페이지 수
+        pageCount = { 1 }  // 총 페이지 수
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -39,7 +39,7 @@ fun DietBox() {
                 modifier = Modifier
                     .height(380.dp)
                     .fillMaxWidth()
-                    .padding(top = 8.dp, start = 20.dp, end = 20.dp)
+                    .padding(top = 8.dp, start = 1.dp, end = 1.dp)
                     .shadow(
                         elevation = 2.dp,
                         shape = RoundedCornerShape(8.dp),
@@ -53,23 +53,26 @@ fun DietBox() {
             }
         }
 
-        Row(
-            Modifier
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            repeat(pagerState.pageCount) { iteration ->
-                val color = if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
-                Box(
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .size(9.dp)
-                        .background(color)
-                )
+        if (pagerState.pageCount > 1) {
+            Row(
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(pagerState.pageCount) { iteration ->
+                    val color = if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                    Box(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .size(9.dp)
+                            .background(color)
+                    )
+                }
             }
         }
+
     }
 }
 
