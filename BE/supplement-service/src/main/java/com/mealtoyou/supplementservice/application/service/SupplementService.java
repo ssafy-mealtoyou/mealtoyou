@@ -1,5 +1,6 @@
 package com.mealtoyou.supplementservice.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -65,5 +66,20 @@ public class SupplementService {
 		return supplementRepository.deleteById(id)
 			.then(Mono.just("Supplement deleted successfully"))
 			.onErrorResume(e -> Mono.just("Failed to delete supplement: " + e.getMessage()));
+	}
+
+	public Mono<Void> resetTakenYn() {
+
+		// 모든 영양제 조회
+		Flux<Supplement> supplementsFlux = supplementRepository.findAll();
+
+		// 모든 영양제의 takenYn 값을 false로 초기화
+		return supplementsFlux.flatMap(supplement -> {
+			// 빌더를 사용하여 객체 수정
+			Supplement updatedSupplement = supplement.toBuilder()
+				.takenYn(false)
+				.build();
+			return supplementRepository.save(updatedSupplement);
+		}).then();
 	}
 }
