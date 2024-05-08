@@ -1,24 +1,28 @@
 package com.mealtoyou.foodservice.application.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mealtoyou.foodservice.application.dto.DailyDietsResponseDto;
+import com.mealtoyou.foodservice.application.dto.DietFoodDto;
 import com.mealtoyou.foodservice.application.dto.DietFoodRequestDto;
+import com.mealtoyou.foodservice.application.dto.DietSummaryDto;
 import com.mealtoyou.foodservice.domain.model.Diet;
 import com.mealtoyou.foodservice.domain.model.DietFood;
 import com.mealtoyou.foodservice.domain.model.Food;
 import com.mealtoyou.foodservice.domain.repository.DietFoodRepository;
 import com.mealtoyou.foodservice.domain.repository.DietRepository;
 import com.mealtoyou.foodservice.domain.repository.FoodRepository;
+import com.mealtoyou.foodservice.infrastructor.kafka.KafkaMonoUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +35,19 @@ import reactor.util.function.Tuples;
 @Slf4j
 public class DietService {
 
+	private final KafkaMonoUtils kafkaMonoUtils;
 	private final DietRepository dietRepository;
 	private final DietFoodRepository dietFoodRepository;
 	private final FoodRepository foodRepository;
+
+	private Mono<Integer> requestBMR(long userId) {
+		// TODO: BMR 요청 토픽 구현
+		return kafkaMonoUtils.sendAndReceive("", userId).map(Integer::parseInt);
+	}
+
+	private int calcNutrientsPer(int bmr, double ratio, double nutrientsGram, int caloriesFactor) {
+		return (int)(((nutrientsGram * caloriesFactor) / (bmr * ratio)) * 100);
+	}
 
 	@Transactional
 	public Mono<Void> createDiet(long userId, List<DietFoodRequestDto> dietFoodRequestDtoList) {
@@ -90,5 +104,64 @@ public class DietService {
 			.then();
 	}
 
+	public Mono<DailyDietsResponseDto> getMyDiet(long userId, String dateString) {
+		// 문자열을 LocalDateTime으로 변환
+		LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
+		LocalDateTime startOfDay = date.atStartOfDay();
+		LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+		return dietRepository.findAllByUserIdAndCreateDateTimeBetween(userId, startOfDay, endOfDay)
+			.flatMap(diet -> {
+				Flux<DietFood> dietFoodFlux = dietFoodRepository.findDietFoodsByDietId(diet.getDietId());
+				Flux<Food> foodFlux = foodRepository.findFoodsByRidIn(dietFoodFlux.map(DietFood::getFoodId));
+				return foodFlux.map(food ->
+						DietFoodDto.builder()
+							.name(food.getName())
+							.imageUrl("temp image url") // TODO: 음식 이미지 가져오기
+							.calories(food.getEnergy())
+							.carbohydrate(food.getCarbohydrate())
+							.protein(food.getProtein())
+							.fat(food.getFat())
+							.build())
+					.collectList()
+					.flatMap(dietFoods ->
+						requestBMR(userId).flatMap((bmr) -> {
+							DietSummaryDto dietInfo = DietSummaryDto.builder()
+								.dietId(diet.getDietId())
+								.totalCalories(diet.getTotalCalories().intValue())
+								.carbohydratePer(calcNutrientsPer(bmr, 0.5, diet.getTotalCarbohydrate(), 4))
+								.proteinPer(calcNutrientsPer(bmr, 0.25, diet.getTotalProtein(), 4))
+								.fatPer(calcNutrientsPer(bmr, 0.25, diet.getTotalFat(), 9))
+								.dietFoods(dietFoods)
+								.build();
+							return Mono.just(dietInfo);
+						})
+					);
+			})
+			.collectList()
+			.map(diets -> {
+					double totalCalories = 0.0;
+					double totalCarbohydrate = 0.0;
+					double totalProtein = 0.0;
+					double totalFat = 0.0;
+					for (DietSummaryDto diet : diets) {
+						for (DietFoodDto food : diet.dietFoods()) {
+							totalCalories += food.calories();
+							totalCarbohydrate += food.carbohydrate();
+							totalProtein += food.protein();
+							totalFat += food.fat();
+						}
+					}
+					return DailyDietsResponseDto.builder()
+						.date(dateString)
+						.dailyCaloriesBurned(totalCalories)
+						.dailyCarbohydrateTaked(totalCarbohydrate)
+						.dailyProteinTaked(totalProtein)
+						.dailyFatTaked(totalFat)
+						.diets(diets)
+						.build();
+				}
+			);
+	}
 
 }
