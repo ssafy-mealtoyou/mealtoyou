@@ -1,3 +1,4 @@
+import redis
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
@@ -15,6 +16,11 @@ def get_db():
   finally:
     db.close()
 
+# Redis 클라이언트 생성
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+# 식단의 만료 기간을 3일로 설정
+PERIOD = 60 * 60 * 24 * 3
 
 #테스트용 나중에 지우기
 @app.get("/")
@@ -27,32 +33,35 @@ async def root():
 def get_recommendations(nutrient_info: NutrientInfo, db: Session = Depends(get_db)):
   sum = nutrient_info.calories+ nutrient_info.carbs+ nutrient_info.protein+ nutrient_info.fat
   # 먼저 RDB에서 내가 원하는 목표값과 비슷한 조합이 있는지 확인
-  existing_combination = find_combination_in_db(
+  combinations = find_combination_in_db(
       db, nutrient_info.calories/sum, nutrient_info.carbs/sum, nutrient_info.protein/sum, nutrient_info.fat/sum
   )
-  # 기존 조합이 있을 경우
-  if existing_combination :
-    return {
-      "selected_foods": existing_combination.food_names,
-      "total_nutrients": [
-        existing_combination.total_calories_ratio,
-        existing_combination.carbs_ratio,
-        existing_combination.protein_ratio,
-        existing_combination.fat_ratio
-      ],
-      "nutrients": [
-        nutrient_info.calories,
-        nutrient_info.carbs,
-        nutrient_info.protein,
-        nutrient_info.fat
-      ],
-      "total": [
-        existing_combination.total_calories_ratio*sum,
-        existing_combination.carbs_ratio*sum,
-        existing_combination.protein_ratio*sum,
-        existing_combination.fat_ratio*sum
-      ],
-    }
+
+  for combination in combinations:
+    # 모든 조합이 이미 추천된 경우 새로운 조합 생성
+    if not is_diet_recommended(user_id=1, diet_id=combination.id):
+      store_diet(user_id=1, diet_id=combination.id)
+      return {
+        "selected_foods": combination.food_names,
+        "total_nutrients": [
+          combination.total_calories_ratio,
+          combination.carbs_ratio,
+          combination.protein_ratio,
+          combination.fat_ratio
+        ],
+        "nutrients": [
+          nutrient_info.calories,
+          nutrient_info.carbs,
+          nutrient_info.protein,
+          nutrient_info.fat
+        ],
+        "total": [
+          combination.total_calories_ratio*sum,
+          combination.carbs_ratio*sum,
+          combination.protein_ratio*sum,
+          combination.fat_ratio*sum
+        ],
+      }
   else:
     # 기존 조합이 없는 경우 새로운 조합 생성
     return get_food_recommendations(nutrient_info)
@@ -160,7 +169,19 @@ def find_combination_in_db(db, target_calories, target_carbs, target_protein, ta
       (FoodCombination.carbs_ratio.between(target_carbs * (1 - tolerance), target_carbs * (1 + tolerance))) &
       (FoodCombination.protein_ratio.between(target_protein * (1 - tolerance), target_protein * (1 + tolerance))) &
       (FoodCombination.fat_ratio.between(target_fat * (1 - tolerance), target_fat * (1 + tolerance)))
-  ).first()
+  ).all()
 
   return results
 
+# 사용자 식단 추천 저장
+def store_diet(user_id, diet_id):
+  # 사용자별로 식단 조합 키 생성
+  key = f"user:{user_id}:diet:{diet_id}"
+
+  # 해당 식단을 3일 동안 유지하는 키 생성
+  redis_client.setex(key, PERIOD, "recommended")
+
+# 사용자에게 이미 동일한 식단을 추천했는지 확인
+def is_diet_recommended(user_id, diet_id):
+  key = f"user:{user_id}:diet:{diet_id}"
+  return redis_client.exists(key)
