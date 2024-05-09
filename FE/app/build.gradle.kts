@@ -106,7 +106,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+    implementation (libs.okhttp)
+    implementation (libs.squareup.logging.interceptor)
+    implementation (libs.gson)
+    implementation("io.coil-kt:coil-compose:1.4.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // The view calendar library
     implementation("com.kizitonwose.calendar:view:2.5.1")
