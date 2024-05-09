@@ -1,12 +1,12 @@
 package com.mealtoyou.chattingservice.application.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealtoyou.chattingservice.application.dto.CommunityDietDTO;
 import com.mealtoyou.chattingservice.domain.model.Chat;
+import com.mealtoyou.chattingservice.domain.model.CommunityDietMessage;
 import com.mealtoyou.chattingservice.domain.repository.ChatRepository;
+import com.mealtoyou.chattingservice.infrastructure.kafka.KafkaMonoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -15,28 +15,31 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class RouteService {
 
-    private final KafkaTemplate<Object, String> kafkaTemplate;
     private final ChatRepository chatRepository;
-    private final ObjectMapper objectMapper;
+    private final KafkaMonoUtils kafkaMonoUtils;
 
-    public Mono<Chat> route(Chat chat) {
-        // Save the chat message to MongoDB and send it to Kafka
-        return chatRepository.save(chat)
-                .flatMap(savedChat -> {
-                    // Send the chat message to Kafka as JSON
-                    String jsonChat = convertChatToJson(savedChat);
-//                    kafkaTemplate.send("group-chat-topic", jsonChat);
-                    // Finish by returning the saved chat
-                    return Mono.just(savedChat);
-                });
-    }
+    public Mono<Chat> routeChat(Chat chat) {
+        // 채팅 메시지를 MongoDB에 저장
+        Mono<Chat> saveChatMono = chatRepository.save(chat);
 
-    private String convertChatToJson(Chat chat) {
-        try {
-            return objectMapper.writeValueAsString(chat);
-        } catch (JsonProcessingException e) {
-            log.error("Error converting chat to JSON: {}", e.getMessage());
-            throw new RuntimeException("Error converting chat to JSON");
+        // 메시지가 CommunityDietMessage 인지 확인
+        if (chat.getMessage() instanceof CommunityDietMessage) {
+            // CommunityDietMessage 인 경우, Kafka 로 전송
+            return saveChatMono.flatMap(savedChat ->
+                    kafkaMonoUtils.sendAndReceive(
+                                    "community-service-diet",
+                                    new CommunityDietDTO(
+                                            chat.getGroupId(),
+                                            ((CommunityDietMessage) savedChat.getMessage()).getDietId()
+                                    )
+                            )
+                            .then(Mono.just(savedChat))
+            );
+        } else {
+            // CommunityDietMessage 가 아닌 경우, 저장된 채팅을 반환
+            return saveChatMono;
         }
     }
+
+
 }
