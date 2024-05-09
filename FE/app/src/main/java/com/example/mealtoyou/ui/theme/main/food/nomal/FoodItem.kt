@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -72,14 +73,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.repository.FoodSearchRepository
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
+import com.example.mealtoyou.viewmodel.FoodSearchViewModel
 import java.text.DecimalFormat
 
 
@@ -124,7 +128,7 @@ fun IncrementDecrementButtons() {
 }
 
 @Composable
-fun FoodItemSearch() {
+fun FoodItemSearch(name:String,energy:Double) {
     Box(
         modifier = Modifier
             .height(70.dp)
@@ -308,8 +312,10 @@ fun Modifier.dashedBorder(
 
 @Composable
 private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: Boolean) {
+    val viewModel: FoodSearchViewModel = viewModel()
     var showDialog by remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
+    val foodSearchResult = viewModel.foodSearchResult.value
 
     Column(
         modifier = Modifier
@@ -399,17 +405,35 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                 label = { Text("Enter text") },  // 라벨 텍스트
                 singleLine = true,  // 단일 줄 입력 필드
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        // 여기에 서버로 데이터를 전송하는 코드를 추가합니다.
+                        Log.d("foodSearchKeyword",textState.value)
+                        viewModel.foodSearch(textState.value)
+                    }
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp)
             )
-            Spacer(modifier = Modifier.height(15.dp))
-            FoodItemSearch()
-            Spacer(modifier = Modifier.height(15.dp))
-            FoodItemSearch()
-            Spacer(modifier = Modifier.height(15.dp))
-            FoodItemSearch()
-            Spacer(modifier = Modifier.height(20.dp))
+            foodSearchResult?.let { resultList ->
+                LazyColumn {
+                    items(resultList) { foodItem ->
+                        Spacer(modifier = Modifier.height(15.dp))
+                        FoodItemSearch(name = foodItem.name,energy=foodItem.energy)
+                    }
+                }
+            } ?: run {
+                // 결과가 null인 경우, 예를 들어 "검색 결과가 없습니다"와 같은 메시지 표시
+                Text(text = "검색 결과가 없습니다.")
+            }
+//            Spacer(modifier = Modifier.height(15.dp))
+//            FoodItemSearch()
+//            Spacer(modifier = Modifier.height(15.dp))
+//            FoodItemSearch()
+//            Spacer(modifier = Modifier.height(15.dp))
+//            FoodItemSearch()
+//            Spacer(modifier = Modifier.height(20.dp))
             Button(
                 onClick = { setContent("default") },
                 modifier = Modifier
