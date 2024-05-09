@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: chatting-service
+  config:
+    import: optional:configserver:${CONFIG_IMPORT}
+  cloud:
+    config:
+      profile: dev

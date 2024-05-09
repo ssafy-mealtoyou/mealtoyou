@@ -6,6 +6,6 @@ import lombok.Getter;
 
 @Getter
 public class CommunityDietsRequestDto {
-	private Integer userId;
+	private Long userId;
 	private List<Long> dietIdList;
 }

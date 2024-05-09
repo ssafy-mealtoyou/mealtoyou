@@ -1,4 +1,4 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
