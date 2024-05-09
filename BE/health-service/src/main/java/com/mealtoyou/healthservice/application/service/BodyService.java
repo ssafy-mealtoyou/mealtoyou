@@ -11,6 +11,7 @@ import com.mealtoyou.healthservice.domain.repository.BodyRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMonoUtils;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -61,4 +62,12 @@ public class BodyService {
 			});
 
 	}
+
+	public Mono<Double> getUserBmr(Long userId) {
+		// 가장 최근의 BMR 기록 1개 불러오기
+		return bodyRepository.findByUserId(userId, 1)
+			.collectList()
+			.map(bodyList -> bodyList.get(0).getBmr());
+	}
+
 }
