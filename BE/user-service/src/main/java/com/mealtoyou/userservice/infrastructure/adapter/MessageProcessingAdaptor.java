@@ -23,6 +23,12 @@ public class MessageProcessingAdaptor {
         return userService.getHeight(id);
     }
 
+    @KafkaMessageListener(topic = "getNickname")
+    public Mono<String> getNickname(String message) {
+        Long id = Long.parseLong(message);
+        return userService.getNickname(id);
+    }
+
     // @KafkaMessageListener(topic = "requests2")
     // public String processMessage2(String message) {
     //     return message + "2번 MSA입니다.";

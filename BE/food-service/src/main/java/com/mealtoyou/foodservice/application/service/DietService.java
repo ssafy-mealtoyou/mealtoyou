@@ -51,8 +51,7 @@ public class DietService {
 	}
 
 	private Mono<String> requestUserNickname(long userId) {
-		// TODO: BMR 요청 토픽 구현
-		return kafkaMonoUtils.sendAndReceive("", userId);
+		return kafkaMonoUtils.sendAndReceive("user-service-getNickname", userId);
 	}
 
 	@Transactional
