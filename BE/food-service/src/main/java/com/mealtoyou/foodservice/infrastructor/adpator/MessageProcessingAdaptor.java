@@ -35,7 +35,7 @@ public class MessageProcessingAdaptor {
         return dto;
     }
 
-    @KafkaMessageListener(topic = "diets")
+    @KafkaMessageListener(topic = "community-diet-list")
     public Mono<List<CommunityDietDto>> processMessage1(String message) throws JsonProcessingException {
         log.info("커뮤니티 다이어트 목록 조회: {}", message);
         CommunityDietsRequestDto dto = readCommunityDietsRequestDto(message);
