@@ -47,4 +47,10 @@ public class UserService {
 		return userRepository
 			.findById(userId).map(User::getHeight);
 	}
+
+	public Mono<String> getNickname(Long userId) {
+		return userRepository
+			.findById(userId).map(User::getNickname);
+	}
+
 }

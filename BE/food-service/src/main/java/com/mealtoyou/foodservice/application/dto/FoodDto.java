@@ -26,7 +26,7 @@ public class FoodDto {
 
 	public static FoodDto toDto(Food food) {
 		return FoodDto.builder()
-			.id(food.getId())
+			.id((food.getRid()))
 			.name(food.getName())
 			.servingUnit(food.getServingUnit())
 			.servingSize(food.getServingSize())

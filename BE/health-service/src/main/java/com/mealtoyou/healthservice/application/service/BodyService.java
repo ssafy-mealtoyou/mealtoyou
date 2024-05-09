@@ -64,6 +64,13 @@ public class BodyService {
 
 	}
 
+	public Mono<Double> getUserBmr(Long userId) {
+		// 가장 최근의 BMR 기록 1개 불러오기
+		return bodyRepository.findByUserId(userId, 1)
+			.collectList()
+			.map(bodyList -> bodyList.get(0).getBmr());
+	}
+
 	public Flux<BodyDto> readBodyData(String token, Integer day) {
 		Long userId = jwtTokenProvider.getUserId(token);
 		Flux<Body> bodyFlux = bodyRepository.findByUserId(userId,day);
@@ -78,4 +85,5 @@ public class BodyService {
 				.build()
 		);
 	}
+
 }
