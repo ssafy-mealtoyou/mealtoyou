@@ -133,6 +133,7 @@ fun FoodItemSearch() {
         Row {
             Box(
                 modifier = shadowModifier()
+                    .padding(10.dp)
                     .weight(1f)
                     .height(70.dp)
                     .fillMaxWidth()
@@ -221,6 +222,7 @@ fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
                 modifier = shadowModifier()
                     .weight(1f)
                     .height(70.dp)
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.Transparent)
@@ -388,7 +390,8 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
             Text(
                 text = "음식 검색",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
             OutlinedTextField(
                 value = textState.value,  // 현재 텍스트 상태
@@ -521,6 +524,7 @@ fun Item(text: String, iconId: Int, onItemClicked: () -> Unit) {
         modifier = shadowModifier()
             .fillMaxWidth()
             .height(165.dp)
+            .padding(10.dp)
             .clickable(onClick = onItemClicked), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(1f))

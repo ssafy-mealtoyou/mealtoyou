@@ -1,6 +1,8 @@
 package com.mealtoyou.communityservice.infrastructure.handler;
 
 import com.mealtoyou.communityservice.infrastructure.exception.CommunityAlreadyExistsException;
+import com.mealtoyou.communityservice.infrastructure.exception.EmptyCommunityException;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,12 +42,23 @@ public class CustomExceptionHandler {
     @ExceptionHandler(CommunityAlreadyExistsException.class)
     public ResponseEntity<Object> handleCommunityAlreadyExistsException(CommunityAlreadyExistsException ex) {
         log.error("Community already exists", ex);
+        return getObjectResponseEntity(ex.getMessage(), ex);
+    }
+
+    @ExceptionHandler(EmptyCommunityException.class)
+    public ResponseEntity<Object> handleEmptyCommunityException(EmptyCommunityException ex) {
+        log.error("Community is not exists", ex);
+        return getObjectResponseEntity(ex.getMessage(), ex);
+    }
+
+    @NotNull
+    private ResponseEntity<Object> getObjectResponseEntity(String message, Exception ex) {
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.BAD_REQUEST.value());
         response.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
         response.put("path", "/communities");
-        response.put("message", ex.getMessage());
+        response.put("message", message);
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

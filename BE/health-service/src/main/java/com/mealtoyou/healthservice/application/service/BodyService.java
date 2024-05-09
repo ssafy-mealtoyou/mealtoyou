@@ -11,6 +11,7 @@ import com.mealtoyou.healthservice.domain.repository.BodyRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMonoUtils;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -35,6 +36,7 @@ public class BodyService {
 				return bodyRepository.findByUserIdandMeasuredDate(userId,measuredDate)
 					.flatMap(existingBody -> {
 						Body updatedBody = existingBody.toBuilder()
+							.userId(userId)
 							.bodyFat(formattedBodyFat)
 							.weight(formattedWeight)
 							.skeletalMuscle(formattedSkeletalMuscle)
@@ -61,4 +63,27 @@ public class BodyService {
 			});
 
 	}
+
+	public Mono<Double> getUserBmr(Long userId) {
+		// 가장 최근의 BMR 기록 1개 불러오기
+		return bodyRepository.findByUserId(userId, 1)
+			.collectList()
+			.map(bodyList -> bodyList.get(0).getBmr());
+	}
+
+	public Flux<BodyDto> readBodyData(String token, Integer day) {
+		Long userId = jwtTokenProvider.getUserId(token);
+		Flux<Body> bodyFlux = bodyRepository.findByUserId(userId,day);
+		return bodyFlux.map(
+			body -> BodyDto.builder()
+				.bodyFat(body.getBodyFat())
+				.weight(body.getWeight())
+				.bmi(body.getBmi())
+				.bmr(body.getBmr())
+				.skeletalMuscle(body.getSkeletalMuscle())
+				.measuredDate(body.getMeasuredDate())
+				.build()
+		);
+	}
+
 }

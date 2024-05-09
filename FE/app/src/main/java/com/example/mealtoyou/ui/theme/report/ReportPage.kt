@@ -84,7 +84,7 @@ fun ReportPage() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            MainBar(text = "분석")
+            MainBar(text = "분석", infoImg = true)
             ContentBody(Modifier.weight(1f))
         }
     }

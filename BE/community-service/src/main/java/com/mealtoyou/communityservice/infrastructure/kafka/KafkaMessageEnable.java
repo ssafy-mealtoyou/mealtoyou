@@ -1,4 +1,4 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
