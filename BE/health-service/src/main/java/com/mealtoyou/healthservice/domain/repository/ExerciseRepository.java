@@ -22,5 +22,7 @@ public interface ExerciseRepository extends ReactiveCrudRepository<Exercise, Lon
 	@Query("SELECT * FROM exercise WHERE user_id = :userId AND step_start_date = :stepStartDate")
 	Flux<Exercise> findByUserIdAndStepStartDate(Long userId, LocalDate stepStartDate);
 
+	Mono<Exercise> findFirstByUserIdOrderByStepStartDateDesc(Long userId);
+
 }
 
