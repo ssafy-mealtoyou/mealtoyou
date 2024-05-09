@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mealtoyou.foodservice.application.dto.CommunityDietDto;
+import com.mealtoyou.foodservice.application.dto.CommunityDietFoodDto;
 import com.mealtoyou.foodservice.application.dto.DailyDietsResponseDto;
 import com.mealtoyou.foodservice.application.dto.DietFoodDto;
 import com.mealtoyou.foodservice.application.dto.DietFoodRequestDto;
@@ -47,6 +49,11 @@ public class DietService {
 
 	private int calcNutrientsPer(int bmr, double ratio, double nutrientsGram, int caloriesFactor) {
 		return (int)(((nutrientsGram * caloriesFactor) / (bmr * ratio)) * 100);
+	}
+
+	private Mono<String> requestUserNickname(long userId) {
+		// TODO: BMR 요청 토픽 구현
+		return kafkaMonoUtils.sendAndReceive("", userId);
 	}
 
 	@Transactional
@@ -162,6 +169,39 @@ public class DietService {
 						.build();
 				}
 			);
+	}
+
+	public Mono<List<CommunityDietDto>> getCommunityDiets(long userId, List<Long> dietIds) {
+		return dietRepository.findAllById(dietIds)
+			.flatMap((diet -> {
+				Mono<List<Food>> listMono = dietFoodRepository.findDietFoodsByDietId(diet.getDietId())
+					.flatMap(dietFood -> foodRepository.findByRid(dietFood.getFoodId()))
+					.collectList();
+				Mono<Integer> bmrMono = requestBMR(userId);
+				Mono<String> nicknameMono = requestUserNickname(userId);
+
+				return Mono.zip(listMono, bmrMono, nicknameMono)
+					.map(tuple -> {
+						List<Food> foods = tuple.getT1();
+						int bmr = tuple.getT2();
+						String nickname = tuple.getT3();
+						List<CommunityDietFoodDto> dietFoodDtoList =
+							foods.stream().map(f -> CommunityDietFoodDto.builder()
+								.foodName(f.getName())
+								.foodImageUrl("temp image url") // TODO: 음식 이미지 조회 필요
+								.calories(f.getEnergy().intValue())
+								.build()).toList();
+						return CommunityDietDto.builder()
+							.nickname(nickname)
+							.totalCalories(diet.getTotalCalories().intValue())
+							.carbohydratePer(calcNutrientsPer(bmr, 0.5, diet.getTotalCarbohydrate(), 4))
+							.proteinPer(calcNutrientsPer(bmr, 0.25, diet.getTotalProtein(), 4))
+							.fatPer(calcNutrientsPer(bmr, 0.25, diet.getTotalFat(), 9))
+							.foodList(dietFoodDtoList)
+							.build();
+					});
+			}))
+			.collectList();
 	}
 
 }
