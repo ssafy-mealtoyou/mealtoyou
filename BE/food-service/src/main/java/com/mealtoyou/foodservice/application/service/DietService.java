@@ -110,25 +110,31 @@ public class DietService {
 	}
 
 	public Mono<DailyDietsResponseDto> getMyDiet(long userId, String dateString) {
-		// 문자열을 LocalDateTime으로 변환
-		LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
-		LocalDateTime startOfDay = date.atStartOfDay();
-		LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+		LocalDateTime startOfDay, endOfDay;
+		try {
+			// 문자열을 LocalDateTime 으로 변환
+			LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
+			startOfDay = date.atStartOfDay();
+			endOfDay = date.atTime(LocalTime.MAX);
+		} catch (RuntimeException re) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "입력 날짜 형식이 잘못되었습니다.");
+		}
 
 		return dietRepository.findAllByUserIdAndCreateDateTimeBetween(userId, startOfDay, endOfDay)
 			.flatMap(diet -> {
 				Flux<DietFood> dietFoodFlux = dietFoodRepository.findDietFoodsByDietId(diet.getDietId());
-				Flux<Food> foodFlux = foodRepository.findFoodsByRidIn(dietFoodFlux.map(DietFood::getFoodId));
-				return foodFlux.map(food ->
-						DietFoodDto.builder()
+				Mono<List<Food>> listMono = dietFoodFlux.collectList()
+					.flatMap(list -> foodRepository.findFoodsByRidIn(list.stream().map(DietFood::getFoodId).toList())
+						.collectList());
+				return listMono.map(foods ->
+						foods.stream().map(food -> DietFoodDto.builder()
 							.name(food.getName())
 							.imageUrl("temp image url") // TODO: 음식 이미지 가져오기
 							.calories(food.getEnergy())
 							.carbohydrate(food.getCarbohydrate())
 							.protein(food.getProtein())
 							.fat(food.getFat())
-							.build())
-					.collectList()
+							.build()).toList())
 					.flatMap(dietFoods ->
 						requestBMR(userId).flatMap((bmr) -> {
 							DietSummaryDto dietInfo = DietSummaryDto.builder()
