@@ -14,6 +14,6 @@ public class Chat {
     private ObjectId id;
     private Long userId;
     private Long groupId;
-    private String message;
+    private Message message;
     private LocalDateTime timestamp;
 }

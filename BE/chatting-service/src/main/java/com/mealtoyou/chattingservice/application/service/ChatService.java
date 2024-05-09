@@ -20,7 +20,7 @@ public class ChatService {
         if (lastId != null && !lastId.isEmpty()) {
             return chatRepository.findByGroupIdAndIdLessThanOrderByTimestampDesc(groupId, new ObjectId(lastId), PageRequest.of(0, pageSize, sort));
         } else {
-            return chatRepository.findByGroupIdOrderByTimestampDesc(groupId);
+            return chatRepository.findByGroupIdOrderByTimestampAsc(groupId);
         }
     }
 }

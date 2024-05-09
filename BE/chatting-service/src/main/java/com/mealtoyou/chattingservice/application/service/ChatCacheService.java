@@ -14,7 +14,7 @@ public class ChatCacheService {
     private final ChatRepository chatRepository;
 
     public Mono<List<Chat>> getRecentChatsFromMongo(Long groupId, int limit) {
-        return chatRepository.findByGroupIdOrderByTimestampDesc(groupId)
+        return chatRepository.findByGroupIdOrderByTimestampAsc(groupId)
                 .take(limit)
                 .collectList();
     }

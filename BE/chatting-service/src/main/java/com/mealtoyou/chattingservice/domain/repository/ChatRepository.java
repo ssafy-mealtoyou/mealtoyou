@@ -12,7 +12,7 @@ public interface ChatRepository extends ReactiveMongoRepository<Chat, ObjectId> 
     @Query("{ 'groupId': ?0, '_id': { $lt: ?1 } }")
     Flux<Chat> findByGroupIdAndIdLessThanOrderByTimestampDesc(Long groupId, ObjectId lastId, Pageable pageable);
 
-    Flux<Chat> findByGroupIdOrderByTimestampDesc(Long groupId);
+    Flux<Chat> findByGroupIdOrderByTimestampAsc(Long groupId);
 
     @Query("{ 'groupId': ?0 }")
     Flux<Chat> findTop3ByGroupIdOrderByTimestampDesc(Long groupId, Pageable pageable);

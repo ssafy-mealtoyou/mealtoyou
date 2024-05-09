@@ -3,7 +3,6 @@ package com.mealtoyou.chattingservice.presentation.controller;
 import com.mealtoyou.chattingservice.domain.model.Chat;
 import com.mealtoyou.chattingservice.domain.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

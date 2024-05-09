@@ -1,11 +1,14 @@
 package com.mealtoyou.chattingservice.infrastructure.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mealtoyou.chattingservice.application.service.ChatCacheService;
 import com.mealtoyou.chattingservice.application.service.JwtTokenProvider;
 import com.mealtoyou.chattingservice.application.service.RouteService;
 import com.mealtoyou.chattingservice.domain.model.Chat;
+import com.mealtoyou.chattingservice.domain.model.CommunityDietMessage;
+import com.mealtoyou.chattingservice.domain.model.TextMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -67,42 +70,64 @@ public class ChatWebSocketHandler implements WebSocketHandler {
 
     public Mono<Void> sendPreviousChatsToUser(Long groupId, WebSocketSession session) {
         log.info("채팅 조회");
-        return chatCacheService.getRecentChatsFromMongo(groupId, 20)
+        return chatCacheService.getRecentChatsFromMongo(groupId, 1000)
                 .doOnNext(chats -> log.info("채팅 조회 결과: {}", chats)) // Log the fetched chats
                 .flatMapMany(Flux::fromIterable)
-                .flatMap(chat -> session.send(Mono.just(session.textMessage(chat.getMessage()))))
+                .flatMap(chat -> {
+                    // Chat 객체를 JSON 문자열로 변환
+                    String jsonMessage;
+                    try {
+                        jsonMessage = objectMapper.writeValueAsString(chat);
+                    } catch (JsonProcessingException e) {
+                        log.error("Error converting Chat object to JSON: {}", e.getMessage());
+                        return Mono.empty();
+                    }
+                    // JSON 문자열을 WebSocket 세션으로 전송
+                    return session.send(Mono.just(session.textMessage(jsonMessage)));
+                })
                 .then();
     }
 
     private Mono<Void> handleMessage(WebSocketSession session, WebSocketMessage message, Long groupId, String senderSessionId) {
         log.info("클라이언트로부터 메시지 수신: {}", message.getPayloadAsText());
-
         if (message.getPayloadAsText().equals("CLOSE_MESSAGE")) {
             return session.close();
         }
-
         Long userId = getUserIdFromSession(session);
-
-        Chat chat;
         try {
-            chat = objectMapper.readValue(message.getPayloadAsText(), Chat.class);
+            JsonNode jsonNode = objectMapper.readTree(message.getPayloadAsText());
+            if (!jsonNode.has("type")) {
+                log.warn("Message type is not specified: {}", message.getPayloadAsText());
+                return Mono.empty(); // 또는 에러 처리
+            }
+            String messageType = jsonNode.get("type").asText();
+            Chat chat = new Chat();
+            chat.setUserId(userId);
+            chat.setGroupId(groupId);
+            chat.setTimestamp(LocalDateTime.now());
+
+            switch (messageType) {
+                case "chat" -> chat.setMessage(new TextMessage(jsonNode.get("message").asText()));
+                case "diet" -> chat.setMessage(objectMapper.convertValue(jsonNode, CommunityDietMessage.class));
+                default -> {
+                    log.warn("Unknown message type: {}", messageType);
+                    return Mono.empty(); // 또는 에러 처리
+                }
+            }
+
+            return routeService.routeChat(chat)
+                    .flatMap(savedMessage -> broadcastMessageToGroup(chat, senderSessionId))
+                    .then()
+                    .onErrorResume(throwable -> {
+                        log.warn("Error during message handling: {}", throwable.getMessage());
+                        return Mono.empty();
+                    });
         } catch (IOException e) {
-            log.error("Error deserializing Chat object: {}", e.getMessage());
+            log.error("Error deserializing message: {}", e.getMessage());
             return Mono.error(e);
         }
-        chat.setUserId(userId);
-        chat.setGroupId(groupId);
-        chat.setTimestamp(LocalDateTime.now());
-
-        return routeService.route(chat)
-                .flatMap(savedMessage -> broadcastMessageToGroup(chat, senderSessionId))
-                .then()
-                .onErrorResume(throwable -> {
-                    log.warn("Error during message handling: {}", throwable.getMessage());
-                    return Mono.empty();
-                });
-
     }
+
 
     private Mono<Void> broadcastMessageToGroup(Chat chat, String senderSessionId) {
         List<WebSocketSession> sessions = groupSessions.getOrDefault(chat.getGroupId(), Collections.emptyList());
