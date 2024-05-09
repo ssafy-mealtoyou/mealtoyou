@@ -42,11 +42,11 @@ public class DietService {
 	private final DietFoodRepository dietFoodRepository;
 	private final FoodRepository foodRepository;
 
-	private Mono<Integer> requestBMR(long userId) {
-		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Integer::parseInt);
+	private Mono<Double> requestBMR(long userId) {
+		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Double::parseDouble);
 	}
 
-	private int calcNutrientsPer(int bmr, double ratio, double nutrientsGram, int caloriesFactor) {
+	private int calcNutrientsPer(double bmr, double ratio, double nutrientsGram, int caloriesFactor) {
 		return (int)(((nutrientsGram * caloriesFactor) / (bmr * ratio)) * 100);
 	}
 
@@ -110,25 +110,31 @@ public class DietService {
 	}
 
 	public Mono<DailyDietsResponseDto> getMyDiet(long userId, String dateString) {
-		// 문자열을 LocalDateTime으로 변환
-		LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
-		LocalDateTime startOfDay = date.atStartOfDay();
-		LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+		LocalDateTime startOfDay, endOfDay;
+		try {
+			// 문자열을 LocalDateTime 으로 변환
+			LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
+			startOfDay = date.atStartOfDay();
+			endOfDay = date.atTime(LocalTime.MAX);
+		} catch (RuntimeException re) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "입력 날짜 형식이 잘못되었습니다.");
+		}
 
 		return dietRepository.findAllByUserIdAndCreateDateTimeBetween(userId, startOfDay, endOfDay)
 			.flatMap(diet -> {
 				Flux<DietFood> dietFoodFlux = dietFoodRepository.findDietFoodsByDietId(diet.getDietId());
-				Flux<Food> foodFlux = foodRepository.findFoodsByRidIn(dietFoodFlux.map(DietFood::getFoodId));
-				return foodFlux.map(food ->
-						DietFoodDto.builder()
+				Mono<List<Food>> listMono = dietFoodFlux.collectList()
+					.flatMap(list -> foodRepository.findFoodsByRidIn(list.stream().map(DietFood::getFoodId).toList())
+						.collectList());
+				return listMono.map(foods ->
+						foods.stream().map(food -> DietFoodDto.builder()
 							.name(food.getName())
 							.imageUrl("temp image url") // TODO: 음식 이미지 가져오기
 							.calories(food.getEnergy())
 							.carbohydrate(food.getCarbohydrate())
 							.protein(food.getProtein())
 							.fat(food.getFat())
-							.build())
-					.collectList()
+							.build()).toList())
 					.flatMap(dietFoods ->
 						requestBMR(userId).flatMap((bmr) -> {
 							DietSummaryDto dietInfo = DietSummaryDto.builder()
@@ -175,13 +181,13 @@ public class DietService {
 				Mono<List<Food>> listMono = dietFoodRepository.findDietFoodsByDietId(diet.getDietId())
 					.flatMap(dietFood -> foodRepository.findByRid(dietFood.getFoodId()))
 					.collectList();
-				Mono<Integer> bmrMono = requestBMR(userId);
+				Mono<Double> bmrMono = requestBMR(userId);
 				Mono<String> nicknameMono = requestUserNickname(userId);
 
 				return Mono.zip(listMono, bmrMono, nicknameMono)
 					.map(tuple -> {
 						List<Food> foods = tuple.getT1();
-						int bmr = tuple.getT2();
+						double bmr = tuple.getT2();
 						String nickname = tuple.getT3();
 						List<CommunityDietFoodDto> dietFoodDtoList =
 							foods.stream().map(f -> CommunityDietFoodDto.builder()
