@@ -42,11 +42,11 @@ public class DietService {
 	private final DietFoodRepository dietFoodRepository;
 	private final FoodRepository foodRepository;
 
-	private Mono<Integer> requestBMR(long userId) {
-		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Integer::parseInt);
+	private Mono<Double> requestBMR(long userId) {
+		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Double::parseDouble);
 	}
 
-	private int calcNutrientsPer(int bmr, double ratio, double nutrientsGram, int caloriesFactor) {
+	private int calcNutrientsPer(double bmr, double ratio, double nutrientsGram, int caloriesFactor) {
 		return (int)(((nutrientsGram * caloriesFactor) / (bmr * ratio)) * 100);
 	}
 
@@ -175,13 +175,13 @@ public class DietService {
 				Mono<List<Food>> listMono = dietFoodRepository.findDietFoodsByDietId(diet.getDietId())
 					.flatMap(dietFood -> foodRepository.findByRid(dietFood.getFoodId()))
 					.collectList();
-				Mono<Integer> bmrMono = requestBMR(userId);
+				Mono<Double> bmrMono = requestBMR(userId);
 				Mono<String> nicknameMono = requestUserNickname(userId);
 
 				return Mono.zip(listMono, bmrMono, nicknameMono)
 					.map(tuple -> {
 						List<Food> foods = tuple.getT1();
-						int bmr = tuple.getT2();
+						double bmr = tuple.getT2();
 						String nickname = tuple.getT3();
 						List<CommunityDietFoodDto> dietFoodDtoList =
 							foods.stream().map(f -> CommunityDietFoodDto.builder()
