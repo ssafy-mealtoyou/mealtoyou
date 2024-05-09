@@ -36,6 +36,7 @@ public class BodyService {
 				return bodyRepository.findByUserIdandMeasuredDate(userId,measuredDate)
 					.flatMap(existingBody -> {
 						Body updatedBody = existingBody.toBuilder()
+							.userId(userId)
 							.bodyFat(formattedBodyFat)
 							.weight(formattedWeight)
 							.skeletalMuscle(formattedSkeletalMuscle)
@@ -68,6 +69,21 @@ public class BodyService {
 		return bodyRepository.findByUserId(userId, 1)
 			.collectList()
 			.map(bodyList -> bodyList.get(0).getBmr());
+	}
+
+	public Flux<BodyDto> readBodyData(String token, Integer day) {
+		Long userId = jwtTokenProvider.getUserId(token);
+		Flux<Body> bodyFlux = bodyRepository.findByUserId(userId,day);
+		return bodyFlux.map(
+			body -> BodyDto.builder()
+				.bodyFat(body.getBodyFat())
+				.weight(body.getWeight())
+				.bmi(body.getBmi())
+				.bmr(body.getBmr())
+				.skeletalMuscle(body.getSkeletalMuscle())
+				.measuredDate(body.getMeasuredDate())
+				.build()
+		);
 	}
 
 }

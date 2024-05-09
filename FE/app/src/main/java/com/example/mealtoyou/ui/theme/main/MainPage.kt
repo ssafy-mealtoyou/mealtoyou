@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavHostController
 import com.example.mealtoyou.ui.theme.main.feedback.MyFeedBack
 import com.example.mealtoyou.ui.theme.main.food.FoodBox
 import com.example.mealtoyou.ui.theme.main.report.MyTodayReport
@@ -32,7 +31,7 @@ fun MainPage() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 스크롤되지 않고 항상 상단에 고정될 MainBarIcon
-            MainBar("")
+            MainBar("", true)
 
             // 스크롤 가능한 부분을 Box와 함께 생성
             Box(modifier = Modifier
