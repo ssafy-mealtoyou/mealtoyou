@@ -16,6 +16,7 @@ import com.google.firebase.messaging.Notification;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -32,36 +33,29 @@ public class FcmService {
 
 	@PostConstruct
 	public void init() throws IOException {
-		//Firebase 프로젝트 정보를 FireBaseOptions에 입력해준다.
 		FirebaseOptions options = FirebaseOptions.builder()
 			.setCredentials(
 				GoogleCredentials.fromStream(new ClassPathResource(serviceAccountFilePath).getInputStream()))
 			.setProjectId(projectId)
 			.build();
-
-		//입력한 정보를 이용하여 initialze 해준다.
 		FirebaseApp.initializeApp(options);
 	}
 
-	public void sendMessageByTopic(String title, String body) throws IOException, FirebaseMessagingException {
-		FirebaseMessaging.getInstance().send(Message.builder()
-			.setNotification(Notification.builder()
-				.setTitle(title)
-				.setBody(body)
-				.build())
-			.setTopic(topicName)
-			.build());
-
+	public Mono<Void> sendMessageByToken(String title, String body, String token) {
+		return Mono.fromCallable(() -> {
+			try {
+				FirebaseMessaging.getInstance().send(Message.builder()
+					.setNotification(Notification.builder()
+						.setTitle(title)
+						.setBody(body)
+						.build())
+					.setToken(token)
+					.build());
+				return null; // Mono<Void>에 맞춰서 null 반환
+			} catch (FirebaseMessagingException e) {
+				//TODO: 에러가 발생시 토큰 초기화 or 처리방법 추가
+				throw new RuntimeException(e);
+			}
+		}).then();
 	}
-
-	public void sendMessageByToken(String title, String body, String token) throws FirebaseMessagingException {
-		FirebaseMessaging.getInstance().send(Message.builder()
-			.setNotification(Notification.builder()
-				.setTitle(title)
-				.setBody(body)
-				.build())
-			.setToken(token)
-			.build());
-	}
-
 }
