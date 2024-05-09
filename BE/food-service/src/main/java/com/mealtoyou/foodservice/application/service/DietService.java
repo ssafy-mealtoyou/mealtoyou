@@ -43,8 +43,7 @@ public class DietService {
 	private final FoodRepository foodRepository;
 
 	private Mono<Integer> requestBMR(long userId) {
-		// TODO: BMR 요청 토픽 구현
-		return kafkaMonoUtils.sendAndReceive("", userId).map(Integer::parseInt);
+		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Integer::parseInt);
 	}
 
 	private int calcNutrientsPer(int bmr, double ratio, double nutrientsGram, int caloriesFactor) {
