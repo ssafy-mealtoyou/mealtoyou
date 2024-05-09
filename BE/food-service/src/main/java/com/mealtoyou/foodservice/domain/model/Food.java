@@ -1,5 +1,6 @@
 package com.mealtoyou.foodservice.domain.model;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
@@ -12,7 +13,8 @@ import lombok.ToString;
 @Getter
 @ToString
 public class Food {
-	private Long id;
+	@Field(name = "id")
+	private Long rid;
 	private String code;
 	private String name;
 	private String origin;

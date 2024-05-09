@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -97,6 +98,7 @@ dependencies {
     implementation(libs.core)
     implementation(libs.views)
     implementation(libs.androidx.compose.material)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -110,5 +112,9 @@ dependencies {
     implementation("com.kizitonwose.calendar:view:2.5.1")
     // The compose calendar library
     implementation("com.kizitonwose.calendar:compose:2.5.1")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
+
 
 }
