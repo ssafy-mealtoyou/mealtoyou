@@ -6,8 +6,6 @@ spring:
   cloud:
     config:
       profile: dev
-  profiles:
-    include: oauth
 fcm:
   service-account-file: key/mealtoyou.json
   topic-name: testMessage
