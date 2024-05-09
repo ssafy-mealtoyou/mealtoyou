@@ -5,7 +5,6 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
-@Getter
 public record DietSummaryDto(
 	Long dietId,
 	Integer totalCalories,
