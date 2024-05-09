@@ -55,12 +55,15 @@ public class User {
 
     private String role;
 
-    public void updateUserInfo(UserInfoRequestDto u) {
+    public void updateUserInfo(UserInfoRequestDto u,String imageUrl) {
         this.nickname = u.nickname();
         this.gender = u.gender();
         this.age = u.age();
         this.height = u.height();
         this.weight = u.weight();
+        if(imageUrl!=null){
+            this.userImageUrl = imageUrl;
+        }
         // this.isIntermittentFasting = u.isIntermittentFasting();
         // this.goalWeight = u.goalWeight();
         // this.goalEndDate = u.goalEndDate();
