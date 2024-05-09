@@ -1,4 +1,4 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
