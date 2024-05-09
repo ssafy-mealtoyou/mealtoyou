@@ -46,8 +46,9 @@ public class HealthController {
 			.onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body("Error saving body data: " + e.getMessage())));
 	}
 
-	// @GetMapping("/body-fat")
-	// public ResponseEntity<Flux<BodyDto>> readBodyData(@RequestHeader("Authorization") String token,@RequestParam(value="day", required = false, defaultValue="1")){
-	//
-	// }
+	@GetMapping("/body-fat")
+	public ResponseEntity<Flux<BodyDto>> readBodyData(@RequestHeader("Authorization") String token,@RequestParam(value="day", required = false, defaultValue="1") Integer day){
+		Flux<BodyDto> bodyFlux = bodyService.readBodyData(token,day);
+		return ResponseEntity.ok().body(bodyFlux);
+	}
 }
