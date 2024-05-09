@@ -1,8 +1,8 @@
 package com.mealtoyou.communityservice.application.dto;
 
 public record RecentMessage(
-        String message1,
-        String message2,
-        String message3
+        Message message1,
+        Message message2,
+        Message message3
 ) {
 }

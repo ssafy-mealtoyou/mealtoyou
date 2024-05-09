@@ -5,6 +5,7 @@ import com.mealtoyou.communityservice.application.service.JwtTokenProvider;
 import com.mealtoyou.communityservice.domain.model.Community;
 import com.mealtoyou.communityservice.presentation.request.CreateCommunityRequest;
 import com.mealtoyou.communityservice.presentation.request.UpdateCommunityRequest;
+import com.mealtoyou.communityservice.presentation.response.ChattingUserInfoResponse;
 import com.mealtoyou.communityservice.presentation.response.CommunityResponse;
 import com.mealtoyou.communityservice.presentation.response.UserCommunityResponse;
 import jakarta.validation.Valid;
@@ -33,7 +34,6 @@ public class CommunityController {
     // 커뮤니티 조회
     @GetMapping("/communities/my")
     public Mono<UserCommunityResponse> getUserCommunityInfo(@RequestHeader("Authorization") String token) {
-        Long userId = jwtTokenProvider.getUserId(token);
         return communityService.getUserCommunityInfo(getUserId(token));
     }
 
@@ -51,8 +51,18 @@ public class CommunityController {
     }
 
     @PostMapping("/communities/goals")
-    public Mono<String> dailyGoalCheck(@RequestHeader("Authorization") String token, int steps, int caloriesBurned) {
+    public Mono<String> dailyGoalCheck(@RequestHeader("Authorization") String token, @RequestParam int steps, @RequestParam int caloriesBurned) {
         return communityService.dailyGoalCheck(getUserId(token), steps, caloriesBurned);
+    }
+
+    @GetMapping("/communities/{communityId}")
+    public Flux<ChattingUserInfoResponse> getChattingUserInfo(@PathVariable Long communityId) {
+        return communityService.getChattingUserInfo(communityId);
+    }
+
+    @GetMapping("/communities/users/{userId}")
+    public Flux<ChattingUserInfoResponse> getChattingUserInfoOne(@PathVariable Long userId) {
+        return communityService.getChattingUserInfoOne(userId);
     }
 
     public Long getUserId(String token) {
