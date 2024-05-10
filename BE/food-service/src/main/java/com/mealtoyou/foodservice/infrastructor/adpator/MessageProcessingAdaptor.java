@@ -9,6 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mealtoyou.foodservice.application.dto.CommunityDietDto;
 import com.mealtoyou.foodservice.application.dto.CommunityDietsRequestDto;
+import com.mealtoyou.foodservice.application.dto.DailyDietFoodRequestDto;
+import com.mealtoyou.foodservice.application.dto.DailyDietsResponseDto;
 import com.mealtoyou.foodservice.application.service.DietService;
 import com.mealtoyou.foodservice.infrastructor.kafka.KafkaMessageEnable;
 import com.mealtoyou.foodservice.infrastructor.kafka.KafkaMessageListener;
@@ -35,6 +37,14 @@ public class MessageProcessingAdaptor {
         return dto;
     }
 
+    private DailyDietFoodRequestDto readDailyDietFoodRequestDto(String message) throws JsonProcessingException {
+        DailyDietFoodRequestDto dto = objectMapper.readValue(message, DailyDietFoodRequestDto.class);
+        if (dto.date() == null || dto.userId() == null) {
+            throw new IllegalArgumentException("유효하지 않은 요청값입니다. ");
+        }
+        return dto;
+    }
+
     @KafkaMessageListener(topic = "community-diet-list")
     public Mono<List<CommunityDietDto>> processMessage1(String message) throws JsonProcessingException {
         log.info("커뮤니티 다이어트 목록 조회: {}", message);
@@ -42,9 +52,11 @@ public class MessageProcessingAdaptor {
         return dietService.getCommunityDiets(dto.getUserId(), dto.getDietIdList());
     }
 
-    @KafkaMessageListener(topic = "requests2")
-    public String processMessage2(String message) {
-        return message + "2번 MSA입니다.";
+    @KafkaMessageListener(topic = "getFoodListByDate")
+    public Mono<DailyDietsResponseDto> getFoodListByDate(String message) throws JsonProcessingException {
+        log.info("일자별 식단 목록 조회: {}", message);
+        DailyDietFoodRequestDto dto = readDailyDietFoodRequestDto(message);
+        return dietService.getMyDiet(dto.userId(), dto.date());
     }
 
 }

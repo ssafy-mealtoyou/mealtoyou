@@ -1,12 +1,17 @@
 package com.mealtoyou.healthservice.infrastructure.adpator;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealtoyou.healthservice.application.dto.DailyExerciseRequestDto;
+import com.mealtoyou.healthservice.application.dto.ExerciseDto;
 import com.mealtoyou.healthservice.application.dto.UserHealthInfo;
 import com.mealtoyou.healthservice.application.dto.UserInbodyRequestDto;
 import com.mealtoyou.healthservice.application.service.BodyService;
+import com.mealtoyou.healthservice.application.service.ExerciseService;
 import com.mealtoyou.healthservice.domain.repository.ExerciseRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMessageEnable;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMessageListener;
@@ -24,6 +29,7 @@ public class MessageProcessingAdaptor {
     private final ObjectMapper objectMapper;
     private final ExerciseRepository exerciseRepository;
     private final BodyService bodyService;
+	private final ExerciseService exerciseService;
 
     @KafkaMessageListener(topic = "getBmr")
     public Mono<Double> getBmr(String message) {
@@ -78,5 +84,17 @@ public class MessageProcessingAdaptor {
   public Mono<Double> getFat(String message) {
     return bodyService.getUserFat(Long.parseLong(message));
   }
+
+	@KafkaMessageListener(topic = "getExerciseByDate")
+	public Mono<ExerciseDto> getExerciseByDate(String message) {
+		DailyExerciseRequestDto dto;
+		try {
+			dto = objectMapper.readValue(message, DailyExerciseRequestDto.class);
+		} catch (JsonProcessingException e) {
+			log.error("요청 메세지 매핑 실패", e);
+			return Mono.just(ExerciseDto.builder().build());
+		}
+		return exerciseService.readExerciseDataByDate(dto.userId(), dto.date());
+	}
 
 }
