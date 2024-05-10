@@ -83,7 +83,7 @@ public class UserService {
 	public Mono<Void> updateInbody(long userId, String token, UserInbodyRequestDto requestDto) {
 		return userRepository.findById(userId).flatMap(user -> {
 			if (user.getHeight() <= 0.0 || user.getWeight() <= 0.0) {
-				return Mono.error(new RuntimeException("유효하지 않은 "));
+				return Mono.error(new RuntimeException("유효하지 않은 체중 또는 키 값입니다."));
 			}
 			requestDto.setOthers(token, user.getWeight(), user.getHeight(), user.getAge());
 			return requestSavingUserHealth(requestDto);
