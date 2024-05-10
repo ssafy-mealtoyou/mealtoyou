@@ -1,5 +1,6 @@
 package com.mealtoyou.userservice.presentation.controller;
 
+import com.mealtoyou.userservice.application.dto.response.HealthInfoResponseDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
@@ -82,5 +83,11 @@ public class UserController {
                 return Mono.just(ResponseEntity.badRequest().build());
             });
     }
+
+  @GetMapping("/health")
+  public Mono<HealthInfoResponseDto> getHealthInfo(
+      @RequestHeader("Authorization") String token) {
+    return userService.getHealthInfo(getUserId(token));
+  }
 
 }
