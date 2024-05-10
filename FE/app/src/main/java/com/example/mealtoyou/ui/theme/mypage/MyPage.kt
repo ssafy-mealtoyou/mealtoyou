@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,10 +63,11 @@ import com.example.mealtoyou.ui.theme.main.stage.DrugInfo
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
+import com.example.mealtoyou.viewmodel.HealthViewModel
 import java.time.LocalTime
 
 @Composable
-fun MyPage(supplementViewModel: SupplementViewModel) {
+fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
@@ -124,6 +126,7 @@ fun MyPage(supplementViewModel: SupplementViewModel) {
                             .background(Color.White)
                             .padding(14.dp)
                     ) {
+                        val healthData by healthViewModel._bodyResult.collectAsState()
                         Column {
                             Text(
                                 text = "나의 체성분 정보",
@@ -142,7 +145,7 @@ fun MyPage(supplementViewModel: SupplementViewModel) {
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "32kg",
+                                    text = "${healthData?.skeletalMuscle ?: 0}kg",
                                     color = Color(0xff171A1F),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -156,7 +159,7 @@ fun MyPage(supplementViewModel: SupplementViewModel) {
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "22kg",
+                                    text = "${healthData?.bodyFat ?: 0}kg",
                                     color = Color(0xff171A1F),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -193,7 +196,7 @@ fun MyPage(supplementViewModel: SupplementViewModel) {
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Button(
-                                    onClick = {healthEventHandlerState.value?.readHealthData()},
+                                    onClick = {healthEventHandlerState.value?.readHealthData(healthViewModel)},
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(

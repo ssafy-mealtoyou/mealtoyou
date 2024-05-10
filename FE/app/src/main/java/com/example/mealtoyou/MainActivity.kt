@@ -49,6 +49,7 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.handler.FcmEventHandler
+import com.example.mealtoyou.viewmodel.HealthViewModel
 import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
@@ -95,7 +96,7 @@ class MainActivity : ComponentActivity() {
             setupPeriodicWork()
         }
         val supplementViewModel: SupplementViewModel by viewModels()
-
+        val healthViewModel: HealthViewModel by viewModels()
         // 액티비티가 생성될 때 데이터 로드
         supplementViewModel.supplementScreen()
         setContent {
@@ -111,7 +112,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 SetupSystemBars()
 
-                MainScreen(navController, supplementViewModel)
+                MainScreen(navController, supplementViewModel, healthViewModel)
             }
 
         }
@@ -167,7 +168,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainScreen(navController: NavHostController, supplementViewModel: SupplementViewModel) {
+    fun MainScreen(navController: NavHostController, supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute != "login" && currentRoute != "chat"
@@ -224,7 +225,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(supplementViewModel)
+                        MyPage(supplementViewModel, healthViewModel)
                     }
                     composable("chat") {
                         ChatScreen()

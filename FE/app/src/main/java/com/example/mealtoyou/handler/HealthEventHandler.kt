@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mealtoyou.data.ExerciseData
 import com.example.mealtoyou.data.HealthData
 import com.example.mealtoyou.retrofit.RetrofitClient
+import com.example.mealtoyou.viewmodel.HealthViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,7 +30,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     private val startOfToday = LocalDate.now(zoneId).minusDays(1).atStartOfDay(zoneId).toInstant() // 오늘 자정의 Instant, 한국 시간대 기준
 
 
-    fun readHealthData() {
+    fun readHealthData(viewModel : HealthViewModel) {
         lifecycleOwner.lifecycleScope.launch {
             val permissions = setOf(
                 HealthPermission.createReadPermission(BasalMetabolicRateRecord::class),
@@ -75,6 +76,8 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
                     val healthData = HealthData(bmr, measuredDate, bodyFat,skeletalMuscle,weight)
 //                    if (bmr !== 0.0 && bodyFat !== 0.0 && weight !== 0.0 && skeletalMuscle !== 0.0) {
                     sendHealthData(healthData = healthData)
+                    viewModel._bodyResult.value= HealthData(bmr, measuredDate, bodyFat, skeletalMuscle, weight)
+
 //                    }
                 } catch (e: Exception) {
                     Log.e("HealthData", "Error reading health data: ${e.message}")
