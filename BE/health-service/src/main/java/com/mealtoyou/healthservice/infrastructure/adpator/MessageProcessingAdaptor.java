@@ -60,4 +60,23 @@ public class MessageProcessingAdaptor {
 			});
     }
 
+  @KafkaMessageListener(topic = "getCurrentYearWeight")
+  public Mono<Double> getCurrentYearWeight(String message) {
+    return bodyService.getCurrentYearWeightInfo(Long.parseLong(message));
+  }
+
+  @KafkaMessageListener(topic = "getLastMonthWeight")
+  public Mono<Double> getLastMonthWeight(String message) {
+    return bodyService.getLastMonthWeightInfo(Long.parseLong(message));
+  }
+
+  @KafkaMessageListener(topic = "getMuscle")
+  public Mono<Double> getMuscle(String message) {
+    return bodyService.getUserMuscle(Long.parseLong(message));
+  }
+  @KafkaMessageListener(topic = "getFat")
+  public Mono<Double> getFat(String message) {
+    return bodyService.getUserFat(Long.parseLong(message));
+  }
+
 }

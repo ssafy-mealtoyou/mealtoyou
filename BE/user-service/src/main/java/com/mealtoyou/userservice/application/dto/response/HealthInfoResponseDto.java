@@ -1,5 +1,6 @@
 package com.mealtoyou.userservice.application.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.Builder;
@@ -18,6 +19,6 @@ public class HealthInfoResponseDto {
   private double weight;
   private double weightLastMonth;
   private double weightThisYear;
-  private double goalWeight;
-  private LocalDateTime goalDate;
+  private Integer goalWeight;
+  private LocalDate goalDate;
 }

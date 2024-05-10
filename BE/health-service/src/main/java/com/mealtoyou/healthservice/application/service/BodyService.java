@@ -10,8 +10,6 @@ import com.mealtoyou.healthservice.application.dto.UserInbodyRequestDto;
 import com.mealtoyou.healthservice.domain.model.Body;
 import com.mealtoyou.healthservice.domain.repository.BodyRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMonoUtils;
-import java.text.DecimalFormat;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -173,5 +171,4 @@ public class BodyService {
           return Mono.just(bodyList.get(0).getBodyFat());
         });
   }
-
 }

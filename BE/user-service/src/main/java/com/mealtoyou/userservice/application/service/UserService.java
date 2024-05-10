@@ -17,7 +17,6 @@ import com.mealtoyou.userservice.domain.repository.IntermittentRepository;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
 import com.mealtoyou.userservice.infrastructure.kafka.KafkaMonoUtils;
 
-import com.mealtoyou.userservice.infrastructure.kafka.KafkaMonoUtils;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -120,7 +119,7 @@ public class UserService {
 					.weight(user.getWeight())
 					.weightLastMonth(lastMonthWeight)
 					.weightThisYear(currentYearWeight)
-					.goalWeight(Optional.ofNullable(user.getGoalWeight()).orElse(0.0))
+					.goalWeight(Optional.ofNullable(user.getGoalWeight()).orElse(0))
 					.goalDate(user.getGoalEndDate())
 					.build();
 		});
