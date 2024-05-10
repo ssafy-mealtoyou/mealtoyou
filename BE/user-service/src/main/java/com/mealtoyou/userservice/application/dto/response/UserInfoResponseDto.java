@@ -1,6 +1,6 @@
 package com.mealtoyou.userservice.application.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.mealtoyou.userservice.domain.model.User;
 
@@ -17,8 +17,8 @@ public record UserInfoResponseDto(
 	double weight,
 	boolean isIntermittentFasting,
 	String userImageUrl,
-	Double goalWeight,
-	LocalDateTime goalEndDate,
+	Integer goalWeight,
+	LocalDate goalEndDate,
 	String role
 ) {
 	public static UserInfoResponseDto fromEntity(User user) {
