@@ -7,8 +7,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
-import com.example.mealtoyou.auth.AuthInterceptor
 import com.example.mealtoyou.auth.LoggingInterceptor
+import com.example.mealtoyou.ui.theme.group.ChatApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,7 +16,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object RetrofitClient {
-    private const val BASE_URL = "http://70.12.247.142:8083/"
+    private const val BASE_URL = "http://172.20.10.14:8080/"
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(AuthInterceptor("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk"))
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가
@@ -56,5 +56,15 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
         retrofit.create(FcmApiService::class.java)
+    }
+
+    val chatInstance: ChatApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        retrofit.create(ChatApiService::class.java)
     }
 }

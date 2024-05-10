@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var healthEventHandler: HealthEventHandler
+
     @Composable
     fun SetupSystemBars() {
         SideEffect {
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         healthConnectClient = HealthConnectClient.getOrCreate(this)
         healthEventHandler = HealthEventHandler(this, healthConnectClient)
         setContent {
@@ -88,14 +90,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
-        val targetTime = LocalTime.of(if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour, 50)
+        val targetTime = LocalTime.of(
+            if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour,
+            50
+        )
         val delay = Duration.between(currentTime, targetTime).toMinutes().coerceAtLeast(0L)
 
-        val exerciseDataWorkRequest = PeriodicWorkRequestBuilder<ExerciseDataWorker>(1, TimeUnit.HOURS)
-            .setInitialDelay(delay, TimeUnit.MINUTES)
-            .build()
+        val exerciseDataWorkRequest =
+            PeriodicWorkRequestBuilder<ExerciseDataWorker>(1, TimeUnit.HOURS)
+                .setInitialDelay(delay, TimeUnit.MINUTES)
+                .build()
 
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
             "exerciseDataWork",
@@ -103,6 +110,7 @@ class MainActivity : ComponentActivity() {
             exerciseDataWorkRequest
         )
     }
+
     @Composable
     fun MainScreen(navController: NavHostController) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -120,10 +128,30 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination = "login",
-                    enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) },
-                    exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) },
-                    popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) },
-                    popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(300)
+                        )
+                    }
                 ) {
                     composable("login") {
                         LoginPage(navController)
@@ -141,7 +169,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(healthEventHandler,healthConnectClient)
+                        MyPage(healthEventHandler, healthConnectClient)
                     }
                     composable("chat") {
                         ChatScreen()

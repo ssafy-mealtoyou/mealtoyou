@@ -21,6 +21,7 @@ dependencies {
     implementation 'io.r2dbc:r2dbc-pool'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.1.1'
     implementation 'org.springframework.cloud:spring-cloud-config-client:4.1.1'
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.174")
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.kafka:spring-kafka'
@@ -41,6 +42,9 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-admin:9.1.1'
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('bootBuildImage') {
