@@ -40,6 +40,13 @@ import com.example.mealtoyou.ui.theme.main.MainPage
 import com.example.mealtoyou.ui.theme.report.ReportPage
 import com.example.mealtoyou.ui.theme.shared.BottomNavigationBar
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.content.Context
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.sp
+import android.util.Log
+import com.example.mealtoyou.handler.FcmEventHandler
+import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
@@ -48,6 +55,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var healthEventHandler: HealthEventHandler
+
     @Composable
     fun SetupSystemBars() {
         SideEffect {
@@ -58,27 +66,89 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun isHealthConnectInstalled(context: Context): Boolean {
+        val packageManager = context.packageManager
+        return try {
+            packageManager.getPackageInfo("com.google.android.apps.healthdata", 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        healthConnectClient = HealthConnectClient.getOrCreate(this)
-        healthEventHandler = HealthEventHandler(this, healthConnectClient)
+        val isInstalled = isHealthConnectInstalled(this)
+        var showDialog by mutableStateOf(false)
+        var errorMessage by mutableStateOf("")
+
+        if (!isInstalled) {
+            errorMessage =
+                "Health Connect application is required to use this app. Please install it from the Play Store."
+            showDialog = true
+        } else {
+            healthConnectClient = HealthConnectClient.getOrCreate(this)
+            healthEventHandler = HealthEventHandler(this, healthConnectClient)
+            setupPeriodicWork()
+        }
+
         setContent {
+            if (showDialog) {
+                ShowErrorDialog(errorMessage) {
+                    //finish() // 액티비티 종료
+                    showDialog = false
+                }
+            }
             MealToYouTheme {
                 val navController = rememberNavController()
                 SetupSystemBars()
                 MainScreen(navController)
             }
+
         }
+        sendFcmToken()
         setupPeriodicWork()
     }
+
+    @Composable
+    fun ShowErrorDialog(errorMessage: String, onDismiss: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Health Connect Required", fontSize = 18.sp) },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = onDismiss) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    private fun sendFcmToken(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "FCM Token: $token")
+
+            FcmEventHandler().sendFcmToken(token)
+        }
+    }
+
+
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
-        val targetTime = LocalTime.of(if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour, 50)
+        val targetTime = LocalTime.of(
+            if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour,
+            50
+        )
         val delay = Duration.between(currentTime, targetTime).toMinutes().coerceAtLeast(0L)
 
-        val exerciseDataWorkRequest = PeriodicWorkRequestBuilder<ExerciseDataWorker>(1, TimeUnit.HOURS)
-            .setInitialDelay(delay, TimeUnit.MINUTES)
-            .build()
+        val exerciseDataWorkRequest =
+            PeriodicWorkRequestBuilder<ExerciseDataWorker>(1, TimeUnit.HOURS)
+                .setInitialDelay(delay, TimeUnit.MINUTES)
+                .build()
 
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
             "exerciseDataWork",
@@ -86,6 +156,7 @@ class MainActivity : ComponentActivity() {
             exerciseDataWorkRequest
         )
     }
+
     @Composable
     fun MainScreen(navController: NavHostController) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -102,11 +173,31 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination = "login",
-                    enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) },
-                    exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) },
-                    popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) },
-                    popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) }
+                    startDestination = "mainPage",
+                    enterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(300)
+                        )
+                    }
                 ) {
                     composable("login") {
                         LoginPage(navController)
@@ -124,7 +215,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(healthEventHandler,healthConnectClient)
+                        MyPage()
                     }
                     composable("chat") {
                         ChatScreen()
@@ -133,6 +224,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     // Declare the launcher at the top of your Activity/Fragment:
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),

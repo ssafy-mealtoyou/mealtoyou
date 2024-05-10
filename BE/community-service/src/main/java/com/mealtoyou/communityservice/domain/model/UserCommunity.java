@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("user_group")
+@Table("user_community")
 @Getter
 @Builder
 public class UserCommunity {

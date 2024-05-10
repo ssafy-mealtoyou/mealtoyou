@@ -1,5 +1,6 @@
 package com.mealtoyou.userservice.presentation.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -21,9 +22,9 @@ public class IntermittentController {
 	private final IntermittentService intermittentService;
 
 	@PutMapping("/users/intermittent")
-	public Mono<?> updateTime(@RequestHeader("Authorization") String token,
+	public Mono<ResponseEntity<Void>> updateTime(@RequestHeader("Authorization") String token,
 		@RequestBody IntermittentRequestDto intermittentRequestDto) {
-		intermittentService.updateTime(token, intermittentRequestDto);
-		return null;
+		return intermittentService.updateTime(token, intermittentRequestDto)
+			.then(Mono.just(ResponseEntity.ok().build()));
 	}
 }

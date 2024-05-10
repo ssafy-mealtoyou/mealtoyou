@@ -1,6 +1,12 @@
 package com.mealtoyou.healthservice.application.service;
 
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+
+import org.springframework.stereotype.Service;
+
 import com.mealtoyou.healthservice.application.dto.BodyDto;
+import com.mealtoyou.healthservice.application.dto.UserInbodyRequestDto;
 import com.mealtoyou.healthservice.domain.model.Body;
 import com.mealtoyou.healthservice.domain.repository.BodyRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMonoUtils;
@@ -8,7 +14,6 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -29,7 +34,7 @@ public class BodyService {
 				Double formattedWeight = Double.valueOf(df.format(bodyDto.getWeight()));
 				Double formattedSkeletalMuscle = Double.valueOf(df.format(bodyDto.getSkeletalMuscle()));
 				Double formattedBmr = Double.valueOf(df.format(bodyDto.getBmr()));
-				Double bmi = formattedWeight / Math.pow(Double.parseDouble(height),2);
+				Double bmi = formattedWeight / Math.pow(Double.parseDouble(height) / 100.0, 2);
 
 				return bodyRepository.findByUserIdandMeasuredDate(userId,measuredDate)
 					.flatMap(existingBody -> {
@@ -66,7 +71,11 @@ public class BodyService {
 		// 가장 최근의 BMR 기록 1개 불러오기
 		return bodyRepository.findByUserId(userId, 1)
 			.collectList()
-			.map(bodyList -> bodyList.get(0).getBmr());
+			.map(bodyList -> {
+				if (bodyList.isEmpty())
+					return 2000.0;
+				return bodyList.get(0).getBmr();
+			});
 	}
 
 	public Flux<BodyDto> readBodyData(String token, Integer day) {
@@ -97,28 +106,72 @@ public class BodyService {
 		String endDate = endOfLastMonth.format(formatter);
 		// 평균 몸무게 요청
 		return bodyRepository.findByUserIdAndStartOfLastMonthAndEndOfLastMonth(userId, startDate, endDate).switchIfEmpty(Mono.just(0.0));
+  }
 
+	public Mono<String> saveBodyData(UserInbodyRequestDto dto) {
+		Long userId = jwtTokenProvider.getUserId(dto.getToken());
+		LocalDate measuredDate = LocalDate.now();
+
+		DecimalFormat df = new DecimalFormat("#.0");
+
+		// bmr = 66.47 + (13.75 × 체중) + (5×키) - (6.76 × 나이)
+		double bmr = 66.47 + (13.75 * dto.getWeight()) + (5 * dto.getHeight()) - (6.76 * dto.getAge());
+
+		Double formattedBodyFat = Double.valueOf(df.format(dto.getBodyFat()));
+		double formattedWeight = Double.parseDouble(df.format(dto.getWeight()));
+		Double formattedSkeletalMuscle = Double.valueOf(df.format(dto.getSkeletalMuscle()));
+		Double formattedBmr = Double.valueOf(df.format(bmr));
+		Double bmi = formattedWeight / Math.pow(dto.getHeight() / 100.0, 2);
+
+		return bodyRepository.findByUserIdandMeasuredDate(userId, measuredDate)
+			.flatMap(existingBody -> {
+				Body updatedBody = existingBody.toBuilder()
+					.userId(userId)
+					.bodyFat(formattedBodyFat)
+					.weight(formattedWeight)
+					.skeletalMuscle(formattedSkeletalMuscle)
+					.measuredDate(measuredDate)
+					.bmr(formattedBmr)
+					.bmi(bmi)
+					.build();
+				return bodyRepository.save(updatedBody);
+			})
+			.switchIfEmpty(Mono.defer(() -> {
+				Body newBody = Body.builder()
+					.userId(userId)
+					.bodyFat(formattedBodyFat)
+					.measuredDate(measuredDate)
+					.weight(formattedWeight)
+					.skeletalMuscle(formattedSkeletalMuscle)
+					.bmr(formattedBmr)
+					.bmi(bmi)
+					.build();
+				return bodyRepository.save(newBody);
+			}))
+			.then(Mono.just("Exercise data saved successfully")) // 모든 작업이 성공적으로 완료됨
+			.onErrorResume(e -> Mono.error(new RuntimeException("Error saving body data", e))); // 에러 처리
 	}
 
-	public Mono<Double> getUserMuscle(Long userId) {
-		return bodyRepository.findByUserId(userId, 1)
-				.collectList()
-				.flatMap(bodyList -> {
-					if (bodyList.isEmpty()) {
-						return Mono.just(0.0); // 기본값 0.0 반환
-					}
-					return Mono.just(bodyList.get(0).getSkeletalMuscle());
-				});
-	}
+  public Mono<Double> getUserMuscle(Long userId) {
+    return bodyRepository.findByUserId(userId, 1)
+        .collectList()
+        .flatMap(bodyList -> {
+          if (bodyList.isEmpty()) {
+            return Mono.just(0.0); // 기본값 0.0 반환
+          }
+          return Mono.just(bodyList.get(0).getSkeletalMuscle());
+        });
+  }
 
-	public Mono<Double> getUserFat(Long userId) {
-		return bodyRepository.findByUserId(userId, 1)
-				.collectList()
-				.flatMap(bodyList -> {
-					if (bodyList.isEmpty()) {
-						return Mono.just(0.0); // 기본값 0.0 반환
-					}
-					return Mono.just(bodyList.get(0).getBodyFat());
-				});
-	}
+  public Mono<Double> getUserFat(Long userId) {
+    return bodyRepository.findByUserId(userId, 1)
+        .collectList()
+        .flatMap(bodyList -> {
+          if (bodyList.isEmpty()) {
+            return Mono.just(0.0); // 기본값 0.0 반환
+          }
+          return Mono.just(bodyList.get(0).getBodyFat());
+        });
+  }
+
 }

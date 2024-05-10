@@ -1,8 +1,9 @@
-package com.mealtoyou.communityservice.application.dto;
+package com.mealtoyou.communityservice.presentation.request;
+
 
 import jakarta.validation.constraints.*;
 
-public record CreateCommunityDto(
+public record CreateCommunityRequest(
         @NotBlank(message = "title은 필수 값 입니다.")
         String title,
 

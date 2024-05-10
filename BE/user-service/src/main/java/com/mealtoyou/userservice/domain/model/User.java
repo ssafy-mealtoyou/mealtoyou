@@ -1,11 +1,13 @@
 package com.mealtoyou.userservice.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.mealtoyou.userservice.application.dto.request.FcmRequestDto;
+import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 
 import lombok.Builder;
@@ -45,10 +47,10 @@ public class User {
 	private String userImageUrl;
 
 	@Column("goal_weight")
-	private Double goalWeight;
+	private Integer goalWeight;
 
 	@Column("goal_end_date")
-	private LocalDateTime goalEndDate;
+	private LocalDate goalEndDate;
 
 	@Column("withdraw_yn")
 	private boolean isWithdraw;
@@ -64,12 +66,36 @@ public class User {
         if(imageUrl!=null){
             this.userImageUrl = imageUrl;
         }
-        // this.isIntermittentFasting = u.isIntermittentFasting();
-        // this.goalWeight = u.goalWeight();
-        // this.goalEndDate = u.goalEndDate();
     }
+	@Column("fcm_token")
+	private String fcmToken;
+
+	public void updateUserInfo(UserInfoRequestDto u) {
+		this.nickname = u.nickname();
+		this.gender = u.gender();
+		this.age = u.age();
+		this.height = u.height();
+		this.weight = u.weight();
+		// this.isIntermittentFasting = u.isIntermittentFasting();
+		// this.goalWeight = u.goalWeight();
+		// this.goalEndDate = u.goalEndDate();
+	}
 
 	public void updateIntermittent() {
 		this.isIntermittentFasting = !this.isIntermittentFasting;
+	}
+
+	public void updateGoal(UserGoalRequestDto dto) {
+		this.goalWeight = dto.goalWeight();
+		this.goalEndDate = dto.goalEndDate();
+	}
+
+	public void updateWeight(Integer weight) {
+		this.weight = weight;
+	}
+
+
+	public void updateUserFcmToken(FcmRequestDto fcmRequestDto) {
+		this.fcmToken = fcmRequestDto.getFcmToken();
 	}
 }

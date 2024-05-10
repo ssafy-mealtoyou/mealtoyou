@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mealtoyou.foodservice.application.dto.DailyDietsResponseDto;
 import com.mealtoyou.foodservice.application.dto.DietFoodRequestDto;
 import com.mealtoyou.foodservice.application.service.DietService;
+import com.mealtoyou.foodservice.application.service.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +26,12 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/diets")
 public class DietController {
 
+	private final JwtTokenProvider jwtTokenProvider;
+
 	private final DietService dietService;
 
 	private long toUserId(String token) {
-		// FIXME: 사용자 아이디 조회 로직 필요
-		return 1;
+		return jwtTokenProvider.getUserId(token);
 	}
 
 	@PostMapping

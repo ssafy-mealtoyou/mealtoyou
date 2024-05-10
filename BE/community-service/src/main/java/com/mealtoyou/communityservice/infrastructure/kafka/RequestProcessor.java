@@ -1,7 +1,6 @@
-package com.mealtoyou.sample.infrastructor.kafka;
+package com.mealtoyou.communityservice.infrastructure.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
