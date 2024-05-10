@@ -40,6 +40,10 @@ import com.example.mealtoyou.ui.theme.main.MainPage
 import com.example.mealtoyou.ui.theme.report.ReportPage
 import com.example.mealtoyou.ui.theme.shared.BottomNavigationBar
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.content.Context
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.sp
 import android.util.Log
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.google.firebase.messaging.FirebaseMessaging
@@ -62,20 +66,62 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun isHealthConnectInstalled(context: Context): Boolean {
+        val packageManager = context.packageManager
+        return try {
+            packageManager.getPackageInfo("com.google.android.apps.healthdata", 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isInstalled = isHealthConnectInstalled(this)
+        var showDialog by mutableStateOf(false)
+        var errorMessage by mutableStateOf("")
 
-        healthConnectClient = HealthConnectClient.getOrCreate(this)
-        healthEventHandler = HealthEventHandler(this, healthConnectClient)
+        if (!isInstalled) {
+            errorMessage =
+                "Health Connect application is required to use this app. Please install it from the Play Store."
+            showDialog = true
+        } else {
+            healthConnectClient = HealthConnectClient.getOrCreate(this)
+            healthEventHandler = HealthEventHandler(this, healthConnectClient)
+            setupPeriodicWork()
+        }
+
         setContent {
+            if (showDialog) {
+                ShowErrorDialog(errorMessage) {
+                    //finish() // 액티비티 종료
+                    showDialog = false
+                }
+            }
             MealToYouTheme {
                 val navController = rememberNavController()
                 SetupSystemBars()
                 MainScreen(navController)
             }
+
         }
         sendFcmToken()
         setupPeriodicWork()
+    }
+
+    @Composable
+    fun ShowErrorDialog(errorMessage: String, onDismiss: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Health Connect Required", fontSize = 18.sp) },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = onDismiss) {
+                    Text("OK")
+                }
+            }
+        )
     }
     private fun sendFcmToken(){
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
@@ -127,7 +173,7 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination = "login",
+                    startDestination = "mainPage",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -169,7 +215,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(healthEventHandler, healthConnectClient)
+                        MyPage()
                     }
                     composable("chat") {
                         ChatScreen()
@@ -178,6 +224,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     // Declare the launcher at the top of your Activity/Fragment:
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
