@@ -1,10 +1,20 @@
 package com.mealtoyou.userservice.application.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealtoyou.userservice.application.dto.DailyDietFoodRequestDto;
+import com.mealtoyou.userservice.application.dto.DailyDietsResponseDto;
+import com.mealtoyou.userservice.application.dto.DailyExerciseRequestDto;
+import com.mealtoyou.userservice.application.dto.ExerciseDto;
 import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInbodyRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
@@ -18,14 +28,13 @@ import com.mealtoyou.userservice.domain.repository.IntermittentRepository;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
 import com.mealtoyou.userservice.infrastructure.kafka.KafkaMonoUtils;
 
-import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+	private final ObjectMapper objectMapper;
 	private final UserRepository userRepository;
 	private final IntermittentRepository intermittentRepository;
 	private final S3Uploader s3Uploader;
@@ -35,6 +44,44 @@ public class UserService {
 		return kafkaMonoUtils.sendAndReceive("health-service-save-user-inbody", requestDto)
 			.map(Boolean::parseBoolean)
 			.onErrorResume((e) -> Mono.just(false));
+	}
+
+	private Mono<Double> requestBMR(long userId) {
+		return kafkaMonoUtils.sendAndReceive("health-service-getBmr", userId).map(Double::parseDouble);
+	}
+
+	private Mono<DailyDietsResponseDto> requestTodayDietsInfo(long userId) {
+		DailyDietFoodRequestDto dailyDietFoodRequestDto = DailyDietFoodRequestDto.builder()
+			.userId(userId)
+			.date(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+			.build();
+		return kafkaMonoUtils.sendAndReceive("food-service-getFoodListByDate", dailyDietFoodRequestDto)
+			.map(message -> {
+				try {
+					return objectMapper.readValue(message, DailyDietsResponseDto.class);
+				} catch (JsonProcessingException e) {
+					return DailyDietsResponseDto.builder().build();
+				}
+			});
+	}
+
+	private Mono<ExerciseDto> requestTodayUserExercise(long userId) {
+		DailyExerciseRequestDto dto = DailyExerciseRequestDto.builder()
+			.userId(userId)
+			.date(LocalDate.now())
+			.build();
+		return kafkaMonoUtils.sendAndReceive("health-service-getExerciseByDate", dto)
+			.map(message -> {
+				try {
+					return objectMapper.readValue(message, ExerciseDto.class);
+				} catch (JsonProcessingException e) {
+					return ExerciseDto.builder().build();
+				}
+			});
+	}
+
+	private int calcNutrientsPer(double bmr, double ratio, double nutrientsGram, int caloriesFactor) {
+		return (int)(((nutrientsGram * caloriesFactor) / (bmr * ratio)) * 100);
 	}
 
 	public Mono<UserInfoResponseDto> getUserProfile(long userId) {
@@ -157,6 +204,44 @@ public class UserService {
 				if (!res)
 					return Mono.error(new RuntimeException());
 				return Mono.empty();
+			});
+	}
+
+	// public Mono<UserHomeResponseDto> getUserHome(long userId) {
+	public Mono<UserHomeResponseDto> getUserHome(long userId) {
+		Mono<DailyDietsResponseDto> dailyDietsResponseDtoMono = requestTodayDietsInfo(userId);
+		Mono<Double> bmrMono = requestBMR(userId);
+		Mono<ExerciseDto> exerciseDtoMono = requestTodayUserExercise(userId);
+		Mono<User> userMono = userRepository.findById(userId);
+
+		return Mono.zip(dailyDietsResponseDtoMono, bmrMono, exerciseDtoMono, userMono)
+			.map(tuple -> {
+				DailyDietsResponseDto dietsResponseDto = tuple.getT1();
+				double bmr = tuple.getT2();
+				ExerciseDto exerciseDto = tuple.getT3();
+				User user = tuple.getT4();
+
+				Long steps = exerciseDto.getSteps();
+				if (steps == null)
+					steps = 0L;
+
+				int activityPer = (int)((steps / 8000) * 100);
+				int dietPer = calcNutrientsPer(bmr, 1.0, dietsResponseDto.dailyCaloriesBurned(), 1);
+				int carbohydratePer = calcNutrientsPer(bmr, 0.5, dietsResponseDto.dailyCarbohydrateTaked(), 4);
+				int proteinPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 4);
+				int fatPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 9);
+
+				return UserHomeResponseDto.builder()
+					.daySummary(UserHomeResponseDto.DaySummary.builder()
+						.activityPer(activityPer)
+						.dietPer(dietPer)
+						.carbohydratePer(carbohydratePer)
+						.proteinPer(proteinPer)
+						.fatPer(fatPer)
+						.build())
+					.goalWeight(user.getGoalWeight())
+					.goalEndDate(user.getGoalEndDate())
+					.build();
 			});
 	}
 }

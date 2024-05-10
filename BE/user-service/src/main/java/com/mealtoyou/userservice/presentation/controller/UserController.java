@@ -17,6 +17,7 @@ import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInbodyRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserWeightRequestDto;
+import com.mealtoyou.userservice.application.dto.response.UserHomeResponseDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.application.service.JwtTokenProvider;
 import com.mealtoyou.userservice.application.service.UserService;
@@ -89,5 +90,12 @@ public class UserController {
       @RequestHeader("Authorization") String token) {
     return userService.getHealthInfo(getUserId(token));
   }
+
+    @GetMapping("/home")
+    public Mono<ResponseEntity<UserHomeResponseDto>> getUserHomeInfo(
+        @RequestHeader("Authorization") String token
+    ) {
+        return userService.getUserHome(getUserId(token)).map(ResponseEntity::ok);
+    }
 
 }
