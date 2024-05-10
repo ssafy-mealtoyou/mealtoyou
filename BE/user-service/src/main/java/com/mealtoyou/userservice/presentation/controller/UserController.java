@@ -1,6 +1,7 @@
 package com.mealtoyou.userservice.presentation.controller;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInbodyRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
-import com.mealtoyou.userservice.application.dto.request.UserIntermittentFastingRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserWeightRequestDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.application.service.JwtTokenProvider;
 import com.mealtoyou.userservice.application.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -37,6 +38,7 @@ public class UserController {
         return jwtTokenProvider.getUserId(token);
     }
 
+    // FIXME: ResponseEntity 로 반환
     @GetMapping("/profile")
     public Mono<UserInfoResponseDto> getUserProfile(@RequestHeader("Authorization") String token) {
         return userService.getUserProfile(getUserId(token));
@@ -50,37 +52,31 @@ public class UserController {
         return userService.updateUserProfile(getUserId(token), image, userInfoRequestDto);
     }
 
-    @PutMapping("/fasting")
-    public void updateFasting(
-        @RequestHeader("Authorization") String token,
-        @RequestBody UserIntermittentFastingRequestDto requestDto
-        ) {
-        userService.updateFasting(getUserId(token), requestDto);
-    }
-
     @PutMapping("/goal")
-    public void updateGoal(
+    public Mono<ResponseEntity<Void>> updateGoal(
         @RequestHeader("Authorization") String token,
-        @RequestBody UserGoalRequestDto requestDto
+        @RequestBody @Valid UserGoalRequestDto requestDto
     ) {
-        userService.updateGoal(getUserId(token), requestDto);
+        return userService.updateGoal(getUserId(token), requestDto)
+            .then(Mono.just(ResponseEntity.ok().build()));
     }
 
     @PutMapping("/weight")
-    public void updateWeight(
+    public Mono<ResponseEntity<Void>> updateWeight(
         @RequestHeader("Authorization") String token,
-        @RequestBody UserWeightRequestDto requestDto
+        @RequestBody @Valid UserWeightRequestDto requestDto
     ) {
-        userService.updateWeight(getUserId(token), requestDto);
+        return userService.updateWeight(getUserId(token), requestDto)
+            .then(Mono.just(ResponseEntity.ok().build()));
     }
 
     @PutMapping("/inbody")
-    public void updateInbody(
+    public Mono<ResponseEntity<Void>> updateInbody(
         @RequestHeader("Authorization") String token,
-        @RequestBody UserInbodyRequestDto requestDto
+        @RequestBody @Valid UserInbodyRequestDto requestDto
     ) {
-        userService.updateInbody(getUserId(token), requestDto);
+        return userService.updateInbody(getUserId(token), requestDto)
+            .then(Mono.just(ResponseEntity.ok().build()));
     }
-
 
 }

@@ -1,5 +1,7 @@
 package com.mealtoyou.userservice.application.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
@@ -8,10 +10,11 @@ import org.springframework.web.server.ResponseStatusException;
 import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInbodyRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
-import com.mealtoyou.userservice.application.dto.request.UserIntermittentFastingRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserWeightRequestDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.domain.model.User;
+import com.mealtoyou.userservice.domain.model.UserInbodyLog;
+import com.mealtoyou.userservice.domain.repository.UserInbodyLogRepository;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +24,9 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserService {
 	private final UserRepository userRepository;
+	private final UserInbodyLogRepository userInbodyLogRepository;
 	private final S3Uploader s3Uploader;
+
 	public Mono<UserInfoResponseDto> getUserProfile(long userId) {
 		return userRepository.findById(userId).flatMap(user -> {
 			if (user == null) {
@@ -59,15 +64,29 @@ public class UserService {
 			.findById(userId).map(User::getNickname);
 	}
 
-	public void updateFasting(long userId, UserIntermittentFastingRequestDto requestDto) {
+	public Mono<Void> updateGoal(long userId, UserGoalRequestDto requestDto) {
+		return userRepository.findById(userId)
+			.flatMap(user -> {
+				user.updateGoal(requestDto);
+				return userRepository.save(user).then();
+			});
 	}
 
-	public void updateGoal(long userId, UserGoalRequestDto requestDto) {
+	public Mono<Void> updateWeight(long userId, UserWeightRequestDto requestDto) {
+		return userRepository.findById(userId).flatMap(user -> {
+			user.updateWeight(requestDto.weight());
+			return userRepository.save(user);
+		}).then();
 	}
 
-	public void updateWeight(long userId, UserWeightRequestDto requestDto) {
-	}
-
-	public void updateInbody(long userId, UserInbodyRequestDto requestDto) {
+	public Mono<Void> updateInbody(long userId, UserInbodyRequestDto requestDto) {
+		return userInbodyLogRepository.save(
+			UserInbodyLog.builder()
+				.userId(userId)
+				.bodyFat(requestDto.getBodyFat())
+				.skeletalMuscle(requestDto.getSkeletalMuscle())
+				.createDate(LocalDateTime.now())
+				.build()
+		).then();
 	}
 }
