@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.views)
     implementation(libs.androidx.compose.material)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.browser)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

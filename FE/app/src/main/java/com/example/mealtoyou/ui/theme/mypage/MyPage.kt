@@ -30,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +42,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -65,7 +68,24 @@ import java.time.LocalTime
 import java.time.format.DateTimeParseException
 
 @Composable
-fun MyPage(healthEventHandler: HealthEventHandler, healthConnectClient: HealthConnectClient) {
+fun MyPage() {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
+    val healthEventHandlerState = remember { mutableStateOf<HealthEventHandler?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val healthConnectClient = HealthConnectClient.getOrCreate(context)
+            healthConnectClientState.value = healthConnectClient
+            healthEventHandlerState.value = HealthEventHandler(lifecycleOwner, healthConnectClient)
+        } catch (e: Exception) {
+            // Health Connect가 없을 때의 처리
+            healthConnectClientState.value = null
+            healthEventHandlerState.value = null
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
@@ -177,7 +197,7 @@ fun MyPage(healthEventHandler: HealthEventHandler, healthConnectClient: HealthCo
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Button(
-                                    onClick = {healthEventHandler.readHealthData()},
+                                    onClick = {healthEventHandlerState.value?.readHealthData()},
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(
