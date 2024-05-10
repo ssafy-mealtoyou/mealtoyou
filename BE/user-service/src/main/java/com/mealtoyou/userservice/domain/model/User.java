@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.mealtoyou.userservice.application.dto.request.FcmRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 
 import lombok.Builder;
@@ -55,6 +56,9 @@ public class User {
 
 	private String role;
 
+	@Column("fcm_token")
+	private String fcmToken;
+
 	public void updateUserInfo(UserInfoRequestDto u) {
 		this.nickname = u.nickname();
 		this.gender = u.gender();
@@ -68,5 +72,9 @@ public class User {
 
 	public void updateIntermittent() {
 		this.isIntermittentFasting = !this.isIntermittentFasting;
+	}
+
+	public void updateUserFcmToken(FcmRequestDto fcmRequestDto) {
+		this.fcmToken = fcmRequestDto.getFcmToken();
 	}
 }
