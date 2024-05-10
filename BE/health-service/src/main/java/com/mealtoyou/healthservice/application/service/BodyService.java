@@ -1,16 +1,14 @@
 package com.mealtoyou.healthservice.application.service;
 
-import java.text.DecimalFormat;
-import java.time.LocalDate;
-
-import org.springframework.stereotype.Service;
-
 import com.mealtoyou.healthservice.application.dto.BodyDto;
 import com.mealtoyou.healthservice.domain.model.Body;
 import com.mealtoyou.healthservice.domain.repository.BodyRepository;
 import com.mealtoyou.healthservice.infrastructure.kafka.KafkaMonoUtils;
-
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -85,5 +83,42 @@ public class BodyService {
 				.build()
 		);
 	}
+	public Mono<Double> getCurrentYearWeightInfo(Long userId){
+		// 올해 데이터 가져오기
+		int currentYear = LocalDate.now().getYear();
+		return bodyRepository.findByUserIdAndCurrentYear(userId, currentYear).switchIfEmpty(Mono.just(0.0));
+	}
+	public Mono<Double> getLastMonthWeightInfo(Long userId) {
+		LocalDate startOfLastMonth = LocalDate.now().minusMonths(1).withDayOfMonth(1);
+		LocalDate endOfLastMonth = startOfLastMonth.withDayOfMonth(startOfLastMonth.lengthOfMonth());
 
+		DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+		String startDate = startOfLastMonth.format(formatter);
+		String endDate = endOfLastMonth.format(formatter);
+		// 평균 몸무게 요청
+		return bodyRepository.findByUserIdAndStartOfLastMonthAndEndOfLastMonth(userId, startDate, endDate).switchIfEmpty(Mono.just(0.0));
+
+	}
+
+	public Mono<Double> getUserMuscle(Long userId) {
+		return bodyRepository.findByUserId(userId, 1)
+				.collectList()
+				.flatMap(bodyList -> {
+					if (bodyList.isEmpty()) {
+						return Mono.just(0.0); // 기본값 0.0 반환
+					}
+					return Mono.just(bodyList.get(0).getSkeletalMuscle());
+				});
+	}
+
+	public Mono<Double> getUserFat(Long userId) {
+		return bodyRepository.findByUserId(userId, 1)
+				.collectList()
+				.flatMap(bodyList -> {
+					if (bodyList.isEmpty()) {
+						return Mono.just(0.0); // 기본값 0.0 반환
+					}
+					return Mono.just(bodyList.get(0).getBodyFat());
+				});
+	}
 }

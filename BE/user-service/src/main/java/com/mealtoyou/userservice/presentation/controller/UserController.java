@@ -1,6 +1,7 @@
 package com.mealtoyou.userservice.presentation.controller;
 
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
+import com.mealtoyou.userservice.application.dto.response.HealthInfoResponseDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.application.service.JwtTokenProvider;
 import com.mealtoyou.userservice.application.service.UserService;
@@ -40,6 +41,12 @@ public class UserController {
         @RequestPart(value = "userInfoRequestDto",required = false) UserInfoRequestDto userInfoRequestDto,
         @RequestPart(value = "image",required = false) FilePart image) {
         return userService.updateUserProfile(getUserId(token), image, userInfoRequestDto);
+    }
+
+    @GetMapping("/users/health")
+    public Mono<HealthInfoResponseDto> getHealthInfo(
+        @RequestHeader("Authorization") String token) {
+        return userService.getHealthInfo(getUserId(token));
     }
 
 }
