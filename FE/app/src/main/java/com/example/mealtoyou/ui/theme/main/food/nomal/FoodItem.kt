@@ -162,14 +162,14 @@ fun FoodItemSearch(name:String,energy:Double) {
                     Column {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = "item",
+                            text = name,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "215 Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "$energy Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -420,7 +420,7 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                 LazyColumn {
                     items(resultList) { foodItem ->
                         Spacer(modifier = Modifier.height(15.dp))
-                        FoodItemSearch(name = foodItem.name,energy=foodItem.energy)
+                        FoodItemSearch(name = foodItem.name, energy=foodItem.energy)
                     }
                 }
             } ?: run {

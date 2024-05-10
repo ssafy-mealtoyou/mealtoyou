@@ -42,7 +42,7 @@ object RetrofitClient {
 
     val foodSearchInstance: FoodSearchApiService by lazy{
         val retrofit=Retrofit.Builder()
-            .baseUrl("http://70.12.247.46:8084/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -51,7 +51,7 @@ object RetrofitClient {
 
     val fcmInstance: FcmApiService by lazy{
         val retrofit=Retrofit.Builder()
-            .baseUrl("http://70.12.247.46:8084/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()

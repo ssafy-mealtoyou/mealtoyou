@@ -11,7 +11,7 @@ object FoodSearchRepository {
         foodSearchResult.clear()
 
         val response = RetrofitClient.foodSearchInstance.getFoodSearch(
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJxZnFmbFBsZjZDd0gySzR1SlVlUm9nPT0iLCJpYXQiOjE3MTUxMzE3MDgsImV4cCI6MTcxNTIxODEwOH0.2-vKVWbwLaiIC6spqzI_MSpCMy7ZdL7GF30CWxNbXh0",
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0dVNFTU5WWlo4NlJvODFxRDA5K21nPT0iLCJpYXQiOjE3MTUyOTk5MDcsImV4cCI6MTcxNTM4NjMwN30.0vgc7AXURd6fT4-MLiBXU8VPJGTPeZghYXyrMd4Unyg",
             keyword
         )
         if (response.isSuccessful) {
