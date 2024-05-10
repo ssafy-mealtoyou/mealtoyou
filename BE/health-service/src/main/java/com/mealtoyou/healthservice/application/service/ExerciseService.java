@@ -1,6 +1,7 @@
 package com.mealtoyou.healthservice.application.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -59,6 +60,22 @@ public class ExerciseService {
 				.stepStartDate((LocalDate)exercise.getStepStartDate())
 				.caloriesStartDate((LocalDate)exercise.getCaloriesStartDate())
 				.build());
+	}
+
+	public Mono<ExerciseDto> readExerciseDataByDate(Long userId, LocalDate date) {
+		Mono<List<Exercise>> exerciseMono = exerciseRepository.findByUserIdAndStepStartDate(userId, date).collectList();
+		return exerciseMono
+			.map(exerciseList -> {
+				if (exerciseList.isEmpty())
+					return ExerciseDto.builder().build();
+				Exercise exercise = exerciseList.get(0);
+				return ExerciseDto.builder()
+					.steps(exercise.getSteps())
+					.caloriesBurned(exercise.getCaloriesBurned())
+					.stepStartDate((LocalDate)exercise.getStepStartDate())
+					.caloriesStartDate((LocalDate)exercise.getCaloriesStartDate())
+					.build();
+			});
 	}
 
 }
