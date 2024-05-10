@@ -1,13 +1,11 @@
 package com.example.mealtoyou.ui.theme.group
 
+import SupplementViewModel
 import android.widget.NumberPicker
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,15 +63,13 @@ import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 import java.time.LocalTime
-import java.time.format.DateTimeParseException
 
 @Composable
-fun MyPage() {
+fun MyPage(supplementViewModel: SupplementViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
     val healthEventHandlerState = remember { mutableStateOf<HealthEventHandler?>(null) }
-
     LaunchedEffect(Unit) {
         try {
             val healthConnectClient = HealthConnectClient.getOrCreate(context)
@@ -252,7 +248,7 @@ fun MyPage() {
                     Challenge(Modifier.weight(9f), Color(0xFFF5F1FE), true)
 
                     Spacer(Modifier.weight(1f))
-                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true)
+                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true,supplementViewModel)
                 }
             }
 
