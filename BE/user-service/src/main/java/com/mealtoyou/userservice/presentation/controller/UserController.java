@@ -71,12 +71,16 @@ public class UserController {
     }
 
     @PutMapping("/inbody")
-    public Mono<ResponseEntity<Void>> updateInbody(
+    public Mono<ResponseEntity<Object>> updateInbody(
         @RequestHeader("Authorization") String token,
         @RequestBody @Valid UserInbodyRequestDto requestDto
     ) {
-        return userService.updateInbody(getUserId(token), requestDto)
-            .then(Mono.just(ResponseEntity.ok().build()));
+        return userService.updateInbody(getUserId(token), token, requestDto)
+            .then(Mono.just(ResponseEntity.ok().build()))
+            .onErrorResume(e -> {
+                log.error("체성분 정보 업데이트 중 에러 발생", e);
+                return Mono.just(ResponseEntity.badRequest().build());
+            });
     }
 
 }

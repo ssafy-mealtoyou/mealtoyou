@@ -1,7 +1,5 @@
 package com.mealtoyou.userservice.application.service;
 
-import java.time.LocalDateTime;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
@@ -13,9 +11,8 @@ import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserWeightRequestDto;
 import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
 import com.mealtoyou.userservice.domain.model.User;
-import com.mealtoyou.userservice.domain.model.UserInbodyLog;
-import com.mealtoyou.userservice.domain.repository.UserInbodyLogRepository;
 import com.mealtoyou.userservice.domain.repository.UserRepository;
+import com.mealtoyou.userservice.infrastructure.kafka.KafkaMonoUtils;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -24,8 +21,12 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserService {
 	private final UserRepository userRepository;
-	private final UserInbodyLogRepository userInbodyLogRepository;
 	private final S3Uploader s3Uploader;
+	private final KafkaMonoUtils kafkaMonoUtils;
+
+	private Mono<Boolean> requestSavingUserHealth(UserInbodyRequestDto requestDto) {
+		return kafkaMonoUtils.sendAndReceive("health-service-save-user-inbody", requestDto).map(Boolean::parseBoolean).onErrorResume((e) -> Mono.just(false));
+	}
 
 	public Mono<UserInfoResponseDto> getUserProfile(long userId) {
 		return userRepository.findById(userId).flatMap(user -> {
@@ -79,14 +80,18 @@ public class UserService {
 		}).then();
 	}
 
-	public Mono<Void> updateInbody(long userId, UserInbodyRequestDto requestDto) {
-		return userInbodyLogRepository.save(
-			UserInbodyLog.builder()
-				.userId(userId)
-				.bodyFat(requestDto.getBodyFat())
-				.skeletalMuscle(requestDto.getSkeletalMuscle())
-				.createDate(LocalDateTime.now())
-				.build()
-		).then();
+	public Mono<Void> updateInbody(long userId, String token, UserInbodyRequestDto requestDto) {
+		return userRepository.findById(userId).flatMap(user -> {
+			if (user.getHeight() <= 0.0 || user.getWeight() <= 0.0) {
+				return Mono.error(new RuntimeException("유효하지 않은 "));
+			}
+			requestDto.setOthers(token, user.getWeight(), user.getHeight(), user.getAge());
+			return requestSavingUserHealth(requestDto);
+		})
+		.flatMap(res -> {
+			if (!res)
+				return Mono.error(new RuntimeException());
+			return Mono.empty();
+		});
 	}
 }
