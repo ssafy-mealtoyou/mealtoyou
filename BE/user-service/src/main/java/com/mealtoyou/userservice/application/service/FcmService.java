@@ -13,6 +13,9 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.mealtoyou.userservice.application.dto.request.FcmRequestDto;
+import com.mealtoyou.userservice.application.dto.response.UserInfoResponseDto;
+import com.mealtoyou.userservice.domain.repository.UserRepository;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,9 @@ public class FcmService {
 
 	@Value("${fcm.project-id}")
 	private String projectId;
+
+	private final UserRepository userRepository;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	@PostConstruct
 	public void init() throws IOException {
@@ -57,5 +63,15 @@ public class FcmService {
 				throw new RuntimeException(e);
 			}
 		}).then();
+	}
+
+	public Mono<UserInfoResponseDto> updateFcmToken(String token, FcmRequestDto fcmRequestDto) {
+		Long userId = jwtTokenProvider.getUserId(token);
+		return userRepository
+			.findById(userId).flatMap(user -> {
+				user.updateUserFcmToken(fcmRequestDto);
+				return userRepository.save(user);
+			})
+			.map(UserInfoResponseDto::fromEntity);
 	}
 }

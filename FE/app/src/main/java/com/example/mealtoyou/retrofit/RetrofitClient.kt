@@ -1,5 +1,7 @@
 package com.example.mealtoyou.retrofit
 
+import com.example.mealtoyou.api.FcmApiService
+import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
@@ -36,6 +38,24 @@ object RetrofitClient {
             .build()
 
         retrofit.create(HealthApiService::class.java)
+    }
+
+    val foodSearchInstance: FoodSearchApiService by lazy{
+        val retrofit=Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+        retrofit.create(FoodSearchApiService::class.java)
+    }
+
+    val fcmInstance: FcmApiService by lazy{
+        val retrofit=Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+        retrofit.create(FcmApiService::class.java)
     }
 
     val chatInstance: ChatApiService by lazy {

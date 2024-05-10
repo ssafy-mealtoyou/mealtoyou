@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mealtoyou.userservice.application.dto.request.IntermittentRequestDto;
-import com.mealtoyou.userservice.application.service.IntermittentService;
+import com.mealtoyou.userservice.application.dto.request.FcmRequestDto;
+import com.mealtoyou.userservice.application.service.FcmService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,13 +18,12 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/")
-public class IntermittentController {
-	private final IntermittentService intermittentService;
+public class FcmController {
+	private final FcmService fcmService;
 
-	@PutMapping("/users/intermittent")
+	@PutMapping("/users/fcm")
 	public Mono<ResponseEntity<Void>> updateTime(@RequestHeader("Authorization") String token,
-		@RequestBody IntermittentRequestDto intermittentRequestDto) {
-		return intermittentService.updateTime(token, intermittentRequestDto)
-			.then(Mono.just(ResponseEntity.ok().build()));
+		@RequestBody FcmRequestDto fcmRequestDto) {
+		return fcmService.updateFcmToken(token, fcmRequestDto).then(Mono.just(ResponseEntity.ok().build()));
 	}
 }

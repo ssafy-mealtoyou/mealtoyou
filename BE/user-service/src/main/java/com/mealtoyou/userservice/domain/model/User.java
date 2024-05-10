@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.mealtoyou.userservice.application.dto.request.FcmRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserGoalRequestDto;
 import com.mealtoyou.userservice.application.dto.request.UserInfoRequestDto;
 
@@ -66,6 +67,19 @@ public class User {
             this.userImageUrl = imageUrl;
         }
     }
+	@Column("fcm_token")
+	private String fcmToken;
+
+	public void updateUserInfo(UserInfoRequestDto u) {
+		this.nickname = u.nickname();
+		this.gender = u.gender();
+		this.age = u.age();
+		this.height = u.height();
+		this.weight = u.weight();
+		// this.isIntermittentFasting = u.isIntermittentFasting();
+		// this.goalWeight = u.goalWeight();
+		// this.goalEndDate = u.goalEndDate();
+	}
 
 	public void updateIntermittent() {
 		this.isIntermittentFasting = !this.isIntermittentFasting;
@@ -80,4 +94,8 @@ public class User {
 		this.weight = weight;
 	}
 
+
+	public void updateUserFcmToken(FcmRequestDto fcmRequestDto) {
+		this.fcmToken = fcmRequestDto.getFcmToken();
+	}
 }

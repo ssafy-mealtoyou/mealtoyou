@@ -40,6 +40,9 @@ import com.example.mealtoyou.ui.theme.main.MainPage
 import com.example.mealtoyou.ui.theme.report.ReportPage
 import com.example.mealtoyou.ui.theme.shared.BottomNavigationBar
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.util.Log
+import com.example.mealtoyou.handler.FcmEventHandler
+import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
@@ -71,8 +74,22 @@ class MainActivity : ComponentActivity() {
                 MainScreen(navController)
             }
         }
+        sendFcmToken()
         setupPeriodicWork()
     }
+    private fun sendFcmToken(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "FCM Token: $token")
+
+            FcmEventHandler().sendFcmToken(token)
+        }
+    }
+
 
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
