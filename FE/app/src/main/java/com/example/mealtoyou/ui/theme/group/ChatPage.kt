@@ -1,6 +1,7 @@
 package com.example.mealtoyou.ui.theme.group
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +26,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +56,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
 import com.example.mealtoyou.R
 import com.example.mealtoyou.retrofit.RetrofitClient
+import com.example.mealtoyou.ui.theme.diet.DailyDietsResponseDto
+import com.example.mealtoyou.ui.theme.shared.BottomSheet
+import com.example.mealtoyou.ui.theme.shared.DietBox
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
@@ -60,12 +67,20 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.text.font.FontWeight
+import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.Diet
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class ChatViewModel : ViewModel() {
     private val chatApiService = RetrofitClient.chatInstance
 
     // 이미지 URL을 저장하는 StateMap
     val imageUrls = mutableStateMapOf<Int, String>()
+    val userNames = mutableStateMapOf<Int, String>()
 
     fun loadUserImages(userId: Int) {
         if (!imageUrls.containsKey(userId)) {
@@ -76,8 +91,12 @@ class ChatViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         imageUrls[userId] =
                             response.body()?.get(0)?.profileImageUrl ?: "No image found"
+
+                        userNames[userId] =
+                            response.body()?.get(0)?.nickname ?: "No image found"
                     } else {
                         imageUrls[userId] = "Error fetching image"
+                        userNames[userId] = "Error fetching user"
                     }
                 } catch (e: Exception) {
                     imageUrls[userId] = "Network request failed"
@@ -85,9 +104,34 @@ class ChatViewModel : ViewModel() {
             }
         }
     }
+
+    private val _diets = mutableStateOf<DailyDietsResponseDto?>(null)
+    val diets: State<DailyDietsResponseDto?> = _diets
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
+    fun loadUserDiets() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val response =
+                    chatApiService.getUserDiets("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs")
+                if (response.isSuccessful) {
+                    _diets.value = response.body()
+                    Log.d("API Success", response.message())
+                    _isLoading.value = false
+                } else {
+                    Log.e("API Error", "Failed to load diets: ${response.errorBody()?.string()}")
+                }
+            } catch (e: Exception) {
+                Log.e("API Error", "Exception during fetching diets: $e")
+            }
+        }
+    }
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatScreen() {
     val infoModifier = Modifier
@@ -104,14 +148,17 @@ fun ChatScreen() {
     val chatViewModel: ChatViewModel = viewModel()
 
     val webSocketClient = remember {
-        WebSocketClient("ws://172.20.10.14:8080/chatting-service/chat/group:11", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTUyMjA2ODMsImV4cCI6MTcxNTMwNzA4M30.aRllQ4AGAoYj5Z3KKyJ6xQCU-FU4Tcskr2WX1xRAEkY") { message ->
+        WebSocketClient(
+            "wss://a102.mgbg.kr/api/chatting-service/chat/group:11",
+            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs"
+        ) { message ->
             scope.launch {
                 messageList.add(message)
             }
         }
     }
 
-
+    val uid = 4
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -131,20 +178,67 @@ fun ChatScreen() {
                     .verticalScroll(scroll)
             ) {
 
+
                 messageList.forEach { message ->
                     val chatMessage = parseJsonChatMessage(message)
                     val imageUrl = chatViewModel.imageUrls[chatMessage.userId] ?: "Loading"
+                    val userName = chatViewModel.userNames[chatMessage.userId] ?: "Loading"
+
                     if (imageUrl == "Loading") {
                         LaunchedEffect(chatMessage.userId) {
                             chatViewModel.loadUserImages(chatMessage.userId)
                         }
                     }
-                    if (chatMessage.userId != 1) {
-                        TextSample(chatMessage.message.message, chatMessage.timestamp, imageUrl)
+                    if (chatMessage.message.message != null) {
+                        if (chatMessage.userId != uid) {
+                            UserText(
+                                chatMessage.message.message,
+                                chatMessage.timestamp,
+                                imageUrl,
+                                userName
+                            )
+                        } else {
+                            MyText(chatMessage.message.message, chatMessage.timestamp)
+                        }
+                    } else {
+                        if (chatMessage.userId != uid) {
+                            Row {
+                                Image(
+                                    painter = rememberImagePainter(
+                                        data = imageUrl,
+                                        builder = {
+                                            crossfade(true)
+                                            placeholder(R.drawable.ava)
+                                            error(R.drawable.ava)
+                                        }
+                                    ),
+                                    contentDescription = "Icon",
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = userName,
+                                    color = Color.Black,
+                                    lineHeight = 30.sp,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+
+                        }
+                        val count: Int = chatMessage.message.dailyDietsResponseDto?.diets?.size ?: 0
+                        val pagerState = rememberPagerState(
+                            pageCount = { count }  // 총 페이지 수
+                        )
+                        DietBox(
+                            chatMessage.message.dailyDietsResponseDto?.diets,
+                            pagerState = pagerState
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
-                    else {
-                        TextSample2(chatMessage.message.message, chatMessage.timestamp)
-                    }
+
                     Log.d("image", imageUrl)
                 }
             }
@@ -158,7 +252,25 @@ fun ChatScreen() {
 
             Box(modifier = infoModifier) {
                 Row {
-                    Box(modifier = Modifier.padding(12.dp)) {
+                    var addSheet by remember {
+                        mutableStateOf(false)
+                    }
+                    if (addSheet) {
+                        BottomSheet(closeSheet = { addSheet = false }, {
+                            SelectDiet { data ->
+                                run {
+                                    addSheet = false
+                                    webSocketClient.send(data)
+                                    messageList.add(createDietMessage(data, uid))
+                                }
+
+                            }
+                        })
+                    }
+
+                    Box(modifier = Modifier
+                        .padding(12.dp)
+                        .clickable { addSheet = true }) {
                         Image(
                             painter = painterResource(id = R.drawable.image),
                             contentDescription = "Icon",
@@ -171,25 +283,94 @@ fun ChatScreen() {
                         Spacer(modifier = Modifier.weight(1f))
                     }
 
+
                     Image(
                         painter = painterResource(id = R.drawable.send),
                         contentDescription = "Send Icon",
-                        modifier = Modifier.size(52.dp).clickable {
-                            messageList.add(createChatMessage(messageToSend.value))
-                            webSocketClient.send("{\n" +
-                                    "    \"type\": \"chat\",\n" +
-                                    "    \"message\": \""+ messageToSend.value +"\"\n" +
-                                    "}")
-                            messageToSend.value = ""
-                        }
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clickable {
+                                messageList.add(createChatMessage(messageToSend.value, uid))
+                                webSocketClient.send(
+                                    "{\n" +
+                                            "    \"type\": \"chat\",\n" +
+                                            "    \"message\": \"" + messageToSend.value + "\"\n" +
+                                            "}"
+                                )
+                                messageToSend.value = ""
+                            }
                     )
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun SelectDiet(function: (message: String) -> Unit) {
+    val chatViewModel: ChatViewModel = viewModel()
+    LaunchedEffect(chatViewModel) {
+        chatViewModel.loadUserDiets()
+    }
+
+    val isLoading = chatViewModel.isLoading.collectAsState()
+    val diets = chatViewModel.diets
+
+    if (!isLoading.value) {
+        Text(text = "식단 목록", color = Color.Black, fontWeight = FontWeight.SemiBold)
+        val count: Int = diets.value?.diets?.size ?: 0
+        val pagerState = rememberPagerState(
+            pageCount = { count }  // 총 페이지 수
+        )
+        DietBox(diet = diets.value?.diets, pagerState = pagerState)
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(
+            onClick = {
+                val dietList: ArrayList<Diet> = ArrayList()
+                diets.value?.diets?.get(pagerState.currentPage)?.let { dietList.add(it) }
+                val dailyDietsResponseDto = DailyDietsResponseDto(
+                    type = "diet",
+                    dailyCaloriesBurned = null,
+                    diets = dietList,
+                    dailyCarbohydrateTaked = null,
+                    dailyFatTaked = null,
+                    dailyProteinTaked = null,
+                    date = null
+                )
+                val sendMessage = SendMessage(
+                    type = "diet",
+                    dailyDietsResponseDto = dailyDietsResponseDto
+                )
+                val gson = Gson()
+                val message: String = gson.toJson(sendMessage)
+                Log.d("TEST", message)
+                function.invoke(message)
+            },
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(
+                    0xFF6D31ED
+                )
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+            modifier = Modifier
+                .height(46.dp)
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = "식단 공유하기",
+                fontFamily = Pretend,
+                color = Color.White
+            )
+        }
+    } else {
+        Text(text = "로딩중")
+    }
 
 }
-fun createChatMessage(value: String):String {
+
+fun createChatMessage(value: String, userId: Int): String {
     val gson = Gson()
     // Id 객체 생성
     val id = Id(
@@ -200,13 +381,13 @@ fun createChatMessage(value: String):String {
     // Message 객체 생성
     val message = Message(
         message = value,
-        community = "Developer Community"
+        dailyDietsResponseDto = null
     )
 
     // ChatMessage 객체 생성
     val chatMessage = ChatMessage(
         id = id,
-        userId = 1,
+        userId = userId,
         groupId = 6,
         message = message,
         timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
@@ -214,6 +395,34 @@ fun createChatMessage(value: String):String {
 
     return gson.toJson(chatMessage)
 }
+
+fun createDietMessage(value: String, userId: Int): String {
+    val gson = Gson()
+    val data = gson.fromJson(value, SendMessage::class.java)
+    // Id 객체 생성
+    val id = Id(
+        timestamp = System.currentTimeMillis(),
+        date = "2024-05-09"
+    )
+
+    // Message 객체 생성
+    val message = Message(
+        message = null,
+        dailyDietsResponseDto = data.dailyDietsResponseDto
+    )
+
+    // ChatMessage 객체 생성
+    val chatMessage = ChatMessage(
+        id = id,
+        userId = userId,
+        groupId = 6,
+        message = message,
+        timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    )
+
+    return gson.toJson(chatMessage)
+}
+
 fun parseJsonChatMessage(jsonString: String): ChatMessage {
     val gson = Gson()
     return gson.fromJson(jsonString, ChatMessage::class.java)
@@ -222,17 +431,21 @@ fun parseJsonChatMessage(jsonString: String): ChatMessage {
 fun getTimeAgo(timestamp: String): String {
     val formatter = DateTimeFormatter.ISO_DATE_TIME
     val messageTime = LocalDateTime.parse(timestamp, formatter)
-    val now = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    val now = LocalDateTime.now(ZoneId.of("UTC"))
     val minutesAgo = ChronoUnit.MINUTES.between(messageTime, now)
+    val hoursAgo = ChronoUnit.HOURS.between(messageTime, now)
+    val daysAgo = ChronoUnit.DAYS.between(messageTime, now)
 
     return when {
         minutesAgo < 1 -> "now"
-        else -> "$minutesAgo mins ago"
+        minutesAgo < 60 -> "$minutesAgo mins ago"
+        hoursAgo < 24 -> "$hoursAgo hours ago"
+        else -> "$daysAgo days ago"
     }
 }
 
 @Composable
-fun TextSample(message: String, timestamp: String, imageUrl: String) {
+fun UserText(message: String, timestamp: String, imageUrl: String, userName: String) {
     var timeAgo by remember { mutableStateOf(getTimeAgo(timestamp)) }
 
     LaunchedEffect(key1 = timestamp) {
@@ -261,6 +474,7 @@ fun TextSample(message: String, timestamp: String, imageUrl: String) {
 
         Spacer(modifier = Modifier.width(8.dp))
         Column {
+            Text(text = userName, color = Color.Black, lineHeight = 28.sp, fontSize = 14.sp)
             Box(
                 modifier = Modifier
                     .width(284.dp)
@@ -294,7 +508,7 @@ fun TextSample(message: String, timestamp: String, imageUrl: String) {
 }
 
 @Composable
-fun TextSample2(message: String, timestamp: String) {
+fun MyText(message: String, timestamp: String) {
     var timeAgo by remember { mutableStateOf(getTimeAgo(timestamp)) }
 
     LaunchedEffect(key1 = timestamp) {

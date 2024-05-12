@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -78,9 +79,10 @@ import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
+import coil.compose.rememberImagePainter
 import com.example.mealtoyou.R
-import com.example.mealtoyou.data.repository.FoodSearchRepository
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.DietFood
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 import com.example.mealtoyou.viewmodel.FoodSearchViewModel
@@ -256,7 +258,7 @@ fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "215 Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "213 Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -572,57 +574,59 @@ fun Item(text: String, iconId: Int, onItemClicked: () -> Unit) {
 fun FoodItems(
     showTemp: MutableState<Boolean>,
     selectedItem: MutableState<String>,
-    editable: Boolean
+    editable: Boolean,
+    foodList: List<DietFood>
 ) {
-    val koreanFoods = listOf("김치", "불고기", "비빔밥", "된장찌개", "김밥", "떡볶이")
-    var sheetOpen by remember {
-        mutableStateOf(false)
-    }
-    if (sheetOpen) {
-        BottomSheet(closeSheet = { sheetOpen = false }, { AddDiet() })
-    }
-    Column {
-        Row(modifier = Modifier.padding(top = 12.dp)) {
-            repeat(3) { index ->
-                FoodItem(koreanFoods[index], showTemp, selectedItem)
-                if (index < 2) Spacer(Modifier.weight(1f))
-            }
-        }
+    val foodNameList = foodList.map { it.name }
+    val foodCalories = foodList.map { it.calories }
+    val foodImages = foodList.map { it.imageUrl }
 
-        Row(modifier = Modifier.padding(top = 12.dp)) {
-            repeat(3) { index ->
-                FoodItem(koreanFoods[index + 3], showTemp, selectedItem)
-                if (index < 2) Spacer(Modifier.weight(1f))
+    var sheetOpen by remember { mutableStateOf(false) }
+
+    Column(Modifier.wrapContentWidth(), horizontalAlignment = Alignment.Start) {
+        foodNameList.chunked(3).forEachIndexed { rowIndex, chunk ->
+            Row(modifier = Modifier.padding(top = if (rowIndex == 0) 12.dp else 0.dp)) {
+                chunk.forEachIndexed { index, name ->
+                    if (index == 0 && chunk.size == 2) Spacer(Modifier.weight(1f))
+                    if (index == 1 && chunk.size == 2) Spacer(Modifier.width(6.dp))
+                    FoodItem(name, showTemp, selectedItem, foodCalories[(rowIndex * 3)+index], foodImages[(rowIndex * 3) + index])
+                    if (index == 1 && chunk.size == 2) Spacer(Modifier.weight(1f))
+                    if (index < chunk.size - 1 && chunk.size != 2) Spacer(Modifier.weight(1f))
+                }
             }
+            if (rowIndex < (foodNameList.size -1) / 3) Spacer(modifier = Modifier.height(10.dp))
         }
         if (editable) {
-            Row {
-                Spacer(Modifier.weight(1f))
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)) {
                 Button(
-                    onClick = {
-                        sheetOpen = true
-                    },
+                    onClick = { sheetOpen = true },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
                     shape = RoundedCornerShape(12),
                     modifier = Modifier
                         .width(100.dp)
                         .height(55.dp)
-                        .padding(top = 12.dp)
                 ) {
-                    Text(
-                        text = "등록하기",
-                        color = Color.White,
-                    )
+                    Text("등록하기", color = Color.White)
                 }
             }
         }
 
+        if (sheetOpen) {
+            BottomSheet(closeSheet = { sheetOpen = false }) { AddDiet() }
+        }
     }
 }
 
+
 @Composable
 fun FoodItem(
-    itemName: String, showTemp: MutableState<Boolean>, selectedItem: MutableState<String>
+    itemName: String,
+    showTemp: MutableState<Boolean>,
+    selectedItem: MutableState<String>,
+    calories: Double,
+    foodImage: String
 ) {
     Box(modifier = Modifier
         .height(120.dp)
@@ -633,7 +637,14 @@ fun FoodItem(
             showTemp.value = true
         }) {
         Image(
-            painter = painterResource(id = R.drawable.tm),
+            painter = rememberImagePainter(
+                data = foodImage,
+                builder = {
+                    crossfade(true)
+                    placeholder(R.drawable.tm)
+                    error(R.drawable.tm)
+                }
+            ),
             contentDescription = "Background Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
@@ -664,7 +675,7 @@ fun FoodItem(
                     .padding(horizontal = 5.dp, vertical = 1.dp) // 텍스트 주변의 패딩
             ) {
                 Text(
-                    text = "215kcal",
+                    text = calories.toString() + "kcal",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     fontFamily = Pretend,
