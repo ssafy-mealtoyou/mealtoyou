@@ -18,4 +18,12 @@ public interface BodyRepository extends ReactiveCrudRepository<Body, Long> {
 
 	@Query("SELECT * FROM user_health WHERE user_id=:userId ORDER BY measured_date DESC limit :day")
 	Flux<Body> findByUserId(Long userId, int day);
+
+	// 지난달 평균 몸무게 가져오는 쿼리
+	@Query("SELECT AVG(weight) FROM user_health WHERE user_id = :userId AND measured_date BETWEEN :startOfLastMonth AND :endOfLastMonth")
+	Mono<Double> findByUserIdAndStartOfLastMonthAndEndOfLastMonth(Long userId, String startOfLastMonth, String endOfLastMonth);
+
+	// 올해 평균 몸무게 가져오는 쿼리
+	@Query("SELECT AVG(weight) FROM user_health WHERE user_id = :userId AND YEAR(measured_date) = :currentYear")
+	Mono<Double> findByUserIdAndCurrentYear(Long userId, int currentYear);
 }

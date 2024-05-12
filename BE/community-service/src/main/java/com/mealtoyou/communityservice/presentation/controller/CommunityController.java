@@ -46,7 +46,7 @@ public class CommunityController {
 
     // 전체 그룹 조회
     @GetMapping("/communities")
-    public Flux<CommunityResponse> getCommunityList(int page, int size) {
+    public Flux<CommunityResponse> getCommunityList(@RequestParam int page, @RequestParam int size) {
         return communityService.getCommunityList(page, size);
     }
 
@@ -63,6 +63,18 @@ public class CommunityController {
     @GetMapping("/communities/users/{userId}")
     public Flux<ChattingUserInfoResponse> getChattingUserInfoOne(@PathVariable Long userId) {
         return communityService.getChattingUserInfoOne(userId);
+    }
+
+    // 커뮤니티 가입
+    @PostMapping("/communities/{communityId}")
+    public Mono<String> registerCommunity(@RequestHeader("Authorization") String token, @PathVariable Long communityId) {
+        return communityService.registerCommunity(getUserId(token), communityId);
+    }
+
+    // 커뮤니티에 가입되어 있는지 확인
+    @GetMapping("/communities/check")
+    public Mono<String> checkStatus(@RequestHeader("Authorization") String token) {
+        return communityService.checkStatus(getUserId(token));
     }
 
     public Long getUserId(String token) {

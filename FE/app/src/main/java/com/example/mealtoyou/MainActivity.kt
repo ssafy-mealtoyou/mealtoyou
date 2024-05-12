@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import android.util.Log
 import com.example.mealtoyou.data.repository.PreferenceUtil
 import com.example.mealtoyou.handler.FcmEventHandler
+import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
