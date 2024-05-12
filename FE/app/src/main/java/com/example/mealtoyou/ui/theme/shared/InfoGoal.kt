@@ -15,15 +15,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun InfoRow() {
+fun InfoRow(dailyGoalCalories: Int, dailyGoalSteps: Int, weeklyMinGoal: Int, cntUsers: Int) {
     Row(modifier = Modifier.padding(12.dp)) {
-        InfoColumn("일일 목표 소모 칼로리", "400 kcal")
+        InfoColumn("일일 목표 소모 칼로리", dailyGoalCalories.toString())
         Spacer(modifier = Modifier.weight(1f))
-        InfoColumn("일일 목표 걸음 수", "6000걸음")
+        InfoColumn("일일 목표 걸음 수", dailyGoalSteps.toString())
         Spacer(modifier = Modifier.weight(1f))
-        InfoColumn("주별 최소 인증", "3회")
+        InfoColumn("주별 최소 인증", weeklyMinGoal.toString())
         Spacer(modifier = Modifier.weight(1f))
-        InfoColumn("참가 인원", "49명")
+        InfoColumn("참가 인원", cntUsers.toString())
     }
 }
 

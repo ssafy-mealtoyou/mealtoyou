@@ -176,6 +176,23 @@ public class CommunityService {
                 });
     }
 
+    public Mono<String> registerCommunity(Long userId, Long communityId) {
+        return userCommunityRepository.findByUserId(userId)
+                .flatMap(userCommunity -> {
+                    // 이미 커뮤니티에 가입된 경우
+                    return Mono.just("already joined community");
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    // 사용자가 아직 커뮤니티에 가입하지 않은 경우 새로운 UserCommunity 객체 생성 및 저장
+                    UserCommunity newUserCommunity = UserCommunity.builder()
+                            .userId(userId)
+                            .communityId(communityId)
+                            .build();
+                    return userCommunityRepository.save(newUserCommunity)
+                            .flatMap(result -> Mono.just("success"));
+                }));
+    }
+
     // 목표를 달생했는지 확인
     private boolean isGoalAchieved(int steps, int caloriesBurned, Community community) {
         Integer dailyGoalSteps = community.getDailyGoalSteps();
@@ -216,7 +233,8 @@ public class CommunityService {
                                 }
                                 try {
                                     // JSON 형식인지 확인하고, JSON을 CommunityDietResponse 객체의 리스트로 변환
-                                    List<CommunityDietResponse> responses = objectMapper.readValue(result, new TypeReference<>() {});
+                                    List<CommunityDietResponse> responses = objectMapper.readValue(result, new TypeReference<>() {
+                                    });
                                     log.info("CommunityDietResponse: {}", responses.get(0));
                                     return Mono.just(responses);
                                 } catch (JsonProcessingException e) {
@@ -301,4 +319,9 @@ public class CommunityService {
         });
     }
 
+    public Mono<String> checkStatus(Long userId) {
+        return userCommunityRepository.findByUserId(userId)
+                .flatMap(userCommunity -> Mono.just("true"))
+                .switchIfEmpty(Mono.just("false"));
+    }
 }
