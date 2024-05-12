@@ -46,7 +46,7 @@ public class CommunityController {
 
     // 전체 그룹 조회
     @GetMapping("/communities")
-    public Flux<CommunityResponse> getCommunityList(int page, int size) {
+    public Flux<CommunityResponse> getCommunityList(@RequestParam int page, @RequestParam int size) {
         return communityService.getCommunityList(page, size);
     }
 
