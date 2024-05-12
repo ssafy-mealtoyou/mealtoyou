@@ -1,5 +1,7 @@
 package com.example.mealtoyou.ui.theme.group
 
+import com.example.mealtoyou.ui.theme.diet.DailyDietsResponseDto
+
 data class ChatMessage(
     val id: Id,
     val userId: Int,
@@ -14,6 +16,11 @@ data class Id(
 )
 
 data class Message(
-    val message: String,
-    val community: String
+    val dailyDietsResponseDto: DailyDietsResponseDto?,
+    val message: String?
+)
+
+data class SendMessage(
+    val dailyDietsResponseDto: DailyDietsResponseDto?,
+    val type: String
 )

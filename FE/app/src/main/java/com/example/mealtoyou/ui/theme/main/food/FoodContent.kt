@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.Diet
 import com.example.mealtoyou.ui.theme.main.food.nomal.FoodItems
 import com.example.mealtoyou.ui.theme.main.food.nomal.NutrientInfo
 import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationBox
@@ -64,12 +65,13 @@ fun NormalContent(
     showTemp: MutableState<Boolean>,
     selectedItem: MutableState<String>,
     editable: Boolean,
+    diet: Diet,
 ) {
     Column(Modifier.padding(12.dp)) {
-        RecommendationHeader()
-        CalorieInfo("862kcal")
-        NutrientInfo()
-        FoodItems(showTemp, selectedItem, editable)
+        RecommendationHeader(diet)
+        CalorieInfo(diet.totalCalories.toString() + "kcal")
+        NutrientInfo(diet)
+        FoodItems(showTemp, selectedItem, editable, diet.dietFoods)
     }
 }
 
