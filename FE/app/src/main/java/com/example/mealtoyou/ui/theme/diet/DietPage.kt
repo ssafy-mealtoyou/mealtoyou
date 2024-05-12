@@ -1,6 +1,7 @@
 package com.example.mealtoyou.ui.theme.diet
 
 import CalendarScreen
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.mealtoyou.ui.theme.shared.DietBox
 import com.example.mealtoyou.ui.theme.shared.MainBar
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DietPage() {
     Surface(
@@ -42,7 +44,8 @@ fun DietPage() {
                 Spacer(modifier = Modifier.height(16.dp))
                 DietInfographic()
                 Column(Modifier.padding(start = 20.dp, end = 20.dp)) {
-                    DietBox()
+
+                    DietBox(null, null)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

@@ -16,7 +16,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object RetrofitClient {
-    private const val BASE_URL = "http://172.20.10.14:8080/"
+    private const val BASE_URL = "https://a102.mgbg.kr/api/"
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(AuthInterceptor("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk"))
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가

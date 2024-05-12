@@ -15,15 +15,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.Diet
 
 @Composable
-fun NutrientInfo() {
+fun NutrientInfo(diet: Diet) {
     Row {
-        Nutrient("탄 33%", R.drawable.tan)
+        Nutrient("탄 " + diet.carbohydratePer + "%", R.drawable.tan)
         Spacer(Modifier.width(10.dp))
-        Nutrient("단 33%", R.drawable.dan)
+        Nutrient("단 " + diet.proteinPer + "%", R.drawable.dan)
         Spacer(Modifier.width(10.dp))
-        Nutrient("지 33%", R.drawable.zi)
+        Nutrient("지 "  + diet.fatPer + "%", R.drawable.zi)
     }
 }
 
