@@ -7,6 +7,7 @@ import com.mealtoyou.communityservice.application.dto.CommunityDietsRequestDto;
 import com.mealtoyou.communityservice.application.dto.RecentMessage;
 import com.mealtoyou.communityservice.application.dto.UserHealthInfo;
 import com.mealtoyou.communityservice.domain.model.Community;
+import com.mealtoyou.communityservice.domain.model.CommunityDiet;
 import com.mealtoyou.communityservice.domain.model.UserCommunity;
 import com.mealtoyou.communityservice.domain.repository.CommunityDietRepository;
 import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
@@ -196,6 +197,7 @@ public class CommunityService {
 
     private Mono<List<CommunityDietResponse>> getSharedMenuList(Long communityId, Long userId) {
         return communityDietRepository.findByCommunityId(communityId)
+                .map(CommunityDiet::getDietId) // CommunityDiet에서 dietId만 추출
                 .collectList()
                 .flatMap(dietIds -> {
                     CommunityDietsRequestDto communityDietsRequestDto = CommunityDietsRequestDto.builder()
@@ -206,7 +208,7 @@ public class CommunityService {
                     return kafkaMonoUtils.sendAndReceive("food-service-community-diet-list", communityDietsRequestDto)
                             .flatMap(result -> {
                                 // result 가 JSON 형식이 아닌 문자열인지 확인
-                                if (!result.startsWith("{")) {
+                                if (!result.startsWith("[")) {
                                     // JSON 형식이 아닌 경우 처리
                                     log.error("Error: Not a JSON string");
                                     // 기본 값으로 빈 리스트 대신 원하는 값을 반환하도록 수정
@@ -214,8 +216,7 @@ public class CommunityService {
                                 }
                                 try {
                                     // JSON 형식인지 확인하고, JSON을 CommunityDietResponse 객체의 리스트로 변환
-                                    List<CommunityDietResponse> responses = objectMapper.readValue(result, new TypeReference<>() {
-                                    });
+                                    List<CommunityDietResponse> responses = objectMapper.readValue(result, new TypeReference<>() {});
                                     log.info("CommunityDietResponse: {}", responses.get(0));
                                     return Mono.just(responses);
                                 } catch (JsonProcessingException e) {
@@ -227,6 +228,7 @@ public class CommunityService {
                             });
                 });
     }
+
 
     private Mono<Integer> calculateWeeklyRemainGoal(Long userId) {
         return reactiveRedisTemplate.opsForValue().get(userId.toString())
