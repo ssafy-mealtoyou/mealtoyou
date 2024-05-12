@@ -65,6 +65,18 @@ public class CommunityController {
         return communityService.getChattingUserInfoOne(userId);
     }
 
+    // 커뮤니티 가입
+    @PostMapping("/communities/{communityId}")
+    public Mono<String> registerCommunity(@RequestHeader("Authorization") String token, @PathVariable Long communityId) {
+        return communityService.registerCommunity(getUserId(token), communityId);
+    }
+
+    // 커뮤니티에 가입되어 있는지 확인
+    @GetMapping("/communities/check")
+    public Mono<String> checkStatus(@RequestHeader("Authorization") String token) {
+        return communityService.checkStatus(getUserId(token));
+    }
+
     public Long getUserId(String token) {
         return jwtTokenProvider.getUserId(token);
     }

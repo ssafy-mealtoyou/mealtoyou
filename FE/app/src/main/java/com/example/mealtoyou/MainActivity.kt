@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
 import android.util.Log
 import com.example.mealtoyou.handler.FcmEventHandler
+import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
@@ -123,7 +124,8 @@ class MainActivity : ComponentActivity() {
             }
         )
     }
-    private fun sendFcmToken(){
+
+    private fun sendFcmToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)

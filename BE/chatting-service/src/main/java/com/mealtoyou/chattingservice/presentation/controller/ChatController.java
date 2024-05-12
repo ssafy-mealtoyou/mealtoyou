@@ -29,4 +29,9 @@ public class ChatController {
     public Flux<Chat> getAllMessages() {
         return chatRepository.findAll();
     }
+
+    @PostMapping("/delete")
+    public Mono<Void> deleteMessage() {
+        return chatRepository.deleteAll();
+    }
 }

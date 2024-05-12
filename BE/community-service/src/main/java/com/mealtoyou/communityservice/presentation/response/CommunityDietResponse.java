@@ -3,7 +3,7 @@ package com.mealtoyou.communityservice.presentation.response;
 import java.util.List;
 
 public record CommunityDietResponse(
-        String nickname,
+        Long dietId,
 
         Integer totalCalories,
 
@@ -13,6 +13,6 @@ public record CommunityDietResponse(
 
         Integer fatPer,
 
-        List<DietFood> foodList
+        List<DietFood> dietFoods
 ) {
 }
