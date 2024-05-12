@@ -1,6 +1,7 @@
 package com.example.mealtoyou.handler
 
 import android.util.Log
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.data.FcmData
 import com.example.mealtoyou.retrofit.RetrofitClient
 import retrofit2.Call
@@ -11,7 +12,6 @@ import java.time.LocalDateTime
 class FcmEventHandler{
     fun sendFcmToken(fcmToken: String){
         RetrofitClient.fcmInstance.postFcmData(
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0dVNFTU5WWlo4NlJvODFxRDA5K21nPT0iLCJpYXQiOjE3MTUyOTk5MDcsImV4cCI6MTcxNTM4NjMwN30.0vgc7AXURd6fT4-MLiBXU8VPJGTPeZghYXyrMd4Unyg",
             FcmData(fcmToken=fcmToken, timeStamp = LocalDateTime.now())
         ).enqueue(object :
             Callback<Void> {

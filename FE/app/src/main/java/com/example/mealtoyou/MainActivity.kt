@@ -45,16 +45,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
 import android.util.Log
+import com.example.mealtoyou.data.repository.PreferenceUtil
 import com.example.mealtoyou.handler.FcmEventHandler
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var healthEventHandler: HealthEventHandler
+    private lateinit var googleSignInClient: GoogleSignInClient
+
 
     @Composable
     fun SetupSystemBars() {
@@ -91,6 +96,13 @@ class MainActivity : ComponentActivity() {
             healthEventHandler = HealthEventHandler(this, healthConnectClient)
             setupPeriodicWork()
         }
+        // GoogleSignInOptions 설정
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("")
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         setContent {
             if (showDialog) {
@@ -123,7 +135,8 @@ class MainActivity : ComponentActivity() {
             }
         )
     }
-    private fun sendFcmToken(){
+
+    private fun sendFcmToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
@@ -162,6 +175,12 @@ class MainActivity : ComponentActivity() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute != "login" && currentRoute != "chat"
+        // TODO: 여기에 accessToken검증과정 추가예정
+        val startDestination = if (MainApplication.prefs.getValue("accessToken").isNotEmpty()) {
+            "mainPage"
+        } else {
+            "login"
+        }
         Scaffold(
             bottomBar = {
                 if (showBottomBar) {
@@ -173,7 +192,7 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination = "mainPage",
+                    startDestination =startDestination,
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -200,7 +219,7 @@ class MainActivity : ComponentActivity() {
                     }
                 ) {
                     composable("login") {
-                        LoginPage(navController)
+                        LoginPage(navController, googleSignInClient)
                     }
                     composable("mainPage") {
                         MainPage()
