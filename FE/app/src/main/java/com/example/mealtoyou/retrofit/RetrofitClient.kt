@@ -1,5 +1,6 @@
 package com.example.mealtoyou.retrofit
 
+import com.example.mealtoyou.api.CommunityApiService
 import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
@@ -16,7 +17,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object RetrofitClient {
-    private const val BASE_URL = "https://a102.mgbg.kr/api/"
+    private const val BASE_URL = "http://192.168.0.25:8080/"
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(AuthInterceptor("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk"))
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가
@@ -28,6 +29,7 @@ object RetrofitClient {
         .registerTypeAdapter(LocalDate::class.java, JsonDeserializer { json, _, _ ->
             LocalDate.parse(json.asJsonPrimitive.asString, DateTimeFormatter.ISO_LOCAL_DATE)
         })
+        .setLenient()
         .create()
 
     val healthInstance: HealthApiService by lazy {
@@ -66,5 +68,15 @@ object RetrofitClient {
             .build()
 
         retrofit.create(ChatApiService::class.java)
+    }
+
+    val communityInstance: CommunityApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+
+        retrofit.create(CommunityApiService::class.java)
     }
 }

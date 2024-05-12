@@ -28,7 +28,7 @@ public class JwtTokenProvider {
 
     private static final String SECRET_KEY = "YourSecretKey123";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000L;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 90 * 24 * 60 * 60 * 1000L;
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 90 * 24 * 60 * 60 * 1000L;
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, RefreshTokenRepository refreshTokenRepository) {
