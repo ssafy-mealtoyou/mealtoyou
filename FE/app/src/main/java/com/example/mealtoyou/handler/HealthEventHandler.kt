@@ -106,7 +106,9 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
         })
     }
 
-    fun readExerciseData() {
+
+    fun readExerciseData(): Pair<Int, Int> {
+        lateinit var result: Pair<Int, Int>
         // 비동기 코루틴 스코프에서 데이터를 읽습니다.
         lifecycleOwner.lifecycleScope.launch {
             // 권한 확인
@@ -146,6 +148,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
 
                     Log.d("health","${exerciseData.steps} + ${exerciseData.stepStartDate} + ${exerciseData.caloriesBurned} + ${exerciseData.caloriesStartDate}")
                     sendExerciseData(exerciseData = exerciseData)
+                    result = Pair(steps.toInt(), caloriesBurned.toInt())
                 } catch (e: Exception) {
                     Log.e("HealthData", "Error reading health data: ${e.message}")
                 }
@@ -153,6 +156,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
                 Log.e("HealthData", "Required permissions not granted")
             }
         }
+        return result
     }
     private suspend fun sendExerciseData(exerciseData: ExerciseData) {
         try {

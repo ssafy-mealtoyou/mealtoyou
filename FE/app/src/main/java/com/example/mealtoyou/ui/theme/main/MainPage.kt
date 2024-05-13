@@ -1,6 +1,7 @@
 package com.example.mealtoyou.ui.theme.main
 
 import SupplementViewModel
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.ui.theme.main.feedback.MyFeedBack
 import com.example.mealtoyou.ui.theme.main.food.DateLabel
