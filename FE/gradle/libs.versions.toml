@@ -19,6 +19,9 @@ firebaseMessaging = "24.0.0"
 okhttp = "4.11.0"
 squareupLoggingInterceptor = "4.9.0"
 browser = "1.8.0"
+appcompat = "1.6.1"
+material = "1.11.0"
+activity = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +53,9 @@ views = { module = "com.patrykandpatrick.vico:views", version.ref = "composeM2" 
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
