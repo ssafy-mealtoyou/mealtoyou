@@ -5,6 +5,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.auth0.jwk.Jwk;
@@ -35,8 +36,8 @@ public class VerifyUtil {
 	private String googleIss1 = "https://accounts.google.com";
 	// @Value("${google.iss2}")
 	private String googleIss2 = "accounts.google.com";
-	// @Value("${spring.security.oauth2.client.registration.google.client-id}")
-	private String googleAud = "";
+	@Value("${google.clientId}")
+	private String googleAud;
 	// @Value("${google.jwks}")
 	private String googleJwks = "https://www.googleapis.com/oauth2/v3/certs";
 
