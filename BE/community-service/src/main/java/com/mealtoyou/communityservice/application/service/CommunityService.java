@@ -7,6 +7,7 @@ import com.mealtoyou.communityservice.application.dto.CommunityDietsRequestDto;
 import com.mealtoyou.communityservice.application.dto.RecentMessage;
 import com.mealtoyou.communityservice.application.dto.UserHealthInfo;
 import com.mealtoyou.communityservice.domain.model.Community;
+import com.mealtoyou.communityservice.domain.model.CommunityDiet;
 import com.mealtoyou.communityservice.domain.model.UserCommunity;
 import com.mealtoyou.communityservice.domain.repository.CommunityDietRepository;
 import com.mealtoyou.communityservice.domain.repository.CommunityRepository;
@@ -175,6 +176,23 @@ public class CommunityService {
                 });
     }
 
+    public Mono<String> registerCommunity(Long userId, Long communityId) {
+        return userCommunityRepository.findByUserId(userId)
+                .flatMap(userCommunity -> {
+                    // 이미 커뮤니티에 가입된 경우
+                    return Mono.just("already joined community");
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    // 사용자가 아직 커뮤니티에 가입하지 않은 경우 새로운 UserCommunity 객체 생성 및 저장
+                    UserCommunity newUserCommunity = UserCommunity.builder()
+                            .userId(userId)
+                            .communityId(communityId)
+                            .build();
+                    return userCommunityRepository.save(newUserCommunity)
+                            .flatMap(result -> Mono.just("success"));
+                }));
+    }
+
     // 목표를 달생했는지 확인
     private boolean isGoalAchieved(int steps, int caloriesBurned, Community community) {
         Integer dailyGoalSteps = community.getDailyGoalSteps();
@@ -196,6 +214,7 @@ public class CommunityService {
 
     private Mono<List<CommunityDietResponse>> getSharedMenuList(Long communityId, Long userId) {
         return communityDietRepository.findByCommunityId(communityId)
+                .map(CommunityDiet::getDietId) // CommunityDiet에서 dietId만 추출
                 .collectList()
                 .flatMap(dietIds -> {
                     CommunityDietsRequestDto communityDietsRequestDto = CommunityDietsRequestDto.builder()
@@ -206,7 +225,7 @@ public class CommunityService {
                     return kafkaMonoUtils.sendAndReceive("food-service-community-diet-list", communityDietsRequestDto)
                             .flatMap(result -> {
                                 // result 가 JSON 형식이 아닌 문자열인지 확인
-                                if (!result.startsWith("{")) {
+                                if (!result.startsWith("[")) {
                                     // JSON 형식이 아닌 경우 처리
                                     log.error("Error: Not a JSON string");
                                     // 기본 값으로 빈 리스트 대신 원하는 값을 반환하도록 수정
@@ -227,6 +246,7 @@ public class CommunityService {
                             });
                 });
     }
+
 
     private Mono<Integer> calculateWeeklyRemainGoal(Long userId) {
         return reactiveRedisTemplate.opsForValue().get(userId.toString())
@@ -299,4 +319,9 @@ public class CommunityService {
         });
     }
 
+    public Mono<String> checkStatus(Long userId) {
+        return userCommunityRepository.findByUserId(userId)
+                .flatMap(userCommunity -> Mono.just("true"))
+                .switchIfEmpty(Mono.just("false"));
+    }
 }

@@ -1,5 +1,6 @@
 package com.mealtoyou.communityservice.infrastructure.adpator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mealtoyou.communityservice.application.dto.CommunityDietDTO;
 import com.mealtoyou.communityservice.domain.model.CommunityDiet;
@@ -20,7 +21,12 @@ public class MessageProcessingAdaptor {
 
     @KafkaMessageListener(topic = "diet")
     public Mono<CommunityDiet> processMessage1(String message) {
-        CommunityDietDTO communityDietDTO = objectMapper.convertValue(message, CommunityDietDTO.class);
+        CommunityDietDTO communityDietDTO = null;
+        try {
+            communityDietDTO = objectMapper.readValue(message, CommunityDietDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         CommunityDiet communityDiet = CommunityDiet.builder()
                 .communityId(communityDietDTO.getCommunityId())
                 .dietId(communityDietDTO.getDietId())

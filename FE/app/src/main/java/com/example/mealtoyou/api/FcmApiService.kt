@@ -9,6 +9,6 @@ import retrofit2.http.PUT
 
 interface FcmApiService {
     @PUT("users/fcm")
-    fun postFcmData(@Header("Authorization") authorization: String, @Body fcmData: FcmData): Call<Void>
+    fun postFcmData(@Body fcmData: FcmData): Call<Void>
 
 }
