@@ -8,7 +8,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 
 interface FcmApiService {
-    @PUT("users/fcm")
+    @PUT("api/user-service/users/fcm")
     fun postFcmData(@Body fcmData: FcmData): Call<Void>
 
 }

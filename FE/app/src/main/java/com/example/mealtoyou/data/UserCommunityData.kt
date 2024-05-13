@@ -10,6 +10,7 @@ data class UserCommunityData(
     val dailyGoalSteps: Int,
     val weeklyMinGoal: Int,
     val weeklyRemainGoal: Int,
+    val isToday: Boolean,
     val steps: Int,
     val caloriesBurned: Int,
     val communityDietList: List<Diet>
