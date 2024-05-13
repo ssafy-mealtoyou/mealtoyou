@@ -5,14 +5,18 @@ import java.util.List;
 import lombok.Builder;
 
 public record CommunityDietDto(
-	String nickname,
-	Integer totalCalories,
-	Integer carbohydratePer,
-	Integer proteinPer,
-	Integer fatPer,
-	List<CommunityDietFoodDto> foodList
+        Long dietId,
+
+        Integer totalCalories,
+
+        Integer carbohydratePer,
+
+        Integer proteinPer,
+
+        Integer fatPer,
+        List<CommunityDietFoodDto> dietFoods
 ) {
-	@Builder
-	public CommunityDietDto {
-	}
+    @Builder
+    public CommunityDietDto {
+    }
 }

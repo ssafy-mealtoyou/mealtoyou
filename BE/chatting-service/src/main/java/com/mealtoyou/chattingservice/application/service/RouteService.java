@@ -24,13 +24,14 @@ public class RouteService {
 
         // 메시지가 CommunityDietMessage 인지 확인
         if (chat.getMessage() instanceof CommunityDietMessage) {
+            log.info("kafka community diet message");
             // CommunityDietMessage 인 경우, Kafka 로 전송
             return saveChatMono.flatMap(savedChat ->
                     kafkaMonoUtils.sendAndReceive(
                                     "community-service-diet",
                                     new CommunityDietDTO(
                                             chat.getGroupId(),
-                                            ((CommunityDietMessage) savedChat.getMessage()).getDietId()
+                                            ((CommunityDietMessage) savedChat.getMessage()).getDailyDietsResponseDto().diets().get(0).dietId()
                                     )
                             )
                             .then(Mono.just(savedChat))

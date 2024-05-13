@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.Diet
 import com.example.mealtoyou.ui.theme.shared.CloseButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -88,7 +89,12 @@ private fun ActionButton(
 
 
 @Composable
-fun FoodDetail(selectedItem: String, showTemp: MutableState<Boolean>, editable: Boolean) {
+fun FoodDetail(
+    selectedItem: String,
+    showTemp: MutableState<Boolean>,
+    editable: Boolean,
+    diet: Diet
+) {
     val isLoading = remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
