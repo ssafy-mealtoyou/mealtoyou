@@ -1,5 +1,7 @@
 package com.example.mealtoyou.ui.theme.main.stage
 
+import SupplementViewModel
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,6 +24,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,14 +41,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.R
+import com.example.mealtoyou.api.SupplementApiService
+import com.example.mealtoyou.data.SupplementResponseData
 import com.example.mealtoyou.ui.theme.Pretend
-import com.example.mealtoyou.ui.theme.group.AddWeight
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
+import com.example.mealtoyou.viewmodel.FoodSearchViewModel
 import java.util.UUID
 
 @Composable
@@ -169,7 +175,20 @@ fun AddDrug() {
 
 
 @Composable
-fun DrugInfo(modifier: Modifier, color: Color, setupAble: Boolean) {
+fun DrugInfo(
+    modifier: Modifier,
+    color: Color,
+    setupAble: Boolean,
+    supplementViewModel : SupplementViewModel
+) {
+//    val viewModel: SupplementViewModel = viewModel()
+
+    val supplements = supplementViewModel.supplementResult.collectAsState().value
+    Log.d("ssss","${supplements}")
+//    LaunchedEffect(key1 = true) {
+//        supplementViewModel.supplementScreen()
+//    }
+
     Box(
         modifier = modifier
             .height(165.dp)
@@ -209,23 +228,34 @@ fun DrugInfo(modifier: Modifier, color: Color, setupAble: Boolean) {
                     )
                 }
             }
-
-            Text(
-                text = "66% 완료",
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = Pretend,
-                lineHeight = 26.sp,
-                fontSize = 16.sp,
-                color = Color(0xFF323743)
-            )
+            if (supplements.isNullOrEmpty()) {
+                Text("영양제 데이터가 없습니다.")
+            } else {
+                // 완료율 계산 예제: 총 영양제 중에서 takenYn이 true인 영양제의 비율을 표시
+                Log.d("rate", "${supplements.count { it.takenYn }} + ${supplements.size}")
+                val completionRate =
+                    (supplements.count { it.takenYn }.toDouble() / supplements.size) * 100
+                Log.d("test", "${(supplements.count { it.takenYn }.toDouble() / supplements.size)}")
+                Log.d("c", "${completionRate}")
+                Text(
+                    text = "${completionRate.toInt()}% 완료",
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = Pretend,
+                    lineHeight = 26.sp,
+                    fontSize = 16.sp,
+                    color = Color(0xFF323743)
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
+            val displayedDrugs = supplements?.take(3)
+
             Row() {
-                Spacer(modifier = Modifier.weight(1f))
-                Drug(drug = R.drawable.used_drug)
-                Spacer(modifier = Modifier.weight(1f))
-                Drug(drug = R.drawable.used_drug)
-                Spacer(modifier = Modifier.weight(1f))
-                Drug(drug = R.drawable.unused_drug)
+                if (displayedDrugs != null) {
+                    displayedDrugs.forEach { drugData ->
+                        Spacer(modifier = Modifier.weight(1f))
+                        Drug(drug = if (drugData.takenYn) R.drawable.used_drug else R.drawable.unused_drug)
+                    }
+                }
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
