@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
         }
         // GoogleSignInOptions 설정
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("")
+            .requestIdToken("390865306655-5ikfuugrrrftnfldh6bo5muaq9u2dd9r.apps.googleusercontent.com")
             .requestEmail()
             .build()
 
@@ -194,6 +194,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination =startDestination,
+                    // startDestination = "chat",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
