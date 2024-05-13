@@ -15,7 +15,7 @@ data class Diet(
     val carbohydratePer: Int,
     val proteinPer: Int,
     val fatPer: Int,
-    val dietFoods: List<DietFood>
+    val dietFoods: List<DietFood>?
 )
 
 data class DietFood(

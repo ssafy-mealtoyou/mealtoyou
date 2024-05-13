@@ -93,7 +93,6 @@ fun FoodDetail(
     selectedItem: String,
     showTemp: MutableState<Boolean>,
     editable: Boolean,
-    diet: Diet
 ) {
     val isLoading = remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()

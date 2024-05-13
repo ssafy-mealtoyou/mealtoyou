@@ -21,7 +21,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.0.25:8080/"
+    private const val BASE_URL = "https://a102.mgbg.kr"
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(AuthInterceptor(MainApplication.prefs.getValue("accessToken")))
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가
@@ -48,7 +48,7 @@ object RetrofitClient {
 
     val foodSearchInstance: FoodSearchApiService by lazy{
         val retrofit=Retrofit.Builder()
-            .baseUrl("$BASE_URL:8084")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -57,7 +57,7 @@ object RetrofitClient {
 
     val fcmInstance: FcmApiService by lazy{
         val retrofit=Retrofit.Builder()
-            .baseUrl("$BASE_URL:8082")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -76,7 +76,7 @@ object RetrofitClient {
 
     val authInstance: AuthApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$BASE_URL:8082")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
