@@ -38,14 +38,17 @@ public class MessageProcessingAdaptor {
 
     @KafkaMessageListener(topic = "healthInfo")
     public Mono<UserHealthInfo> processMessage1(String message) {
-        log.info("start");
-        return exerciseRepository.findFirstByUserIdOrderByStepStartDateDesc(Long.parseLong(message))
+        return exerciseRepository.findFirstByUserIdAndStepStartDateOrderByStepStartDateDesc(
+                        Long.parseLong(message),
+                        LocalDate.now()
+                )
                 .map(result ->
                         new UserHealthInfo(
                                 result.getSteps().intValue(),
-                                result.getCaloriesBurned().intValue())
-                );
-
+                                result.getCaloriesBurned().intValue()
+                        )
+                )
+                .switchIfEmpty(Mono.just(new UserHealthInfo(0, 0)));
     }
 
     @KafkaMessageListener(topic = "save-user-inbody")

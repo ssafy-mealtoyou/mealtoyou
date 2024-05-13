@@ -3,6 +3,7 @@ package com.mealtoyou.healthservice.domain.repository;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.netflix.appinfo.ApplicationInfoManager;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -22,7 +23,6 @@ public interface ExerciseRepository extends ReactiveCrudRepository<Exercise, Lon
 	@Query("SELECT * FROM exercise WHERE user_id = :userId AND step_start_date = :stepStartDate")
 	Flux<Exercise> findByUserIdAndStepStartDate(Long userId, LocalDate stepStartDate);
 
-	Mono<Exercise> findFirstByUserIdOrderByStepStartDateDesc(Long userId);
-
+	Mono<Exercise> findFirstByUserIdAndStepStartDateOrderByStepStartDateDesc(long l, LocalDate now);
 }
 
