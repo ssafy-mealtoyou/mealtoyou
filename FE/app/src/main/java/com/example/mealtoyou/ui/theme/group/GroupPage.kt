@@ -49,6 +49,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.data.CommunityData
 import com.example.mealtoyou.data.UserCommunityData
 import com.example.mealtoyou.retrofit.RetrofitClient
@@ -71,7 +72,7 @@ class CommunityViewModel : ViewModel() {
     fun fetchData(authorization: String) {
         viewModelScope.launch {
             try {
-                val response = communityApiService.getUserCommunityInfo(authorization)
+                val response = communityApiService.getUserCommunityInfo()
                 if (response.isSuccessful) {
                     val data = response.body()
                     _userCommunityData.value = data
@@ -111,7 +112,7 @@ class CommunityAllViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response =
-                    communityApiService.checkStatus("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs")
+                    communityApiService.checkStatus()
                 _communityStatus.value = "loading"
                 if (response.isSuccessful) {
                     val data = response.body()
@@ -170,7 +171,7 @@ class CommunityAllViewModel : ViewModel() {
     suspend fun joinCommunity(communityId: Long) {
         // 사용자 인증 토큰이라고 가정하고 토큰을 넣어줌
         val authorizationToken =
-            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs"
+            MainApplication.prefs.getValue("accessToken")
         try {
             val response = communityApiService.joinCommunity(authorizationToken, communityId)
             if (response.isSuccessful) {
@@ -333,7 +334,7 @@ private fun DetailScreen(name: String, function: () -> Unit) {
     val communityData by viewModel.userCommunityData.collectAsState()
 
     LaunchedEffect(viewModel) {
-        viewModel.fetchData("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs")
+        viewModel.fetchData(MainApplication.prefs.getValue("accessToken"))
     }
     Column {
         MainBar(text = name, infoImg = true)

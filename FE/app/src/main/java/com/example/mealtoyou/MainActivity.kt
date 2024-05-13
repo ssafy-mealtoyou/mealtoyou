@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
         supplementViewModel.supplementScreen()
         // GoogleSignInOptions 설정
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("390865306655-5ikfuugrrrftnfldh6bo5muaq9u2dd9r.apps.googleusercontent.com")
+            .requestIdToken("390865306655-enuqjnl61ofnm3c5anf7jiua1mcmjtpk.apps.googleusercontent.com")
             .requestEmail()
             .build()
 
