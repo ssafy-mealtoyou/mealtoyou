@@ -1,7 +1,5 @@
 package com.example.mealtoyou.retrofit
 
-import com.example.mealtoyou.api.DietApiService
-import com.example.mealtoyou.MainActivity
 import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.api.AuthApiService
 import com.example.mealtoyou.api.CommunityApiService
@@ -10,12 +8,12 @@ import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
 import com.example.mealtoyou.auth.AuthInterceptor
+import com.example.mealtoyou.auth.LoggingInterceptor
+import com.example.mealtoyou.ui.theme.group.ChatApiService
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
-import com.example.mealtoyou.auth.LoggingInterceptor
-import com.example.mealtoyou.ui.theme.group.ChatApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
