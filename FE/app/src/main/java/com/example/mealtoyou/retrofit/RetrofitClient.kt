@@ -1,5 +1,6 @@
 package com.example.mealtoyou.retrofit
 
+import com.example.mealtoyou.api.DietApiService
 import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
@@ -66,5 +67,15 @@ object RetrofitClient {
             .build()
 
         retrofit.create(ChatApiService::class.java)
+    }
+
+    val dietInstance: DietApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        retrofit.create(DietApiService::class.java)
     }
 }

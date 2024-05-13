@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.main.food.nomal
 
+import DietCreationViewModel
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -49,10 +50,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.DrawModifier
@@ -70,6 +72,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
@@ -79,24 +82,24 @@ import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import com.example.mealtoyou.R
-import com.example.mealtoyou.data.repository.FoodSearchRepository
+import com.example.mealtoyou.data.SwipeFoodItemModel
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
+import com.example.mealtoyou.ui.theme.shared.ImageFromUrlOrResource
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 import com.example.mealtoyou.viewmodel.FoodSearchViewModel
 import java.text.DecimalFormat
 
 
 @Composable
-fun IncrementDecrementButtons() {
-    var quantity by remember { mutableDoubleStateOf(1.0) } // 초기값 설정
-
-    // DecimalFormat을 사용하여 소숫점 첫 번째 자리에서 반올림
-    val df = DecimalFormat("#.#")
-
+fun IncrementDecrementButtons(
+    quantity: Double = 1.0,
+    df: DecimalFormat = DecimalFormat("#.#"),
+    onQuantityChange: (Double) -> Unit = {}
+) {
     Row(
         modifier = Modifier.padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically // 수직 정렬을 가운데로 설정
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = R.drawable.minusg),
@@ -104,7 +107,8 @@ fun IncrementDecrementButtons() {
             modifier = Modifier
                 .size(30.dp)
                 .clickable {
-                    if (quantity > 0.1) quantity -= 0.1 // 최소값을 넘지 않도록 조건 설정
+                    val newQuantity = if (quantity > 0.1) quantity - 0.1 else quantity
+                    onQuantityChange(newQuantity)
                 }
         )
         Spacer(modifier = Modifier.width(6.dp))
@@ -121,14 +125,18 @@ fun IncrementDecrementButtons() {
             modifier = Modifier
                 .size(30.dp)
                 .clickable {
-                    quantity += 0.1 // 0.1 증가
+                    onQuantityChange(quantity + 0.1)
                 }
         )
     }
 }
 
 @Composable
-fun FoodItemSearch(name:String,energy:Double) {
+fun FoodItemSearch(
+    name:String,
+    energy:Double,
+    onItemSelected: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .height(70.dp)
@@ -175,9 +183,7 @@ fun FoodItemSearch(name:String,energy:Double) {
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     Button(
-                        onClick = {
-
-                        },
+                        onClick = onItemSelected,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                         shape = RoundedCornerShape(12),
                         modifier = Modifier
@@ -195,9 +201,16 @@ fun FoodItemSearch(name:String,energy:Double) {
         }
     }
 }
+
+@Preview
 @OptIn(ExperimentalWearMaterialApi::class)
 @Composable
-fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
+fun SwipeFoodItem(
+    model: SwipeFoodItemModel = SwipeFoodItemModel(),
+    onRemoveItem: (Long) -> Unit = {},
+    onQuantityChange: (id: Long, q: Double) -> Unit = {a, b -> }
+) {
+    val df = remember { DecimalFormat("#.#") }
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val sizePx = with(LocalDensity.current) { 70.dp.toPx() }
     val anchors = mapOf(0f to 0, -sizePx to 1)
@@ -238,30 +251,32 @@ fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
                             .width(50.dp)
                             .clip(RoundedCornerShape(8.dp))
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.sample_food),
-                            contentDescription = "Sample Food Image",
+                        ImageFromUrlOrResource(
+                            imageUrl = model.itemImageUrl,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            defaultImageId = R.drawable.sample_food
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = item,
+                            text = model.itemName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                             color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "215 Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "${df.format(model.energy)} Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    IncrementDecrementButtons()
+                    IncrementDecrementButtons(
+                        quantity = model.quantity,
+                        onQuantityChange = {q -> onQuantityChange(model.fid, q)}
+                    )
                 }
 
             }
@@ -273,7 +288,7 @@ fun SwipeFoodItem(item: String, onRemoveItem: () -> Unit) {
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFFDE3B40))
                     .align(Alignment.CenterVertically)
-                    .clickable { onRemoveItem() }
+                    .clickable { onRemoveItem(model.fid) }
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.minus),
@@ -310,12 +325,24 @@ fun Modifier.dashedBorder(
     }
 })
 
+@Preview
 @Composable
-private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: Boolean) {
-    val viewModel: FoodSearchViewModel = viewModel()
+private fun FoodBottomSheetContent(
+    setContent: (String) -> Unit = {},
+    imageBoolean: Boolean = false
+) {
+    val initialState = imageBoolean
+    val foodSearchViewModel: FoodSearchViewModel = viewModel()
     var showDialog by remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
-    val foodSearchResult = viewModel.foodSearchResult.value
+    val foodSearchResult = foodSearchViewModel.foodSearchResult.value
+    val dietCreationViewModel : DietCreationViewModel = remember {
+        DietCreationViewModel()
+    }
+
+    val swipeFoodItemList = remember {
+        mutableStateListOf<SwipeFoodItemModel>()
+    }
 
     Column(
         modifier = Modifier
@@ -372,7 +399,9 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            SwipeFoodItems() // 스크롤 가능한 아이템 리스트를 호출
+
+            SwipeFoodItems(swipeFoodItemList)
+
             Spacer(modifier = Modifier.height(8.dp))
             Box(
                 modifier = Modifier
@@ -381,7 +410,12 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                 contentAlignment = Alignment.Center
             ) {
                 Button(
-                    onClick = { setContent("default") },
+                    onClick = {
+                        // TODO: 식단 등록 API 요청 전송
+                        Log.d("request", "식단 등록 요청 전송 ${swipeFoodItemList.toList()}")
+                        dietCreationViewModel.createDietFromSwipeFoodItems(swipeFoodItemList.toList())
+                        setContent("default")
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),
@@ -409,7 +443,7 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                     onDone = {
                         // 여기에 서버로 데이터를 전송하는 코드를 추가합니다.
                         Log.d("foodSearchKeyword",textState.value)
-                        viewModel.foodSearch(textState.value)
+                        foodSearchViewModel.foodSearch(textState.value)
                     }
                 ),
                 modifier = Modifier
@@ -420,7 +454,23 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
                 LazyColumn {
                     items(resultList) { foodItem ->
                         Spacer(modifier = Modifier.height(15.dp))
-                        FoodItemSearch(name = foodItem.name, energy=foodItem.energy)
+                        FoodItemSearch(
+                            name = foodItem.name,
+                            energy=foodItem.energy,
+                            onItemSelected = {
+                                swipeFoodItemList.add(
+                                    SwipeFoodItemModel(
+                                        fid = foodItem.id,
+                                        itemName = foodItem.name,
+                                        itemImageUrl = "", // TODO: 이미지 링크 넣기
+                                        energy = foodItem.energy,
+                                        quantity = 1.0
+                                    )
+                                )
+                                Log.d("FoodItem", "선택된 음식 ${swipeFoodItemList.last()}")
+                                showDialog = false
+                            }
+                        )
                     }
                 }
             } ?: run {
@@ -434,18 +484,6 @@ private fun FoodBottomSheetContent(setContent: (String) -> Unit, imageBoolean: B
 //            Spacer(modifier = Modifier.height(15.dp))
 //            FoodItemSearch()
 //            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = { setContent("default") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED))
-            ) {
-                Text(
-                    "등록하기", fontSize = 16.sp, color = Color.White
-                )
-            }
         }
     }
 
@@ -504,25 +542,40 @@ fun AnimatedArrowIcon() {
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun SwipeFoodItems() {
-    var items by remember { mutableStateOf(List(10) { "Item $it" }) }  // 상태로 관리되는 아이템 리스트
+fun SwipeFoodItems(
+    swipeFoodItemModelList: SnapshotStateList<SwipeFoodItemModel>,
+) {
     val lazyListState = rememberLazyListState()  // 스크롤 상태 관리
 
     val showIndicator = derivedStateOf {
         val lastVisibleItem = lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        lastVisibleItem < items.size
+        lastVisibleItem < swipeFoodItemModelList.size  // 직접 `.size` 접근
     }
 
-    fun removeItem(item: String) {
-        items = items.filter { it != item }
-        Log.d("WOrk", "Working")
+    // 아이템을 제거하는 함수
+    fun removeItem(id: Long) {
+        swipeFoodItemModelList.removeAll { it.fid == id }
+        Log.d("Work", "Removed $id")
+    }
+
+    // 아이템의 수량을 업데이트하는 함수
+    fun updateQuantity(id: Long, newQuantity: Double) {
+        val index = swipeFoodItemModelList.indexOfFirst { it.fid == id }
+        if (index != -1) {
+            swipeFoodItemModelList[index] = swipeFoodItemModelList[index].copy(quantity = newQuantity)
+            Log.d("Work", "Updated quantity of item $id to $newQuantity")
+        }
     }
 
     Box {
         Column {
             LazyColumn(modifier = Modifier.height(230.dp), state = lazyListState) {
-                items(items, key = { it }) { item ->
-                    SwipeFoodItem(item = item, onRemoveItem = { removeItem(item) })
+                items(swipeFoodItemModelList, key = { it }) { item ->
+                    SwipeFoodItem(
+                        model = item,
+                        onRemoveItem = { id -> removeItem(id) },
+                        onQuantityChange = {id, newQuantity -> updateQuantity(id, newQuantity)}
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
