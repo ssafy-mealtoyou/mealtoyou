@@ -8,11 +8,11 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 interface ChatApiService {
-    @GET("community-service/communities/users/{userId}")
+    @GET("api/community-service/communities/users/{userId}")
     suspend fun getUserImage(@Path("userId") userId: Int): Response<List<UserSimpleData>>
 
 
-    @GET("food-service/api/diets?date=2024-05-10")
+    @GET("api/food-service/api/diets?date=2024-05-10")
     suspend fun getUserDiets(@Header("Authorization") authorization: String): Response<DailyDietsResponseDto>
 }
 
