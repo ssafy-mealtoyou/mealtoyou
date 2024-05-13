@@ -1,5 +1,7 @@
 package com.mealtoyou.supplementservice.domain.repository;
 
+import java.time.LocalTime;
+
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,8 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface SupplementRepository extends ReactiveCrudRepository<Supplement, Long> {
 	Mono<Supplement> findByUserIdAndName(Long userId, String name);
+
 	Flux<Supplement> findByUserId(Long userId);
+
+	Flux<Supplement> findAllByAlertTime(LocalTime alert);
 }
