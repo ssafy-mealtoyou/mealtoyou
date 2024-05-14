@@ -19,12 +19,12 @@ interface HealthApiService {
     @POST("api/health-service/health/exercise")
     suspend fun postExerciseData(@Body exerciseData: ExerciseData) : Response<Void>
 
-    @GET("health/body-fat")
+    @GET("api/health-service/health/body-fat")
     fun readBodyData(
         @Query("day") day: Int = 1
     ): Call<List<BodyResponseData>>
 
-    @GET("health/exercise")
+    @GET("api/health-service/health/exercise")
     fun readExerciseData(@Query("day") day: Int = 1)
     : Call<List<ExerciseData>>
 }
