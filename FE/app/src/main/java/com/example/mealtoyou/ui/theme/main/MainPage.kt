@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,11 +26,17 @@ import com.example.mealtoyou.ui.theme.main.report.MyTodayReport
 import com.example.mealtoyou.ui.theme.main.stage.MyStage
 import com.example.mealtoyou.ui.theme.shared.DietBox
 import com.example.mealtoyou.ui.theme.shared.MainBar
+import com.example.mealtoyou.viewmodel.UserViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainPage(supplementViewModel : SupplementViewModel) {
+fun MainPage(supplementViewModel: SupplementViewModel, userViewModel: UserViewModel = viewModel()) {
 //    val viewModel: SupplementViewModel = viewModel() // Assuming viewModel() is provided by the Compose framework or DI
+
+    LaunchedEffect(true) {
+        userViewModel.updateUserHome()
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
