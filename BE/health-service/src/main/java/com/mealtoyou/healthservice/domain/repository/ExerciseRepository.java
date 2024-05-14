@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface ExerciseRepository extends ReactiveCrudRepository<Exercise, Long> {
 
-	@Query("SELECT * FROM exercise WHERE user_id=:userId ORDER BY measured_date DESC limit :day")
+	@Query("SELECT * FROM exercise WHERE user_id=:userId ORDER BY step_start_date limit :day")
 	Flux<Exercise> findAllByUserId(Long userId, Integer day);
 
 	@Query("SELECT * FROM exercise WHERE user_id = :userId AND step_start_date = :stepStartDate")

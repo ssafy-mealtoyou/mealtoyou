@@ -11,7 +11,7 @@ import lombok.Getter;
 public class SupplementRequestDto {
 	private String name;
 	private Boolean takenYn;
-	private LocalTime alertTime;
+	private String alertTime;
 
 	// public LocalTime getAlertTimeAsLocalTime() {
 	// 	return LocalTime.parse(alertTime, DateTimeFormatter.ofPattern("HH:mm"));

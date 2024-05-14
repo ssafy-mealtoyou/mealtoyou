@@ -1,6 +1,9 @@
 package com.mealtoyou.supplementservice.application.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -24,28 +27,36 @@ public class SupplementService {
 		Long userId = jwtTokenProvider.getUserId(token);
 
 		Flux<Supplement> supplementsFlux = Flux.fromIterable(supplementRequestDtos)
-			.flatMap(dto -> supplementRepository.findByUserIdAndName(userId, dto.getName())
-				.flatMap(existingSupplement -> {
-					// 존재하는 Supplement 업데이트
-					Supplement updatedSupplement = existingSupplement.toBuilder()
-						.userId(userId)
-						.takenYn(dto.getTakenYn())
-						.alertTime(dto.getAlertTime())
-						.name(existingSupplement.getName())
-						.build();
-					return supplementRepository.save(updatedSupplement);
-				})
-				.switchIfEmpty(Mono.defer(() -> {
+			.flatMap(dto -> {
+				final LocalTime[] alertTime = new LocalTime[1];
+				try {
+					alertTime[0] = LocalTime.parse(dto.getAlertTime(), DateTimeFormatter.ofPattern("HH:mm"));
+				} catch (DateTimeParseException e) {
+					alertTime[0] = LocalTime.MIDNIGHT; // 기본값으로 자정 설정
+				}
 
-					Supplement newSupplement = Supplement.builder()
-						.userId(userId)
-						.name(dto.getName())
-						.takenYn(dto.getTakenYn())
-						.alertTime(dto.getAlertTime())
-						.build();
-					return supplementRepository.save(newSupplement);
-				}))
-			);
+				return supplementRepository.findByUserIdAndName(userId, dto.getName())
+					.flatMap(existingSupplement -> {
+						// 존재하는 Supplement 업데이트
+						Supplement updatedSupplement = existingSupplement.toBuilder()
+							.userId(userId)
+							.takenYn(dto.getTakenYn())
+							.alertTime(alertTime[0]) // alertTime을 LocalTime으로 설정
+							.name(existingSupplement.getName())
+							.build();
+						return supplementRepository.save(updatedSupplement);
+					})
+					.switchIfEmpty(Mono.defer(() -> {
+						// 새 Supplement 생성
+						Supplement newSupplement = Supplement.builder()
+							.userId(userId)
+							.name(dto.getName())
+							.takenYn(dto.getTakenYn())
+							.alertTime(alertTime[0]) // alertTime을 LocalTime으로 설정
+							.build();
+						return supplementRepository.save(newSupplement);
+					}));
+			});
 
 		return supplementsFlux.then(Mono.just("Supplements registered successfully"));
 	}
