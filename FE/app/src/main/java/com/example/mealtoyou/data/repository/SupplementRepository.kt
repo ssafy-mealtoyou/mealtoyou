@@ -2,8 +2,11 @@ package com.example.mealtoyou.data.repository
 
 
 import android.util.Log
+import com.example.mealtoyou.MainApplication
+import com.example.mealtoyou.data.SupplementRequestData
 import com.example.mealtoyou.data.SupplementResponseData
 import com.example.mealtoyou.retrofit.RetrofitClient
+import retrofit2.Response
 
 object SupplementRepository {
     private val supplementResult: MutableList<SupplementResponseData> = mutableListOf()
@@ -24,4 +27,22 @@ object SupplementRepository {
         }
         return supplementResult;
     }
+
+    suspend fun registerSupplements(dataList: List<SupplementRequestData>): String {
+        try {
+            val response = RetrofitClient.supplementInstance.registerSupplements(dataList)
+            Log.d("data","${dataList.get(0).alertTime}")
+
+            if (response.isSuccessful) {
+                return "Data sent successfully"
+            } else {
+                Log.e("API Error", "Error sending data: ${response.errorBody()?.string()}")
+                return "Failed to send data"
+            }
+        } catch (e: Exception) {
+            Log.e("API Error", "Exception in sending data: ${e.message}")
+            return "Error occurred while sending data"
+        }
+    }
+
 }

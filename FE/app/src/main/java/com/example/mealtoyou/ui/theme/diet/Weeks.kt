@@ -33,7 +33,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.R
+import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.kizitonwose.calendar.compose.WeekCalendar
 import com.kizitonwose.calendar.compose.weekcalendar.WeekCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
@@ -49,11 +51,12 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(viewModel: DietViewModel) {
     val currentDate = remember { LocalDate.now() }
     val startDate = remember { currentDate.minusDays(500) }
     val endDate = remember { currentDate.plusDays(500) }
     var selection by remember { mutableStateOf(currentDate) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,19 +69,6 @@ fun CalendarScreen() {
             firstVisibleWeekDate = currentDate,
         )
         val visibleWeek = rememberFirstVisibleWeekAfterScroll(state)
-//        CenterAlignedTopAppBar(
-//            title = {
-//                Text(
-//                    text = getWeekPageTitle(visibleWeek),
-//                    fontFamily = FontFamily.SansSerif,
-//                    fontSize = 18.sp,
-//                )
-//            },
-//            colors = TopAppBarDefaults.topAppBarColors(
-//                containerColor = Color.White,
-//                titleContentColor = Color.Black
-//            )
-//        )
 
         WeekCalendar(
             modifier = Modifier.background(Color.White),
@@ -87,6 +77,7 @@ fun CalendarScreen() {
                 Day(day.date, isSelected = selection == day.date) { clicked ->
                     if (selection != clicked) {
                         selection = clicked
+                        viewModel.fetchData(MainApplication.prefs.getValue("accessToken"), clicked.toString())
                     }
                 }
             },
