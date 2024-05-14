@@ -48,12 +48,13 @@ def register_with_eureka():
         }
     }
 
-    eureka_url = f"{eureka_server}/apps/ai-server"
+    eureka_url = f"{eureka_server}apps/ai-server"
     response = requests.post(eureka_url, json=instance_info)
     if response.status_code == 204:
         print("Successfully registered with Eureka")
     else:
         print(f"Failed to register with Eureka: {response.status_code}, {response.text}")
+
 
 
 @app.on_event("startup")
