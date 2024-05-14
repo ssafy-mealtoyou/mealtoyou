@@ -54,7 +54,7 @@ object RetrofitClient {
 
     val healthInstance: HealthApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8083/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -95,7 +95,7 @@ object RetrofitClient {
 
     val supplementInstance: SupplementApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8086/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
