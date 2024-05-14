@@ -12,7 +12,6 @@ object SupplementRepository {
     private val supplementResult: MutableList<SupplementResponseData> = mutableListOf()
 
     suspend fun getSupplements(): MutableList<SupplementResponseData>? {
-        Log.d("a","hi")
         supplementResult.clear()  // 리스트를 함수 호출마다 초기화
         val response = RetrofitClient.supplementInstance.getSupplements()
 //        Log.d("response","${response.body()}")
