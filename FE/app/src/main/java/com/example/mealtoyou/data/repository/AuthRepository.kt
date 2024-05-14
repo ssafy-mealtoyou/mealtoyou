@@ -13,6 +13,7 @@ class AuthRepository {
             response.body()?.let {
                 MainApplication.prefs.setValue("accessToken", response.body()!!.accessToken)
                 MainApplication.prefs.setValue("refreshToken", response.body()!!.refreshToken)
+                MainApplication.prefs.setValue("userId",response.body()!!.userId)
                 emit(true)
             }
         } else {
