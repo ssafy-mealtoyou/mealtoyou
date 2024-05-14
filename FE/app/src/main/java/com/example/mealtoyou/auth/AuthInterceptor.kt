@@ -10,6 +10,7 @@ class AuthInterceptor(private val token: String) : Interceptor {
         val newRequest = originalRequest.newBuilder()
             .header("Authorization", "Bearer $token")
             .build()
+        Log.e("auth","auth")
         Log.e("auth","${newRequest.header("Authorization")}")
         return chain.proceed(newRequest)
     }

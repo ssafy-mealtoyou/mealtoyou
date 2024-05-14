@@ -28,7 +28,8 @@ import java.time.format.DateTimeFormatter
 object RetrofitClient {
 //    private const val BASE_URL = "http://70.12.247.142:8086/supplements/"
 
-    private const val BASE_URL = "http://192.168.0.25:8080/"
+//    private const val BASE_URL = "http://192.168.0.25:8080/"
+    private const val BASE_URL = "https://a102.mgbg.kr/"
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(AuthInterceptor(MainApplication.prefs.getValue("accessToken")))
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가
@@ -72,7 +73,7 @@ object RetrofitClient {
     val fcmInstance: FcmApiService by lazy{
         val retrofit=Retrofit.Builder()
 //            .baseUrl("http://70.12.247.142:8082/")
-            .baseUrl("$BASE_URL:8082")
+            .baseUrl("$BASE_URL")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -81,7 +82,7 @@ object RetrofitClient {
 
     val chatInstance: ChatApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8084/")
+            .baseUrl("$BASE_URL:8084/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -92,22 +93,30 @@ object RetrofitClient {
 
     val supplementInstance: SupplementApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8086/")
+            .baseUrl("$BASE_URL")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         retrofit.create(SupplementApiService::class.java)
     }
-
     val authInstance: AuthApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$BASE_URL:8082")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         retrofit.create(AuthApiService::class.java)
     }
+//    val authInstance: AuthApiService by lazy {
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl("$BASE_URL:8082")
+//            .client(okHttpClient)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
+//
+//        retrofit.create(AuthApiService::class.java)
+//    }
 
     val communityInstance: CommunityApiService by lazy {
         val retrofit = Retrofit.Builder()
@@ -119,4 +128,7 @@ object RetrofitClient {
         retrofit.create(CommunityApiService::class.java)
 
     }
+
+
+
 }

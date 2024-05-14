@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,13 +24,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,14 +47,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.R
 import com.example.mealtoyou.api.SupplementApiService
-import com.example.mealtoyou.data.SupplementResponseData
+import com.example.mealtoyou.data.SupplementInfo
+import com.example.mealtoyou.data.SupplementRequestData
+import com.example.mealtoyou.data.repository.SupplementRepository.registerSupplements
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
-import com.example.mealtoyou.viewmodel.FoodSearchViewModel
+import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
@@ -74,8 +79,7 @@ fun Drug(drug: Int) {
 }
 
 @Composable
-private fun NumberTextField(modifier: Modifier) {
-    val text = remember { mutableStateOf("") }
+private fun NumberTextField(modifier: Modifier,  text: MutableState<String>) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val textStyle = TextStyle(
         color = Color(0xFF171A1F),
@@ -114,28 +118,85 @@ private fun NumberTextField(modifier: Modifier) {
 
 @Composable
 fun AddDrug() {
-    var fields = remember { mutableStateListOf<UUID>() }
+    val coroutineScope = rememberCoroutineScope()  // 코루틴 스코프 생성
+//    var fields = remember { mutableStateListOf<UUID>() }
+    var fields = remember { mutableStateListOf<SupplementInfo>() }
+    val text1 = remember { mutableStateOf("") }
+    val text2 = remember { mutableStateOf("") }
+    val text3 = remember { mutableStateOf("") }
 
     Column {
         Text(text = "영양제 관리", fontSize = 16.sp, color = Color(0xff171A1F), fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
-            items(items = fields, key = { it }) { fieldId ->
-                Text(text = "이름", fontSize = 14.sp, color = Color(0xff9095A1))
-                Spacer(modifier = Modifier.height(6.dp))
+            items(items = fields, key = { it.id }) { supplementInfo ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    NumberTextField(Modifier.weight(1f))
+                    Column(
+                        Modifier
+                            .weight(4.5f)
+                            .wrapContentHeight()) {
+                        Text(text = "이름", fontSize = 14.sp, color = Color(0xff9095A1))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row {
+                            val text = remember { mutableStateOf("") }
+                            TextField(
+                                value = supplementInfo.name.value,
+                                onValueChange = { supplementInfo.name.value = it },
+                                Modifier.weight(4.5f),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ))
+                        }
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .wrapContentHeight()) {
+                        Text(text = "시", fontSize = 14.sp, color = Color(0xff9095A1))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row {
+                            val text = remember { mutableStateOf("") }
+                            TextField(value = supplementInfo.hour.value,
+                                onValueChange = { supplementInfo.hour.value = it },
+                                Modifier.weight(4.5f),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ))
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .wrapContentHeight()) {
+                        Text(text = "분", fontSize = 14.sp, color = Color(0xff9095A1))
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row {
+                            val text = remember { mutableStateOf("") }
+                            TextField(
+                                value = supplementInfo.minute.value,
+                                onValueChange = { supplementInfo.minute.value = it },
+                                Modifier.weight(4.5f),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ))
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Spacer(modifier = Modifier.height(18.dp))
+                        Image(
+                            painter = painterResource(id = R.drawable.minusred),
+                            contentDescription = "Google Icon",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    fields.remove(supplementInfo)
+                                }
+                        )
+                    }
 
-                    Image(
-                        painter = painterResource(id = R.drawable.minusred),
-                        contentDescription = "Google Icon",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                fields.remove(fieldId)
-                            }
-                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -149,7 +210,8 @@ fun AddDrug() {
                     .size(24.dp)
                     .clickable {
                         if (fields.size < 3) {
-                            fields.add(UUID.randomUUID())
+                            fields.add(SupplementInfo())
+//                            fields.add(UUID.randomUUID())
                         }
                     }
             )
@@ -158,8 +220,25 @@ fun AddDrug() {
         Spacer(modifier = Modifier.height(13.dp))
         Button(
             onClick = {
-                if (fields.size < 3) {
-                    fields.add(UUID.randomUUID())
+                coroutineScope.launch {  // 코루틴 내에서 비동기 함수 호출
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+                    val dataList = fields.map { supplementInfo ->
+//                        val hour = supplementInfo.hour.value.toIntOrNull() ?: 0
+//                        val minute = supplementInfo.minute.value.toIntOrNull() ?: 0
+//                        val alertTime = LocalTime.of(hour, minute).format(timeFormatter)
+                        val hourInt = supplementInfo.hour.value.toIntOrNull() ?: 0  // null일 경우 0을 기본값으로 사용
+                        val minuteInt = supplementInfo.minute.value.toIntOrNull() ?: 0
+                        val alertTime = LocalTime.of(hourInt, minuteInt)
+                        Log.d("alertTime","${alertTime}")
+                        SupplementRequestData(
+                            name = supplementInfo.name.value,
+                            takenYn = false,
+                            alertTime = alertTime
+                        )
+                    }
+                    registerSupplements(dataList)
+                    // 결과에 따라 UI를 업데이트하거나 사용자에게 알림
                 }
             },
             shape = RoundedCornerShape(8.dp),
@@ -184,7 +263,7 @@ fun DrugInfo(
 //    val viewModel: SupplementViewModel = viewModel()
 
     val supplements = supplementViewModel.supplementResult.collectAsState().value
-    Log.d("ssss","${supplements}")
+//    Log.d("ssss","${supplements}")
 //    LaunchedEffect(key1 = true) {
 //        supplementViewModel.supplementScreen()
 //    }
