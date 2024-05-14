@@ -12,6 +12,7 @@ import com.mealtoyou.userservice.application.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -29,13 +30,19 @@ public class AuthController {
 			.flatMap(oidcDto -> {
 				if (oidcDto != null) {
 					return authService.generateTokenByEmail(oidcDto)
-						.flatMap(generatedToken -> authService.saveTokens(generatedToken.getAccessToken(),
-								generatedToken.getRefreshToken())
-							.thenReturn(ResponseEntity.ok(Map.of("accessToken", generatedToken.getAccessToken(),
-								"refreshToken", generatedToken.getRefreshToken()))));
+						.flatMap(tokenMap -> Flux.fromIterable(tokenMap.entrySet())
+							.flatMap(entry -> authService.saveTokens(entry.getValue().getAccessToken(),
+									entry.getValue().getRefreshToken())
+								.thenReturn(ResponseEntity.ok(Map.of(
+									"accessToken", entry.getValue().getAccessToken(),
+									"refreshToken", entry.getValue().getRefreshToken(),
+									"userId", entry.getKey().toString()
+								))))
+							.collectList()
+							.map(list -> list.get(0))
+						);
 				} else {
-					// Mono.error를 반환하여 에러 처리
-					return Mono.error(new RuntimeException("invalid error token"));
+					return Mono.error(new RuntimeException("Invalid ID token"));
 				}
 			})
 			.onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Invalid ID token"))));

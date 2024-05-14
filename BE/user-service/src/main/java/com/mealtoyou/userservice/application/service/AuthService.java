@@ -1,5 +1,7 @@
 package com.mealtoyou.userservice.application.service;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
 import com.mealtoyou.userservice.application.dto.GeneratedToken;
@@ -38,11 +40,11 @@ public class AuthService {
 			.then();
 	}
 
-	public Mono<GeneratedToken> generateTokenByEmail(OIDCDto oidcDto) {
+	public Mono<Map<Long, GeneratedToken>> generateTokenByEmail(OIDCDto oidcDto) {
 		return getOrSave(oidcDto)
 			.flatMap(user -> {
 				// userId를 이용하여 토큰을 생성하고 Mono<GeneratedToken>을 반환
-				return Mono.just(jwtTokenProvider.generateToken(user.getUserId()));
+				return Mono.just(Map.of(user.getUserId(), jwtTokenProvider.generateToken(user.getUserId())));
 			});
 	}
 

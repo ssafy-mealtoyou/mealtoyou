@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mealtoyou.communityservice.application.dto.CommunityDietsRequestDto;
-import com.mealtoyou.communityservice.application.dto.RecentMessage;
+import com.mealtoyou.communityservice.application.dto.TodaysGoalDTO;
 import com.mealtoyou.communityservice.application.dto.UserHealthInfo;
 import com.mealtoyou.communityservice.domain.model.Community;
 import com.mealtoyou.communityservice.domain.model.CommunityDiet;
@@ -34,7 +34,6 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -88,7 +87,7 @@ public class CommunityService {
                                 // 공유 식단 리스트 조회
                                 Mono<List<CommunityDietResponse>> sharedMenuList = getSharedMenuList(communityId, userId);
                                 // 주당 일일 목표 달성 횟수 조회
-                                Mono<Integer> weeklyRemainGoal = calculateWeeklyRemainGoal(userId);
+                                Mono<TodaysGoalDTO> weeklyRemainGoal = calculateWeeklyRemainGoal(userId, community.getWeeklyMinGoal());
                                 // 걸음 수 및 소모 칼로리 조회
                                 Mono<UserHealthInfo> userHealthInfo = fetchAndConvertUserHealthInfo(userId);
                                 // Mono 의 zip 연산자를 사용하여 모든 결과를 조합하여 UserCommunityResponse 를 생성
@@ -248,16 +247,20 @@ public class CommunityService {
     }
 
 
-    private Mono<Integer> calculateWeeklyRemainGoal(Long userId) {
+    private Mono<TodaysGoalDTO> calculateWeeklyRemainGoal(Long userId, Integer weeklyMinGoal) {
         return reactiveRedisTemplate.opsForValue().get(userId.toString())
                 .flatMap(value -> {
                     if (value != null) {
-                        return Mono.just(Integer.bitCount(Integer.parseInt(value))); // 조회된 값을 Integer로 변환 후 이진수에서 1의 개수 계산
+                        LocalDateTime now = LocalDateTime.now();
+                        int dayValue = now.getDayOfWeek().getValue();
+                        int weeklyRemainGoal = weeklyMinGoal - Integer.bitCount(Integer.parseInt(value, 2));
+                        boolean isToday = (Integer.parseInt(value, 2) & (1 << (6 - dayValue))) != 0;
+                        return Mono.just(new TodaysGoalDTO(weeklyRemainGoal, isToday)); // 조회된 값을 Integer로 변환 후 이진수에서 1의 개수 계산
                     } else {
-                        return Mono.just(0); // 값이 없을 경우 0 반환
+                        return Mono.just(new TodaysGoalDTO(weeklyMinGoal, false)); // 값이 없을 경우 0 반환
                     }
                 })
-                .switchIfEmpty(Mono.just(0)); // 값이 없을 경우 0 반환
+                .switchIfEmpty(Mono.just(new TodaysGoalDTO(weeklyMinGoal, false))); // 값이 없을 경우 0 반환
     }
 
 

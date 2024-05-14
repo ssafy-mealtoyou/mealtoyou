@@ -131,7 +131,9 @@ class MainActivity : ComponentActivity() {
             }
 
         }
-//        sendFcmToken()
+        if(MainApplication.prefs.getValue("accessToken").isNotEmpty()){
+            sendFcmToken()
+        }
         setupPeriodicWork()
     }
 
@@ -189,6 +191,9 @@ class MainActivity : ComponentActivity() {
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute != "login" && currentRoute != "chat"
         // TODO: 여기에 accessToken검증과정 추가예정
+        if(MainApplication.prefs.getValue("accessToken").isNotEmpty()){
+
+        }
         val startDestination = if (MainApplication.prefs.getValue("accessToken").isNotEmpty()) {
             "mainPage"
         } else {
