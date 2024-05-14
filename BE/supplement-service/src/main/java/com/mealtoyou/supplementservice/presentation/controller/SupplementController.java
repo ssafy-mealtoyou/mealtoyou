@@ -35,6 +35,7 @@ public class SupplementController {
 
 	@GetMapping
 	public ResponseEntity<Flux<SupplementResponseDto>> getSupplements(@RequestHeader("Authorization") String token) {
+		System.out.println(token);
 		Flux<SupplementResponseDto> supplementResponseDtoFlux = supplementService.getSupplements(token);
 		return ResponseEntity.ok().body(supplementResponseDtoFlux);
 	}

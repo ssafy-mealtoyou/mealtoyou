@@ -1,5 +1,6 @@
 package com.mealtoyou.communityservice.presentation.response;
 
+import com.mealtoyou.communityservice.application.dto.TodaysGoalDTO;
 import com.mealtoyou.communityservice.application.dto.UserHealthInfo;
 import com.mealtoyou.communityservice.domain.model.Community;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ public record UserCommunityResponse(
 
         Integer weeklyRemainGoal,
 
+        boolean isToday,
+
         Integer steps,
 
         Integer caloriesBurned,
@@ -38,7 +41,7 @@ public record UserCommunityResponse(
 ) {
 
     public static UserCommunityResponse toEntity(Community community,
-                                                 List<CommunityDietResponse> sharedMenuList, Integer weeklyRemainGoal,
+                                                 List<CommunityDietResponse> sharedMenuList, TodaysGoalDTO todaysGoalDTO,
                                                  UserHealthInfo userHealthInfo) {
         log.info("start");
 
@@ -53,7 +56,8 @@ public record UserCommunityResponse(
                 community != null ? community.getDailyGoalCalories() : 0,  // null 값이면 0으로 대체
                 community != null ? community.getDailyGoalSteps() : 0,  // null 값이면 0으로 대체
                 community != null ? community.getWeeklyMinGoal() : 0,  // null 값이면 0으로 대체
-                weeklyRemainGoal != null ? weeklyRemainGoal : 0,  // null 값이면 0으로 대체
+                todaysGoalDTO != null ? todaysGoalDTO.getWeeklyRemainGoal() : 0,  // null 값이면 0으로 대체
+                todaysGoalDTO != null && todaysGoalDTO.isToday(),
                 userHealthInfo != null ? userHealthInfo.getSteps() : 0,  // null 값이면 0으로 대체
                 userHealthInfo != null ? userHealthInfo.getCaloriesBurned() : 0,  // null 값이면 0으로 대체
                 sharedMenuList

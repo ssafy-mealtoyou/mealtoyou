@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mealtoyou.data.ExerciseData
 import com.example.mealtoyou.data.HealthData
 import com.example.mealtoyou.retrofit.RetrofitClient
+import com.example.mealtoyou.viewmodel.HealthViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,7 +30,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     private val startOfToday = LocalDate.now(zoneId).minusDays(1).atStartOfDay(zoneId).toInstant() // 오늘 자정의 Instant, 한국 시간대 기준
 
 
-    fun readHealthData() {
+    fun readHealthData(viewModel : HealthViewModel) {
         lifecycleOwner.lifecycleScope.launch {
             val permissions = setOf(
                 HealthPermission.createReadPermission(BasalMetabolicRateRecord::class),
@@ -75,6 +76,8 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
                     val healthData = HealthData(bmr, measuredDate, bodyFat,skeletalMuscle,weight)
 //                    if (bmr !== 0.0 && bodyFat !== 0.0 && weight !== 0.0 && skeletalMuscle !== 0.0) {
                     sendHealthData(healthData = healthData)
+                    viewModel._bodyResult.value= HealthData(bmr, measuredDate, bodyFat, skeletalMuscle, weight)
+
 //                    }
                 } catch (e: Exception) {
                     Log.e("HealthData", "Error reading health data: ${e.message}")
@@ -87,7 +90,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     }
 
     fun sendHealthData(healthData: HealthData) {
-        RetrofitClient.healthInstance.postHealthData("Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk",healthData).enqueue(object :
+        RetrofitClient.healthInstance.postHealthData(healthData).enqueue(object :
             Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
@@ -103,7 +106,9 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
         })
     }
 
-    fun readExerciseData() {
+
+    fun readExerciseData(): Pair<Int, Int> {
+        lateinit var result: Pair<Int, Int>
         // 비동기 코루틴 스코프에서 데이터를 읽습니다.
         lifecycleOwner.lifecycleScope.launch {
             // 권한 확인
@@ -143,6 +148,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
 
                     Log.d("health","${exerciseData.steps} + ${exerciseData.stepStartDate} + ${exerciseData.caloriesBurned} + ${exerciseData.caloriesStartDate}")
                     sendExerciseData(exerciseData = exerciseData)
+                    result = Pair(steps.toInt(), caloriesBurned.toInt())
                 } catch (e: Exception) {
                     Log.e("HealthData", "Error reading health data: ${e.message}")
                 }
@@ -150,11 +156,11 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
                 Log.e("HealthData", "Required permissions not granted")
             }
         }
+        return result
     }
     private suspend fun sendExerciseData(exerciseData: ExerciseData) {
         try {
             val response = RetrofitClient.healthInstance.postExerciseData(
-                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk",
                 exerciseData
             )
             if (response.isSuccessful) {

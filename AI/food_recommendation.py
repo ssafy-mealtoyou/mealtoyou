@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from scipy.optimize import differential_evolution
 from database import SessionLocal, FoodCombination
 from config import Config
+import os
 
 
 # openai API 키 인증

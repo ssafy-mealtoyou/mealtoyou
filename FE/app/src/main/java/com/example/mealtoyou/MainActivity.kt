@@ -3,6 +3,7 @@ package com.example.mealtoyou
 import android.content.pm.PackageManager
 import android.os.Build
 import ExerciseDataWorker
+import SupplementViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,17 +46,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
 import android.util.Log
+
+import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.handler.FcmEventHandler
+import com.example.mealtoyou.viewmodel.HealthViewModel
+import com.example.mealtoyou.data.repository.PreferenceUtil
+import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.example.mealtoyou.ui.theme.group.SearchScreen
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import java.time.Duration
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var healthConnectClient: HealthConnectClient
     private lateinit var healthEventHandler: HealthEventHandler
+    private lateinit var googleSignInClient: GoogleSignInClient
+
 
     @Composable
     fun SetupSystemBars() {
@@ -92,22 +103,38 @@ class MainActivity : ComponentActivity() {
             healthEventHandler = HealthEventHandler(this, healthConnectClient)
             setupPeriodicWork()
         }
+        val supplementViewModel: SupplementViewModel by viewModels()
+        val healthViewModel: HealthViewModel by viewModels()
+        // 액티비티가 생성될 때 데이터 로드
+        supplementViewModel.supplementScreen()
+        // GoogleSignInOptions 설정
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("390865306655-enuqjnl61ofnm3c5anf7jiua1mcmjtpk.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         setContent {
+
             if (showDialog) {
                 ShowErrorDialog(errorMessage) {
                     //finish() // 액티비티 종료
                     showDialog = false
                 }
             }
+
             MealToYouTheme {
                 val navController = rememberNavController()
                 SetupSystemBars()
-                MainScreen(navController)
+
+                MainScreen(navController, supplementViewModel, healthViewModel)
             }
 
         }
-        sendFcmToken()
+        if(MainApplication.prefs.getValue("accessToken").isNotEmpty()){
+            sendFcmToken()
+        }
         setupPeriodicWork()
     }
 
@@ -160,10 +187,19 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainScreen(navController: NavHostController) {
+    fun MainScreen(navController: NavHostController, supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute != "login" && currentRoute != "chat"
+        // TODO: 여기에 accessToken검증과정 추가예정
+        if(MainApplication.prefs.getValue("accessToken").isNotEmpty()){
+
+        }
+        val startDestination = if (MainApplication.prefs.getValue("accessToken").isNotEmpty()) {
+            "mainPage"
+        } else {
+            "login"
+        }
         Scaffold(
             bottomBar = {
                 if (showBottomBar) {
@@ -175,7 +211,8 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination = "mainPage",
+                    startDestination =startDestination,
+//                    startDestination = "mainPage",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -202,22 +239,23 @@ class MainActivity : ComponentActivity() {
                     }
                 ) {
                     composable("login") {
-                        LoginPage(navController)
+                        LoginPage(navController, googleSignInClient)
                     }
                     composable("mainPage") {
-                        MainPage()
+                        MainPage(supplementViewModel)
                     }
                     composable("분석") {
                         ReportPage()
                     }
                     composable("식단") {
-                        DietPage()
+                        val viewModel: DietViewModel = viewModel() // viewModel 생성
+                        DietPage(viewModel)
                     }
                     composable("그룹") {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage()
+                        MyPage(supplementViewModel, healthViewModel)
                     }
                     composable("chat") {
                         ChatScreen()

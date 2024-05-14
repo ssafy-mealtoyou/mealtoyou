@@ -45,7 +45,7 @@ async def init_eureka_client():
 
   await eureka_client.init_async(
       eureka_server=eureka_server,
-      app_name="FastAPIApp",
+      app_name="ai-service",
       instance_port=8000,
       instance_ip=instance_ip,
       instance_host=instance_host

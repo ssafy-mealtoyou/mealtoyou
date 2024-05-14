@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: alarm-service
+  config:
+    import: optional:configserver:${CONFIG_IMPORT}
+  cloud:
+    config:
+      profile: dev
+fcm:
+  service-account-file: key/mealtoyou.json
+  topic-name: testMessage
+  project-id: mealtoyou-197d9

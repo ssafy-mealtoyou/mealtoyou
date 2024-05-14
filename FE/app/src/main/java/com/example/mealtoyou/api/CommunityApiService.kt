@@ -15,44 +15,41 @@ import retrofit2.http.Query
 interface CommunityApiService {
 
     // 커뮤니티 생성
-    @POST("community-service/communities")
+    @POST("api/community-service/communities")
     fun createCommunity(
         @Header("Authorization") authorization: String,
         @Body createCommunityData: CreateCommunityData
     ): Call<Void>
 
     // 커뮤니티 조회
-    @GET("community-service/communities/my")
+    @GET("api/community-service/communities/my")
     suspend fun getUserCommunityInfo(
-        @Header("Authorization") authorization: String
     ): Response<UserCommunityData>
 
     // 전체 그룹 조회
-    @GET("community-service/communities")
+    @GET("api/community-service/communities")
     suspend fun getCommunityList(
         @Query("page") page: Int,
         @Query("size") size: Int
     ): Response<List<CommunityData>>
 
     // 일일 목표 인증
-    @POST("/community-service/goals")
-    fun dailyGoalCheck(
+    @POST("api/community-service/goals")
+    suspend fun dailyGoalCheck(
         @Header("Authorization") authorization: String,
         @Query("steps") steps: Int,
         @Query("caloriesBurned") caloriesBurned: Int
-    ): Call<String>
+    ): Response<String>
 
     // 커뮤니티 가입
-    @POST("/community-service/communities/{communityId}")
+    @POST("api/community-service/communities/{communityId}")
     suspend fun joinCommunity(
         @Header("Authorization") authorization: String,
         @Path("communityId") communityId: Long
     ): Response<String>
 
     // 커뮤니티 가입 확인
-    @GET("/community-service/communities/check")
-    suspend fun checkStatus(
-        @Header("Authorization") authorization: String
-    ): Response<String>
+    @GET("api/community-service/communities/check")
+    suspend fun checkStatus(): Response<String>
 
 }

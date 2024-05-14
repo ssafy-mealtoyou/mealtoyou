@@ -70,6 +70,7 @@ import java.time.temporal.ChronoUnit
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.FontWeight
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.Diet
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -150,7 +151,7 @@ fun ChatScreen() {
     val webSocketClient = remember {
         WebSocketClient(
             "wss://a102.mgbg.kr/api/chatting-service/chat/group:11",
-            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs"
+            MainApplication.prefs.getValue("accessToken")
         ) { message ->
             scope.launch {
                 messageList.add(message)
