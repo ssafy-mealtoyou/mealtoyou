@@ -26,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,11 +48,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.R
 import com.example.mealtoyou.api.SupplementApiService
 import com.example.mealtoyou.data.SupplementInfo
 import com.example.mealtoyou.data.SupplementRequestData
 import com.example.mealtoyou.data.repository.SupplementRepository.registerSupplements
+import com.example.mealtoyou.retrofit.RetrofitClient
+
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import kotlinx.coroutines.launch
@@ -229,7 +233,8 @@ fun AddDrug() {
 //                        val alertTime = LocalTime.of(hour, minute).format(timeFormatter)
                         val hourInt = supplementInfo.hour.value.toIntOrNull() ?: 0  // null일 경우 0을 기본값으로 사용
                         val minuteInt = supplementInfo.minute.value.toIntOrNull() ?: 0
-                        val alertTime = LocalTime.of(hourInt, minuteInt)
+//                        val alertTime = LocalTime.of(hourInt, minuteInt)
+                        val alertTime = LocalTime.of(hourInt, minuteInt).format(timeFormatter)
                         Log.d("alertTime","${alertTime}")
                         SupplementRequestData(
                             name = supplementInfo.name.value,
@@ -237,6 +242,7 @@ fun AddDrug() {
                             alertTime = alertTime
                         )
                     }
+
                     registerSupplements(dataList)
                     // 결과에 따라 UI를 업데이트하거나 사용자에게 알림
                 }
@@ -260,13 +266,12 @@ fun DrugInfo(
     setupAble: Boolean,
     supplementViewModel : SupplementViewModel
 ) {
-//    val viewModel: SupplementViewModel = viewModel()
 
     val supplements = supplementViewModel.supplementResult.collectAsState().value
-//    Log.d("ssss","${supplements}")
-//    LaunchedEffect(key1 = true) {
-//        supplementViewModel.supplementScreen()
-//    }
+    Log.d("ssss","${supplements}")
+    LaunchedEffect(Unit) {
+        supplementViewModel.supplementScreen()
+    }
 
     Box(
         modifier = modifier

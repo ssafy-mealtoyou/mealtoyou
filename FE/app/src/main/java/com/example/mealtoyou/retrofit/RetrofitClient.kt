@@ -17,6 +17,7 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
 import com.example.mealtoyou.auth.LoggingInterceptor
+import com.example.mealtoyou.handler.LocalTimeAdapter
 import com.example.mealtoyou.ui.theme.group.ChatApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -93,8 +94,9 @@ object RetrofitClient {
 
     val supplementInstance: SupplementApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$BASE_URL")
-            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl("http://70.12.247.142:8086/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
         retrofit.create(SupplementApiService::class.java)
@@ -108,15 +110,6 @@ object RetrofitClient {
 
         retrofit.create(AuthApiService::class.java)
     }
-//    val authInstance: AuthApiService by lazy {
-//        val retrofit = Retrofit.Builder()
-//            .baseUrl("$BASE_URL:8082")
-//            .client(okHttpClient)
-//            .addConverterFactory(GsonConverterFactory.create())
-//            .build()
-//
-//        retrofit.create(AuthApiService::class.java)
-//    }
 
     val communityInstance: CommunityApiService by lazy {
         val retrofit = Retrofit.Builder()

@@ -2,6 +2,7 @@ package com.example.mealtoyou.data.repository
 
 
 import android.util.Log
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.data.SupplementRequestData
 import com.example.mealtoyou.data.SupplementResponseData
 import com.example.mealtoyou.retrofit.RetrofitClient
