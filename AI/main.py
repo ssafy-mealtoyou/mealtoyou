@@ -11,55 +11,44 @@ from database import SessionLocal, Exercise, UserHealth, FoodCombination, User, 
   Diet
 from food_recommendation import get_food_recommendations, NutrientInfo
 from other_foods_recommendation import get_otherFoods, Info
+import py_eureka_client.eureka_client as eureka_client
 import os
 import socket
-import requests
 
 app = FastAPI()
 
-eureka_server = os.getenv("EUREKA_SERVER", "http://localhost:8761/eureka/")
+eureka_server = os.getenv("EUREKA_SERVER",
+                          "http://localhost:8761/eureka/")
 instance_host = os.getenv("INSTANCE_HOST", "localhost")
 environment = os.getenv("ENVIRONMENT", "local")  # 기본값을 'local'로 설정
 redis_ip = os.getenv("REDIS", "localhost")
 
 
 def get_container_ip():
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
-    return ip
+  # 도커 컨테이너의 IP 주소를 가져오기
+  hostname = socket.gethostname()
+  ip = socket.gethostbyname(hostname)
+  return ip
 
 
-def register_with_eureka():
-    if environment == "docker":
-        instance_ip = get_container_ip()
-    else:
-        instance_ip = "localhost"
+async def init_eureka_client():
+  if environment == "docker":
+    instance_ip = get_container_ip()
+  else:
+    instance_ip = "localhost"
 
-    instance_info = {
-        "instance": {
-            "hostName": instance_host,
-            "app": "ai-server",
-            "ipAddr": instance_ip,
-            "vipAddress": "ai-server",
-            "secureVipAddress": "ai-server",
-            "status": "UP",
-            "port": {"$": 8000, "@enabled": "true"},
-            "dataCenterInfo": {"@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", "name": "MyOwn"}
-        }
-    }
-
-    eureka_url = f"{eureka_server}apps/ai-server"
-    response = requests.post(eureka_url, json=instance_info)
-    if response.status_code == 204:
-        print("Successfully registered with Eureka")
-    else:
-        print(f"Failed to register with Eureka: {response.status_code}, {response.text}")
-
+  await eureka_client.init_async(
+      eureka_server=eureka_server,
+      app_name="FastAPIApp",
+      instance_port=8000,
+      instance_ip=instance_ip,
+      instance_host=instance_host
+  )
 
 
 @app.on_event("startup")
 async def startup_event():
-  register_with_eureka()
+  await init_eureka_client()
 
 
 def get_db():

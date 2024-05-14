@@ -11,4 +11,3 @@ apscheduler~=3.10.4
 python-dotenv~=1.0.1
 mysql-connector-python
 openai~=0.28.0
-requests~=2.30.0
