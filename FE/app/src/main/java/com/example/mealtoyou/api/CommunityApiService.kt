@@ -35,11 +35,11 @@ interface CommunityApiService {
 
     // 일일 목표 인증
     @POST("api/community-service/goals")
-    fun dailyGoalCheck(
+    suspend fun dailyGoalCheck(
         @Header("Authorization") authorization: String,
         @Query("steps") steps: Int,
         @Query("caloriesBurned") caloriesBurned: Int
-    ): Call<String>
+    ): Response<String>
 
     // 커뮤니티 가입
     @POST("api/community-service/communities/{communityId}")

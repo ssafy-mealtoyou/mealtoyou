@@ -10,10 +10,10 @@ import retrofit2.http.POST
 import java.util.Date
 
 interface HealthApiService {
-    @POST("health/body-fat")
+    @POST("api/health-service/health/body-fat")
     fun postHealthData(@Header("Authorization") authorization: String,@Body healthData: HealthData): Call<Void>
 
-    @POST("health/exercise")
+    @POST("api/health-service/health/exercise")
     suspend fun postExerciseData(@Header("Authorization") authorization: String,@Body exerciseData: ExerciseData) : Response<Void>
 
 }
