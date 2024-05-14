@@ -58,7 +58,7 @@ def register_with_eureka():
 
 @app.on_event("startup")
 async def startup_event():
-  await init_eureka_client()
+  register_with_eureka()
 
 
 def get_db():
