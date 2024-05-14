@@ -52,7 +52,7 @@ public class SupplementService {
 
 	public Flux<SupplementResponseDto> getSupplements(String token) {
 		Long userId = jwtTokenProvider.getUserId(token);
-
+		System.out.println(userId);
 		return supplementRepository.findByUserId(userId)
 			.map(supplement -> SupplementResponseDto.builder()
 				.supplementId(supplement.getSupplementId())
