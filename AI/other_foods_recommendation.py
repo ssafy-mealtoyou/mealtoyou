@@ -61,7 +61,19 @@ def get_otherFoods(info):
 
   # 점수가 낮은 순으로 음식 정렬
   optimal_foods = filtered_df.sort_values('score')
+  foods = optimal_foods[['식품명', '에너지(㎉)', '탄수화물(g)', '단백질(g)', '지방(g)', 'score', 'calories_diff', 'carbs_diff', 'protein_diff', 'fat_diff']].head(3)
+
+  dietFoods = []
+  for _, row in foods.iterrows():
+    dietFoods.append({
+      "name": row['식품명'],
+      "imageUrl": '',
+      "calories": row['에너지(㎉)'],
+      "carbohydrate": row['탄수화물(g)'],
+      "protein": row['단백질(g)'],
+      "fat": row['지방(g)']
+    })
 
   # 결과 반환
-  return optimal_foods[['식품명', '에너지(㎉)', '탄수화물(g)', '단백질(g)', '지방(g)', 'score', 'calories_diff', 'carbs_diff', 'protein_diff', 'fat_diff']].head(10)
+  return dietFoods
 
