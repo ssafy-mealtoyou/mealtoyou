@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.example.mealtoyou.viewmodel.HealthViewModel
 import com.example.mealtoyou.data.repository.PreferenceUtil
+import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -247,7 +248,8 @@ class MainActivity : ComponentActivity() {
                         ReportPage()
                     }
                     composable("식단") {
-                        DietPage()
+                        val viewModel: DietViewModel = viewModel() // viewModel 생성
+                        DietPage(viewModel)
                     }
                     composable("그룹") {
                         GroupPage(navController)
