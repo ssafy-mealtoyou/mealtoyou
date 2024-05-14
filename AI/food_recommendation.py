@@ -125,7 +125,7 @@ def objective(selections, category_data, target,total, active_categories):
 
   return np.sum(difference)
 
-def get_food_recommendations(nutrient_info,user_id=1, max_attempts=10):
+def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
   # 데이터 불러오기
   df_nutrients = load_data()
   print(1231321)
