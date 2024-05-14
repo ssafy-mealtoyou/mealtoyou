@@ -211,7 +211,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination =startDestination,
-                    // startDestination = "chat",
+//                    startDestination = "mainPage",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
