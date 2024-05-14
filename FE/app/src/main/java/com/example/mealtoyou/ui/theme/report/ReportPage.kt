@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.report
 
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,8 +22,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,7 +37,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mealtoyou.data.BodyResponseData
+import com.example.mealtoyou.data.ExerciseData
 import com.example.mealtoyou.ui.theme.shared.MainBar
+import com.example.mealtoyou.viewmodel.BodyViewModel
+import com.example.mealtoyou.viewmodel.ExerciseViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
@@ -44,27 +52,51 @@ import com.patrykandpatrick.vico.compose.common.shader.color
 import com.patrykandpatrick.vico.core.cartesian.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.cartesian.axis.AxisPosition
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.core.cartesian.data.AxisValueOverrider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModel
 import com.patrykandpatrick.vico.core.cartesian.data.LineCartesianLayerModel
 import com.patrykandpatrick.vico.core.common.shader.DynamicShader
 
-private val bodyModel =
-    CartesianChartModel(
-        LineCartesianLayerModel.build {
-            series(3, 3.3, 3.2, 3.1, 3.5, 3.4)
-            series(2, 2.3, 2.2, 2.1, 2.5, 2.4)
-            series(1.2, 1.1, 1.1, 1.4, 1.2, 1.4)
-        },
-    )
+//private val bodyModel =
+//    CartesianChartModel(
+//        LineCartesianLayerModel.build {
+//            series(3, 3.3, 3.2, 3.1, 3.5, 3.4)
+//            series(2, 2.3, 2.2, 2.1, 2.5, 2.4)
+//            series(1.2, 1.1, 1.1, 1.4, 1.2, 1.4)
+//        },
+//    )
+fun bodyModel(bodyData: List<BodyResponseData>): CartesianChartModel {
+    val weights = bodyData.map { it.weight.toFloat() }
+    val skeletalMuscleMasses = bodyData.map { it.skeletalMuscle.toFloat() }
+    val bodyFats = bodyData.map { it.bodyFat.toFloat() }
 
-private val activityModel =
-    CartesianChartModel(
+    return CartesianChartModel(
         LineCartesianLayerModel.build {
-            series(3, 3.3, 3.2, 3.1, 3.5, 3.4)
-            series(2, 2.3, 2.2, 2.1, 2.5, 2.4)
-        },
+            series(weights)
+            series(skeletalMuscleMasses)
+            series(bodyFats)
+        }
     )
+}
+
+fun exerciseModel(bodyData: List<ExerciseData>): CartesianChartModel {
+    val steps = bodyData.map { it.steps.toFloat() }
+    val caloriesBurned = bodyData.map { it.caloriesBurned.toFloat() }
+    Log.d("step","${steps.get(0).toFloat()}")
+
+    return CartesianChartModel(
+        LineCartesianLayerModel.build {
+            series(steps)
+            series(caloriesBurned)
+        }
+    )
+}
+//private val activityModel =
+//    CartesianChartModel(
+//        LineCartesianLayerModel.build {
+//            series(3, 3.3, 3.2, 3.1, 3.5, 3.4)
+//            series(2, 2.3, 2.2, 2.1, 2.5, 2.4)
+//        },
+//    )
 
 private val sleepModel =
     CartesianChartModel(
@@ -75,6 +107,17 @@ private val sleepModel =
 
 @Composable
 fun ReportPage() {
+    val bodyViewModel: BodyViewModel = viewModel()
+    val exerciseViewModel: ExerciseViewModel = viewModel()
+
+    LaunchedEffect(Unit) {
+        bodyViewModel.fetchBodyData(7)
+        exerciseViewModel.fetchExerciseData(7)
+    }
+
+    val bodyData = bodyViewModel.bodyData
+    val exerciseData = exerciseViewModel.exerciseData
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
@@ -85,17 +128,25 @@ fun ReportPage() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MainBar(text = "분석", infoImg = true)
-            ContentBody(Modifier.weight(1f))
+
+            ContentBody(Modifier.weight(1f),bodyData,exerciseData)
+
         }
     }
 }
 
 @Composable
-fun ContentBody(modifier: Modifier) {
+fun ContentBody(
+    modifier: Modifier,
+    bodyData: List<BodyResponseData>?,
+    exerciseData: List<ExerciseData>?
+) {
     val scrollState = rememberScrollState()
+    val bodyViewModel: BodyViewModel = viewModel()
+    val exerciseViewModel: ExerciseViewModel = viewModel()
     var dateMenuPointer by remember { mutableIntStateOf(0) }
     var titleMenuPointer by remember { mutableIntStateOf(0) }
-
+    val selectedPointer = remember { mutableStateOf(0) }
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -111,18 +162,34 @@ fun ContentBody(modifier: Modifier) {
                 titleMenuPointer = newPointer
                 dateMenuPointer = 0
             }
-            DateMenu(dateMenuPointer) { newPointer ->
-                dateMenuPointer = newPointer
-            }
+            DateMenu(
+                selectedPointer = selectedPointer.value,
+                onPointerSelected = { pointer ->
+                    selectedPointer.value = pointer
+                    val days = when (pointer) {
+                        0 -> 7
+                        1 -> 30
+                        else -> 100
+                    }
+                    bodyViewModel.fetchBodyData(days)
+                    exerciseViewModel.fetchExerciseData(days)
+                }
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            DataDisplayBox(titleMenuPointer)
+            DataDisplayBox(titleMenuPointer,bodyData,exerciseData)
             Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-fun DataDisplayBox(titleMenuPointer: Int) {
+fun DataDisplayBox(
+    titleMenuPointer: Int,
+    bodyData: List<BodyResponseData>?,
+    exerciseData: List<ExerciseData>?
+) {
+    val model = bodyData?.let { bodyModel(it) }
+    val exerciseModel = exerciseData?.let{ exerciseModel(it) }
     Box(
         modifier = Modifier
             .wrapContentHeight()
@@ -141,10 +208,15 @@ fun DataDisplayBox(titleMenuPointer: Int) {
         Crossfade(targetState = titleMenuPointer, label = "깔끔한 이동") { pointer ->
             Column {
                 when (pointer) {
-                    0 -> {
-                        LineChart(listOf("체중", "골격근량", "체지방량"), bodyModel)
+                        0 -> {
+                            model?.let {
+                                LineChart(
+                                    listOf("체중", "골격근량", "체지방량"),
+                                    it
+                                )
+                            }
                         Spacer(modifier = Modifier.height(15.dp))
-                        BodyInfoRow()
+                        BodyInfoRow(bodyData)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Tempor mollit labore eiusmod excepteur mollit adipisicing ullamco adipisicing dolore sunt ut minim dolor qui ipsum esse laboris. Sit voluptate consectetur p",
@@ -155,9 +227,15 @@ fun DataDisplayBox(titleMenuPointer: Int) {
                     }
 
                     1 -> {
-                        LineChart(listOf("걸음수", "소모 칼로리"), activityModel)
+                        exerciseModel?.let {
+                                    LineChart(
+                                        listOf("걸음수", "소모 칼로리"),
+                                    it
+                                )
+                        }
+//                        LineChart(listOf("걸음수", "소모 칼로리"), activityModel)
                         Spacer(modifier = Modifier.height(15.dp))
-                        ActivityInfoRow()
+                        ActivityInfoRow(exerciseData)
                     }
 
                     2 -> {
@@ -171,24 +249,43 @@ fun DataDisplayBox(titleMenuPointer: Int) {
 
     }
 }
-
-@Composable
-fun BodyInfoRow() {
-    Row {
-        InfoColumn("기초 대사량", "1,829 kcal")
-        Spacer(modifier = Modifier.width(17.dp))
-        InfoColumn("bmi 지수", "18 (정상)")
-        Spacer(modifier = Modifier.width(17.dp))
-        InfoColumn("CID 유형", "표준체중 일반형(I자)")
+fun getBmiCategory(bmi: Double): String {
+    return when {
+        bmi < 18.5 -> "저체중"
+        bmi < 24.9 -> "정상"
+        bmi < 29.9 -> "과체중"
+        else -> "비만"
     }
 }
 
 @Composable
-fun ActivityInfoRow() {
+fun BodyInfoRow(bodyData: List<BodyResponseData>?) {
+    val bmiCategory = bodyData?.last()?.let { getBmiCategory(it.bmi) }
+
     Row {
-        InfoColumn("걸음수 평균", "9,283 걸음")
+        if (bodyData != null) {
+            InfoColumn("기초 대사량", "${bodyData.last().bmr}kcal")
+        }
         Spacer(modifier = Modifier.width(17.dp))
-        InfoColumn("소모 칼로리 평균", "482 kcal")
+        if (bodyData != null) {
+            InfoColumn("bmi 지수", "${bodyData.last().bmi} ($bmiCategory)")
+        }
+//        Spacer(modifier = Modifier.width(17.dp))
+//        InfoColumn("CID 유형", "표준체중 일반형(I자)")
+    }
+}
+
+@Composable
+fun ActivityInfoRow(exerciseData: List<ExerciseData>?) {
+    val totalSteps = exerciseData?.fold(0) { sum, data -> sum + data.steps.toInt() }?.toInt() ?: 0
+    val averageSteps = if (!exerciseData.isNullOrEmpty()) totalSteps / exerciseData.size else 0
+
+    val totalCaloriesBurned = exerciseData?.fold(0) {sum,data -> sum + data.caloriesBurned.toInt()}?.toInt() ?: 0
+    val averageCaloriesBurned = if (!exerciseData.isNullOrEmpty()) totalCaloriesBurned / exerciseData.size else 0
+    Row {
+        InfoColumn("걸음수 평균", "${averageSteps}걸음")
+        Spacer(modifier = Modifier.width(17.dp))
+        InfoColumn("소모 칼로리 평균", "${averageCaloriesBurned}kcal")
     }
 }
 
@@ -240,7 +337,6 @@ fun ChartContent(chartColors: List<Color>, model: CartesianChartModel) {
             thickness = 2.5f.dp
         )
     }
-
     CartesianChartHost(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,7 +345,7 @@ fun ChartContent(chartColors: List<Color>, model: CartesianChartModel) {
         chart = rememberCartesianChart(
             rememberLineCartesianLayer(
                 lineSpecs,
-                axisValueOverrider = AxisValueOverrider.fixed(maxY = 4f),
+//                axisValueOverrider = AxisValueOverrider.fixed(maxY = 4f),
             ),
             startAxis = rememberStartAxisWithCustomPlacer()
         ),

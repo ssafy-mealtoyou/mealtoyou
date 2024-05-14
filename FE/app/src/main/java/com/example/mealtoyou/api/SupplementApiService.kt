@@ -11,13 +11,11 @@ import retrofit2.http.POST
 
 
 interface SupplementApiService {
-//    @GET("api/supplement-service/supplements")
-    @GET("supplements")
+    @GET("api/supplement-service/supplements")
     suspend fun getSupplements()
     : Response<List<SupplementResponseData>>
 
-//    @POST("api/supplement-service/supplements")
-    @POST("supplements")
+    @POST("api/supplement-service/supplements")
     suspend fun registerSupplements(
     @Body supplementDataList: List<SupplementRequestData>)
     : Response<String>
