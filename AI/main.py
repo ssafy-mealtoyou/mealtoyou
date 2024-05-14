@@ -1,10 +1,12 @@
-from datetime import date
+from datetime import date, time, datetime
 import pandas as pd
+import pytz
 
 import redis
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends
+from pydantic import BaseModel
 from sqlalchemy import func, and_
 from sqlalchemy.orm import Session
 from database import SessionLocal, Exercise, UserHealth, FoodCombination, User, \
@@ -22,6 +24,10 @@ eureka_server = os.getenv("EUREKA_SERVER",
 instance_host = os.getenv("INSTANCE_HOST", "localhost")
 environment = os.getenv("ENVIRONMENT", "local")  # 기본값을 'local'로 설정
 redis_ip = os.getenv("REDIS", "localhost")
+
+
+class UserIDRequest(BaseModel):
+  user_id: int
 
 
 def get_container_ip():
@@ -74,9 +80,51 @@ async def root():
 
 # 음식 추천 api
 @app.post("/recommendations")
-async def get_recommendations(nutrient_info: NutrientInfo,
+async def get_recommendations(user_id: UserIDRequest,
     db: Session = Depends(get_db)):
-  # nutrient_info = NutrientInfo(calories=600, carbs=82.5, protein=45, fat=10)
+
+  user_data = db.query(User).filter(User.user_id == user_id.user_id).first()
+  goal_weight = user_data.goal_weight
+  current_weight = user_data.weight
+  if (goal_weight is None):
+    goal_weight = current_weight
+  carb_ratio, protein_ratio, fat_ratio = get_nutrient_ratios(current_weight,
+                                                             goal_weight)
+  calories = calculate_calories(user_id.user_id, db)
+  # 한끼 최소 500칼로리
+  if (calories < 500):
+    calories = 500
+  kst = pytz.timezone('Asia/Seoul')
+  current_time = datetime.now(kst).time()
+
+  morning_start = time(6, 0)
+  morning_end = time(11, 30)
+  afternoon_end = time(17, 30)
+  print(5555555555555)
+  print(current_time)
+  print(morning_start)
+  print(morning_end)
+  print(afternoon_end)
+  if morning_start <= current_time <= morning_end:
+    calories = calories // 3
+  elif morning_end < current_time <= afternoon_end:
+    calories = calories // 2
+
+  print("calories: ", calories)
+  if calories is None:
+    return user_id, "Error: Could not calculate calories"
+
+  carbs_calories = calories * carb_ratio
+  protein_calories = calories * protein_ratio
+  fat_calories = calories * fat_ratio
+
+  carbs = round(carbs_calories / 4, 2)
+  proteins = round(protein_calories / 4, 2)
+  fats = round(fat_calories / 9, 2)
+
+  nutrient_info = NutrientInfo(calories=calories, carbs=carbs, protein=proteins,
+                           fat=fats)
+
 
   sum_nutrient = nutrient_info.calories + nutrient_info.carbs + nutrient_info.protein + nutrient_info.fat
   # 먼저 RDB에서 내가 원하는 목표값과 비슷한 조합이 있는지 확인
@@ -88,8 +136,8 @@ async def get_recommendations(nutrient_info: NutrientInfo,
 
   for combination in combinations:
     # 모든 조합이 이미 추천된 경우 새로운 조합 생성
-    if not is_diet_recommended(user_id=1, diet_id=combination.id):
-      store_diet(user_id=1, diet_id=combination.id)
+    if not is_diet_recommended(user_id=user_id, diet_id=combination.id):
+      store_diet(user_id=user_id, diet_id=combination.id)
       total = combination.carbs_ratio * sum_nutrient + combination.protein_ratio * sum_nutrient + combination.fat_ratio * sum_nutrient
       print(combination.food_names)
       dietFoods = []
@@ -122,15 +170,22 @@ async def get_recommendations(nutrient_info: NutrientInfo,
         food['carbohydrate'] *= calorieRatio
         food['protein'] *= calorieRatio
         food['fat'] *= calorieRatio
-        print(food)
+
+      carbs_calories = combination.carbs_ratio * sum_nutrient * 4
+      protein_calories = combination.protein_ratio * sum_nutrient * 4
+      fat_calories = combination.fat_ratio * sum_nutrient * 9
+
+      total_calories = carbs_calories + protein_calories + fat_calories
+
+      carbohydratePer = int(carbs_calories / total_calories * 100)
+      proteinPer = int(protein_calories / total_calories * 100)
+      fatPer = int(fat_calories / total_calories * 100)
       return {
         "dietId": combination.id,
         "totalCalories": int(combination.total_calories_ratio * sum_nutrient),
-        "carbohydratePer": int(
-            combination.carbs_ratio * sum_nutrient / total * 100),
-        "proteinPer": int(
-            combination.protein_ratio * sum_nutrient / total * 100),
-        "fatPer": int(combination.fat_ratio * sum_nutrient / total * 100),
+        "carbohydratePer": carbohydratePer,
+        "proteinPer": proteinPer,
+        "fatPer": fatPer,
         'dietFoods': dietFoods
       }
   else:
@@ -267,14 +322,6 @@ def process_user(user, split_factor):
 
 # 스케줄러 인스턴스 생성 및 작업 추가
 scheduler = BackgroundScheduler()
-scheduler.add_job(scheduled_recommendation, 'cron', hour=13, minute=12,
-                  args=[3])  # 아침에 3으로 나눔
-scheduler.add_job(scheduled_recommendation, 'cron', hour=10, minute=37,
-                  args=[3])  # 아침에 3으로 나눔
-scheduler.add_job(scheduled_recommendation, 'cron', hour=10, minute=38,
-                  args=[3])  # 아침에 3으로 나눔
-scheduler.add_job(scheduled_recommendation, 'cron', hour=10, minute=39,
-                  args=[3])  # 아침에 3으로 나눔
 
 scheduler.add_job(scheduled_recommendation, 'cron', hour=6, minute=30,
                   args=[3])  # 아침에 3으로 나눔
