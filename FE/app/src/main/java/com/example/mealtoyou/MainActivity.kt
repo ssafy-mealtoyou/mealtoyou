@@ -131,7 +131,9 @@ class MainActivity : ComponentActivity() {
             }
 
         }
-//        sendFcmToken()
+        if(MainApplication.prefs.getValue("accessToken").isNotEmpty()){
+            sendFcmToken()
+        }
         setupPeriodicWork()
     }
 
