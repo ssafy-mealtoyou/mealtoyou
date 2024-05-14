@@ -11,4 +11,5 @@ apscheduler
 py-eureka-client
 python-dotenv
 mysql-connector-python
-openai
+openai==0.28.0
+request
