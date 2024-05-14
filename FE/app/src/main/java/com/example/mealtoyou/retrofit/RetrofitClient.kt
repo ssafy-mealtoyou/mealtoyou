@@ -18,7 +18,6 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
 import com.example.mealtoyou.auth.LoggingInterceptor
-import com.example.mealtoyou.handler.LocalTimeAdapter
 import com.example.mealtoyou.ui.theme.group.ChatApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

@@ -6,14 +6,15 @@ from pydantic import BaseModel
 from scipy.optimize import differential_evolution
 from database import SessionLocal, FoodCombination
 from config import Config
+import os
 
 
 # openai API 키 인증
 openai.api_key = Config.OPENAI_API_KEY
 model = "gpt-3.5-turbo"
-
+redis_ip = os.getenv("REDIS", "localhost")
 # Redis 클라이언트 인스턴스 생성
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_client = redis.StrictRedis(host=redis_ip, port=6379, db=0)
 PERIOD = 60 * 60 * 24 * 3  # 3일간 캐싱
 
 # 기본 역할 설정
