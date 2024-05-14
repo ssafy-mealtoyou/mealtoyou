@@ -1,6 +1,6 @@
 package com.mealtoyou.supplementservice.domain.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -23,7 +23,7 @@ public class Supplement {
 	private String name;
 
 	@Column("alert_time")
-	private LocalDateTime alertTime;
+	private LocalTime alertTime;
 
 	@Column("taken_yn")
 	private Boolean takenYn;
