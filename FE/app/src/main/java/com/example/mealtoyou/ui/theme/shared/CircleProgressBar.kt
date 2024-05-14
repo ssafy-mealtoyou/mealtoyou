@@ -21,8 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.ui.theme.Pretend
 
 @Composable
-fun CircleProgressBar(value:Float, size: Dp) {
-    val progress = remember { mutableFloatStateOf(value) }  // 초기 진행 상태는 30%
+fun CircleProgressBar(value:Float, size: Dp, text: String) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
         CircularProgressIndicator(
             progress = {
@@ -34,13 +33,13 @@ fun CircleProgressBar(value:Float, size: Dp) {
         )
         CircularProgressIndicator(
             progress = {
-                progress.floatValue
+                value
             },
             modifier = Modifier.fillMaxSize(),
             color = Color(0xFF6D31ED),
             strokeWidth = 6.dp,
         )
-        Text(text = "72KG",
+        Text(text = text,
             fontWeight = FontWeight.SemiBold,
             fontFamily = Pretend,
             lineHeight = 30.sp,
