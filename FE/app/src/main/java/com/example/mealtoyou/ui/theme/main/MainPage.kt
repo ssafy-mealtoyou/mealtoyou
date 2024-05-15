@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.main
 
+import SupplementViewModel
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,20 +14,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.ui.theme.main.feedback.MyFeedBack
 import com.example.mealtoyou.ui.theme.main.food.DateLabel
 import com.example.mealtoyou.ui.theme.main.report.MyTodayReport
 import com.example.mealtoyou.ui.theme.main.stage.MyStage
 import com.example.mealtoyou.ui.theme.shared.DietBox
 import com.example.mealtoyou.ui.theme.shared.MainBar
+import com.example.mealtoyou.viewmodel.UserViewModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainPage() {
+fun MainPage(supplementViewModel: SupplementViewModel, userViewModel: UserViewModel = viewModel()) {
+//    val viewModel: SupplementViewModel = viewModel() // Assuming viewModel() is provided by the Compose framework or DI
+
+    LaunchedEffect(true) {
+        userViewModel.updateUserHome()
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
@@ -59,7 +69,7 @@ fun MainPage() {
                     }
                     Spacer(modifier = Modifier.height(18.dp))
                     MyTodayReport()
-                    MyStage()
+                    MyStage(supplementViewModel)
                     MyFeedBack()
                 }
             }

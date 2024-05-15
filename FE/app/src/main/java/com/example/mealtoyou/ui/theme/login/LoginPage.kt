@@ -13,11 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.data.model.request.LoginReqDto
 import com.example.mealtoyou.data.repository.AuthRepository
+import com.example.mealtoyou.handler.FcmEventHandler
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +47,17 @@ fun LoginPage(navController: NavHostController, googleSignInClient: GoogleSignIn
                             if (loginSuccess) {
                                 // 로그인 성공 처리
                                 Log.d("Login", "로그인 성공")
+                                Log.d("Login accessToken",MainApplication.prefs.getValue("accessToken"))
+                                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                    if (!task.isSuccessful) {
+                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                        return@addOnCompleteListener
+                                    }
+                                    val token = task.result
+                                    Log.d("FCM", "FCM Token: $token")
+
+                                    FcmEventHandler().sendFcmToken(token)
+                                }
                                 navController.navigate("mainPage") {
                                     popUpTo("login") {
                                         inclusive = true

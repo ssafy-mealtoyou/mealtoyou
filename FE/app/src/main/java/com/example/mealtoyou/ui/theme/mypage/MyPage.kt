@@ -1,13 +1,11 @@
 package com.example.mealtoyou.ui.theme.group
 
+import SupplementViewModel
 import android.widget.NumberPicker
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,16 +63,15 @@ import com.example.mealtoyou.ui.theme.main.stage.DrugInfo
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
+import com.example.mealtoyou.viewmodel.HealthViewModel
 import java.time.LocalTime
-import java.time.format.DateTimeParseException
 
 @Composable
-fun MyPage() {
+fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
     val healthEventHandlerState = remember { mutableStateOf<HealthEventHandler?>(null) }
-
     LaunchedEffect(Unit) {
         try {
             val healthConnectClient = HealthConnectClient.getOrCreate(context)
@@ -128,6 +126,7 @@ fun MyPage() {
                             .background(Color.White)
                             .padding(14.dp)
                     ) {
+                        val healthData by healthViewModel._bodyResult.collectAsState()
                         Column {
                             Text(
                                 text = "나의 체성분 정보",
@@ -146,7 +145,7 @@ fun MyPage() {
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "32kg",
+                                    text = "${healthData?.skeletalMuscle ?: 0}kg",
                                     color = Color(0xff171A1F),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -160,7 +159,7 @@ fun MyPage() {
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "22kg",
+                                    text = "${healthData?.bodyFat ?: 0}kg",
                                     color = Color(0xff171A1F),
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.SemiBold
@@ -197,7 +196,7 @@ fun MyPage() {
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Button(
-                                    onClick = {healthEventHandlerState.value?.readHealthData()},
+                                    onClick = {healthEventHandlerState.value?.readHealthData(healthViewModel)},
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(
@@ -252,7 +251,7 @@ fun MyPage() {
                     Challenge(Modifier.weight(9f), Color(0xFFF5F1FE), true)
 
                     Spacer(Modifier.weight(1f))
-                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true)
+                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true,supplementViewModel)
                 }
             }
 
