@@ -148,6 +148,7 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
 
   bounds = [(0, len(category_data[cat]) - 1) for cat in active_categories]
 
+  recommendations = []
   attempt = 0
   while attempt < max_attempts:
     result = differential_evolution(objective, bounds, args=(category_data, target, total, active_categories), strategy='best1bin', maxiter=2000, popsize=15, tol=0.1, mutation=(0.5, 1), recombination=0.7)
@@ -198,7 +199,7 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
         diet_id = store_food_data(selected_foods, scaled_total_nutrients[0], scaled_total_nutrients[1], scaled_total_nutrients[2], scaled_total_nutrients[3])
         # store_food_data(selected_foods,scaled_total_nutrients[0],scaled_total_nutrients[1],scaled_total_nutrients[2],scaled_total_nutrients[3])
 
-        return {
+        recommendation = {
           "dietId": diet_id,
           "totalCalories": int(scaled_total_nutrients[0]),
           "carbohydratePer": int(scaled_total_nutrients[1] / scaled_total_nutrients[0] * 100),
@@ -206,6 +207,8 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
           "fatPer": int(scaled_total_nutrients[3] / scaled_total_nutrients[0] * 100),
           'dietFoods': dietFoods
         }
+        recommendations.append(recommendation)
+        return recommendations
       #FoodRecommendations(selected_foods=selected_foods, total_nutrients=scaled_total_nutrients)
       else:
         print("Combination not suitable, retrying...")
