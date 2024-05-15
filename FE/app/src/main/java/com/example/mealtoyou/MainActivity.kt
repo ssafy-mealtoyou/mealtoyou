@@ -250,7 +250,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(supplementViewModel, healthViewModel)
+                        MyPage(supplementViewModel, healthViewModel,navController)
                     }
                     composable("chat") {
                         ChatScreen()

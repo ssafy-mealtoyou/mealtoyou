@@ -8,12 +8,12 @@ import retrofit2.http.GET
 import retrofit2.http.PUT
 
 interface UserApiService {
-    @PUT("api/user-service/api/users/weight")
+    @PUT("api/user-service/users/weight")
     fun putUserWeight(@Body weight: Map<String, String>): Call<Void>
 
     @PUT("api/user-service/users/intermittent")
     fun putUserIntermittent(@Body weight: Map<String, String>): Call<Void>
 
-    @GET("api/user-service/api/users/health")
+    @GET("api/user-service/users/health")
     suspend fun getUserHealth(): Response<UserHealthResDto>
 }

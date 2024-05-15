@@ -55,12 +55,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.R
 import com.example.mealtoyou.data.model.response.UserHealthResDto
 import com.example.mealtoyou.handler.HealthEventHandler
@@ -80,7 +83,11 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
+fun MyPage(
+    supplementViewModel: SupplementViewModel,
+    healthViewModel: HealthViewModel,
+    navController: NavHostController
+) {
     val userHealthViewModel: UserHealthViewModel = viewModel()
     val userHealthInfo by userHealthViewModel._userHealthResult.collectAsState()
     val context = LocalContext.current
@@ -280,6 +287,37 @@ fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthView
 
                     Spacer(Modifier.weight(1f))
                     DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true,supplementViewModel)
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
+                ) {
+                    Text(
+                        text = "로그아웃",
+                        fontFamily = Pretend,
+                        color = Color(0xFF6D31ED),
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .clickable {
+                                MainApplication.prefs.removeValue("accessToken")
+                                MainApplication.prefs.removeValue("refreshToken")
+                                MainApplication.prefs.removeValue("userId")
+
+                                // NavController를 사용하여 메인 화면으로 이동
+                                // 이 예제에서는 navController가 이미 설정되어 있고, 사용 가능하다고 가정합니다.
+                                navController.navigate("mainPage") {
+                                    popUpTo("login") {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true // 이미 현재 대상이면 새 인스턴스를 생성하지 않음
+                                    restoreState = true // 이전 상태 복원 옵션
+                                }
+                            }
+                            .height(36.dp)
+                            .width(158.dp)
+                            .padding(vertical = 8.dp),
+                    )
                 }
             }
 
@@ -490,8 +528,8 @@ fun StopEatEdit(
                 Log.d("시작끝", endHour.toString())
                 UserEventHandler().sendUserIntermittent(
                     isFastingEnabled.value.toString(),
-                    "$hour:$minute",
-                    "$endHour:$minute"
+                    String.format("%02d:%02d",hour,minute),
+                    String.format("%02d:%02d",endHour,minute)
                 )
                 userHealthViewModel.viewModelScope.launch {
                     userHealthViewModel.refreshUserHealth()
@@ -627,8 +665,9 @@ fun StopEatTimer(
     var startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
     var endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
     var currentTime = LocalTime.now().toSecondOfDay()
+    Log.d("남은시간",userHealthInfo.intermittentYn.toString())
     // LaunchedEffect를 사용하여 타이머 로직을 구현합니다.
-    LaunchedEffect(key1 = true) {
+    LaunchedEffect(key1 = userHealthInfo.intermittentYn) {
         if (userHealthInfo.intermittentYn) {
             // 종료 시간이 시작 시간보다 작은 경우, 즉 자정을 넘어가는 경우
             val adjustedEndTime = if (endTime <= startTime) endTime + 24 * 3600 else endTime
@@ -637,9 +676,9 @@ fun StopEatTimer(
 
             // 종료 시간까지 남은 시간 계산
             var remaining = adjustedEndTime - adjustedCurrentTime
-
+            Log.d("단식 남은 시간",remaining.toString())
             // 남은 시간이 양수인 경우
-            if (remaining > 0) {
+            if (endTime!=startTime && remaining > 0) {
                 remainingSeconds = remaining
             }
         }
