@@ -198,7 +198,8 @@ public class AIFeedbackService {
 				String userInfoMessage = String.format(
 					"나이: %d, 성별: %s, 체중: %.0fkg, 키: %.0fcm, BMI: %.1f, 기초 대사량: %.1fkcal",
 					resultDto.getAge(), resultDto.getGender(), resultDto.getWeight(), resultDto.getHeight(), resultDto.getBmi(), resultDto.getBmr());
-				String requestFeedback = "지난 주 식단에 대한 분석과 이번 주 식단 조정에 대한 피드백을 1~2문장으로 제공해줘, 그리고 이 내용에 대한 제목을 두 단어로 만들어 주고 json 형식으로 제목과 내용을 줘";
+				String requestFeedback = "지난 주 식단에 대한 분석과 이번 주 식단 조정에 대한 피드백을 간단한 제목과 내용을 줘 "
+					+ "제목은 3단어 내외이고, 내용은 2~3문장으로, 예시는 다음과 같아 {\"title\": \"탄수화물 과다\", \"content\": \"내용 예시\"}";
 
 
 				ArrayList<ChatGPTRequest.ChatGptMessage> messages = new ArrayList<>(
