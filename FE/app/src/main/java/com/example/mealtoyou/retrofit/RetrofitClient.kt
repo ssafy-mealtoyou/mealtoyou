@@ -121,7 +121,7 @@ object RetrofitClient {
 
     val userInstance: UserApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$LOCAL_HOST:8082")
+            .baseUrl("$BASE_URL")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
