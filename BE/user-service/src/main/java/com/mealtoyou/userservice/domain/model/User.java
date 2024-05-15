@@ -57,6 +57,10 @@ public class User {
 
 	private String role;
 
+	private Double goalStartWeight;
+
+	private LocalDate goalStartDate;
+
     public void updateUserInfo(UserInfoRequestDto u,String imageUrl) {
         this.nickname = u.nickname();
         this.gender = u.gender();
@@ -91,6 +95,8 @@ public class User {
 	}
 
 	public void updateWeight(Integer weight) {
+		this.goalStartWeight = this.weight;
+		this.goalStartDate = LocalDate.now();
 		this.weight = weight;
 	}
 

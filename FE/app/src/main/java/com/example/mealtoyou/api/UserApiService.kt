@@ -5,7 +5,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface UserApiService {
-    @GET("/api/users/home")
+    @GET("api/user-service/users/home")
     suspend fun getUserHomeSummary() : Response<UserHomeResponse>
 
 }
