@@ -133,6 +133,7 @@ async def get_recommendations(user_id: UserIDRequest,
           nutrient_info.carbs / sum_nutrient,
           nutrient_info.protein / sum_nutrient, nutrient_info.fat / sum_nutrient
   )
+  recommendations = []
 
   for combination in combinations:
     # 모든 조합이 이미 추천된 경우 새로운 조합 생성
@@ -180,7 +181,8 @@ async def get_recommendations(user_id: UserIDRequest,
       carbohydratePer = int(carbs_calories / total_calories * 100)
       proteinPer = int(protein_calories / total_calories * 100)
       fatPer = int(fat_calories / total_calories * 100)
-      return {
+
+      recommendation = {
         "dietId": combination.id,
         "totalCalories": int(combination.total_calories_ratio * sum_nutrient),
         "carbohydratePer": carbohydratePer,
@@ -188,6 +190,9 @@ async def get_recommendations(user_id: UserIDRequest,
         "fatPer": fatPer,
         'dietFoods': dietFoods
       }
+      recommendations.append(recommendation)
+
+      return recommendations
   else:
     # 기존 조합이 없는 경우 새로운 조합 생성
     return get_food_recommendations(nutrient_info)
