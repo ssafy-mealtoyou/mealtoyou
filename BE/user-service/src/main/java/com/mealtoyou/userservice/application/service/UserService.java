@@ -29,10 +29,12 @@ import com.mealtoyou.userservice.domain.repository.UserRepository;
 import com.mealtoyou.userservice.infrastructure.kafka.KafkaMonoUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 	private final ObjectMapper objectMapper;
 	private final UserRepository userRepository;
@@ -225,22 +227,24 @@ public class UserService {
 				if (steps == null)
 					steps = 0L;
 
-				int activityPer = (int)((steps / 8000) * 100);
-				int dietPer = calcNutrientsPer(bmr, 1.0, dietsResponseDto.dailyCaloriesBurned(), 1);
-				int carbohydratePer = calcNutrientsPer(bmr, 0.5, dietsResponseDto.dailyCarbohydrateTaked(), 4);
-				int proteinPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 4);
-				int fatPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 9);
+				int activityPer = Math.min(100, (int)((steps / 8000) * 100));
+				int dietPer = Math.min(100, (int)((dietsResponseDto.diets().size() / 3.0) * 100.0));
+				int caloriesPer = Math.min(100, calcNutrientsPer(bmr, 1.0, dietsResponseDto.dailyCaloriesBurned(), 1));
+				// int carbohydratePer = calcNutrientsPer(bmr, 0.5, dietsResponseDto.dailyCarbohydrateTaked(), 4);
+				// int proteinPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 4);
+				// int fatPer = calcNutrientsPer(bmr, 0.25, dietsResponseDto.dailyCarbohydrateTaked(), 9);
 
 				return UserHomeResponseDto.builder()
 					.daySummary(UserHomeResponseDto.DaySummary.builder()
 						.activityPer(activityPer)
 						.dietPer(dietPer)
-						.carbohydratePer(carbohydratePer)
-						.proteinPer(proteinPer)
-						.fatPer(fatPer)
+						.caloriesPer(caloriesPer)
 						.build())
 					.goalWeight(user.getGoalWeight())
 					.goalEndDate(user.getGoalEndDate())
+					.goalStartDate(user.getGoalStartDate())
+					.goalStartWeight(user.getGoalStartWeight())
+					.currentWeight(user.getWeight())
 					.build();
 			});
 	}
