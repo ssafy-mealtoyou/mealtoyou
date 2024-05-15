@@ -35,7 +35,7 @@ import com.example.mealtoyou.handler.HealthEventHandler
 import com.example.mealtoyou.ui.theme.diet.DietPage
 import com.example.mealtoyou.ui.theme.group.ChatScreen
 import com.example.mealtoyou.ui.theme.group.GroupPage
-import com.example.mealtoyou.ui.theme.group.MyPage
+import com.example.mealtoyou.ui.theme.mypage.MyPage
 import com.example.mealtoyou.ui.theme.login.LoginPage
 import com.example.mealtoyou.ui.theme.main.MainPage
 import com.example.mealtoyou.ui.theme.report.ReportPage
@@ -48,11 +48,8 @@ import androidx.compose.ui.unit.sp
 import android.util.Log
 
 import androidx.activity.viewModels
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.example.mealtoyou.viewmodel.HealthViewModel
-import com.example.mealtoyou.data.repository.PreferenceUtil
-import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -168,7 +165,7 @@ class MainActivity : ComponentActivity() {
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
         val targetTime = LocalTime.of(
-            if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour,
+            if (currentTime.minute >= 50) (currentTime.hour + 1)%24 else currentTime.hour,
             50
         )
         val delay = Duration.between(currentTime, targetTime).toMinutes().coerceAtLeast(0L)

@@ -1,6 +1,8 @@
-package com.example.mealtoyou.ui.theme.group
+package com.example.mealtoyou.ui.theme.mypage
 
 import SupplementViewModel
+import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.NumberPicker
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -26,6 +28,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,8 +59,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.health.connect.client.HealthConnectClient
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.model.response.UserHealthResDto
 import com.example.mealtoyou.handler.HealthEventHandler
+import com.example.mealtoyou.handler.UserEventHandler
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.main.stage.Challenge
 import com.example.mealtoyou.ui.theme.main.stage.DrugInfo
@@ -64,10 +72,17 @@ import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.MainBar
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
 import com.example.mealtoyou.viewmodel.HealthViewModel
+import com.example.mealtoyou.viewmodel.UserHealthViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalTime
+import java.util.concurrent.TimeUnit
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthViewModel) {
+    val userHealthViewModel: UserHealthViewModel = viewModel()
+    val userHealthInfo by userHealthViewModel._userHealthResult.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
@@ -236,10 +251,23 @@ fun MyPage(supplementViewModel: SupplementViewModel, healthViewModel: HealthView
                         .padding(end = 20.dp)
                         .padding(bottom = 20.dp)
                 ) {
-                    StopEatTimer(Modifier.weight(9f), Color(0xFFF1FDE9), true)
+                    if (userHealthInfo != null) {
+                        StopEatTimer(
+                            Modifier.weight(9f),
+                            Color(0xFFF1FDE9),
+                            true,
+                            userHealthInfo!!,
+                            userHealthViewModel
+                        )
+                    }
 
                     Spacer(Modifier.weight(1f))
-                    EditWeight(Modifier.weight(9f), Color(0xFFFFFAE1), true)
+                    if (userHealthInfo != null) {
+                        EditWeight(
+                            Modifier.weight(9f), Color(0xFFFFFAE1), true,
+                            userHealthInfo!!, userHealthViewModel
+                        )
+                    }
                 }
                 Row(
                     modifier = Modifier
@@ -296,8 +324,8 @@ private fun CustomTextField() {
 }
 
 @Composable
-private fun NumberTextField() {
-    val text = remember { mutableStateOf("") }
+private fun NumberTextField(text: String, onValueChange: (String) -> Unit) {
+//    val text = remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val textStyle = TextStyle(
         color = Color(0xFF171A1F),
@@ -307,8 +335,8 @@ private fun NumberTextField() {
     )
 
     BasicTextField(
-        value = text.value,
-        onValueChange = { newText -> text.value = newText },
+        value = text,
+        onValueChange = onValueChange,
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth()
@@ -344,14 +372,22 @@ private fun NumberTextField() {
 
 
 @Composable
-fun AddWeight() {
+fun AddWeight(onAddSheetChange: (Boolean) -> Unit, userHealthViewModel: UserHealthViewModel) {
+    val weight = remember { mutableStateOf("") }
+
     Column {
         Text("체중등록", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xff171A1F))
         Spacer(modifier = Modifier.height(16.dp))
-        NumberTextField()
+        NumberTextField(text = weight.value, onValueChange = { newText -> weight.value = newText })
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { },
+            onClick = {
+                onAddSheetChange(false)
+                UserEventHandler().sendUserWeight(weight.value)
+                userHealthViewModel.viewModelScope.launch {
+                    userHealthViewModel.refreshUserHealth()
+                }
+            },
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(
@@ -380,11 +416,11 @@ fun AddDetailWeight() {
         Spacer(modifier = Modifier.height(16.dp))
         Text("골격근량", fontSize = 12.sp, color = Color(0xff9095A1))
         Spacer(modifier = Modifier.height(7.dp))
-        NumberTextField()
+//        NumberTextField()
         Spacer(modifier = Modifier.height(16.dp))
         Text("체지방량", fontSize = 12.sp, color = Color(0xff9095A1))
         Spacer(modifier = Modifier.height(7.dp))
-        NumberTextField()
+//        NumberTextField()
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { },
@@ -411,17 +447,34 @@ fun AddDetailWeight() {
 
 
 @Composable
-fun StopEatEdit() {
+fun StopEatEdit(
+    userHealthInfo: UserHealthResDto,
+    onAddSheetChange: (Boolean) -> Unit,
+    userHealthViewModel: UserHealthViewModel
+) {
     var hour by remember { mutableStateOf(LocalTime.now().hour) }
     var minute by remember { mutableStateOf(LocalTime.now().minute) }
-    val fastingHours = remember { mutableStateOf("") }
+    val fastingHours = remember { mutableStateOf("0") }
     val onTimeChanged = { newHour: Int, newMinute: Int ->
         hour = newHour
         minute = newMinute
     }
+    val isFastingEnabled = remember { mutableStateOf(userHealthInfo.intermittentYn) }
 
     Column {
-        Text("단식 설정", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xff171A1F))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("단식 설정", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xff171A1F))
+            Spacer(modifier = Modifier.width(8.dp)) // 텍스트와 스위치 사이의 공간
+            // 슬라이더 (Switch)
+            Switch(
+                checked = isFastingEnabled.value,
+                onCheckedChange = { isFastingEnabled.value = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF6D31ED),
+                    uncheckedThumbColor = Color(0xFFBDBDBD)
+                )
+            )
+        }
         Spacer(modifier = Modifier.height(30.dp))
         Text("시작 시간 설정", fontSize = 12.sp, color = Color(0xff9095A1))
         TimePicker(hour, minute, onTimeChanged)
@@ -429,7 +482,21 @@ fun StopEatEdit() {
         FastingHoursInput(fastingHours)
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { /* Handle save */ },
+            onClick = {
+                onAddSheetChange(false)
+                val endHour = (hour + fastingHours.value.toInt()) % 24
+                Log.d("switch 상태", isFastingEnabled.value.toString())
+                Log.d("시간", "$endHour:$minute")
+                Log.d("시작끝", endHour.toString())
+                UserEventHandler().sendUserIntermittent(
+                    isFastingEnabled.value.toString(),
+                    "$hour:$minute",
+                    "$endHour:$minute"
+                )
+                userHealthViewModel.viewModelScope.launch {
+                    userHealthViewModel.refreshUserHealth()
+                }
+            },
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
@@ -546,8 +613,47 @@ fun TimePicker(selectedHour: Int, selectedMinute: Int, onTimeChanged: (Int, Int)
 }
 
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun StopEatTimer(modifier: Modifier, color: Color, setupAble: Boolean) {
+fun StopEatTimer(
+    modifier: Modifier,
+    color: Color,
+    setupAble: Boolean,
+    userHealthInfo: UserHealthResDto,
+    userHealthViewModel: UserHealthViewModel
+) {
+
+    var remainingSeconds by remember { mutableStateOf(0) }
+    var startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
+    var endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
+    var currentTime = LocalTime.now().toSecondOfDay()
+    // LaunchedEffect를 사용하여 타이머 로직을 구현합니다.
+    LaunchedEffect(key1 = true) {
+        if (userHealthInfo.intermittentYn) {
+            // 종료 시간이 시작 시간보다 작은 경우, 즉 자정을 넘어가는 경우
+            val adjustedEndTime = if (endTime <= startTime) endTime + 24 * 3600 else endTime
+            val adjustedCurrentTime =
+                if (currentTime < startTime) currentTime + 24 * 3600 else currentTime
+
+            // 종료 시간까지 남은 시간 계산
+            var remaining = adjustedEndTime - adjustedCurrentTime
+
+            // 남은 시간이 양수인 경우
+            if (remaining > 0) {
+                remainingSeconds = remaining
+            }
+        }
+
+        while (remainingSeconds > 0) {
+            delay(1000) // 1초 기다립니다.
+            remainingSeconds-- // 남은 시간을 1초 줄입니다.
+        }
+    }
+    // 시간을 HH:MM:SS 형식으로 변환합니다.
+    val hours = TimeUnit.SECONDS.toHours(remainingSeconds.toLong())
+    val minutes = TimeUnit.SECONDS.toMinutes(remainingSeconds.toLong()) % 60
+    val seconds = remainingSeconds % 60
+    val timeText = String.format("%02d:%02d:%02d", hours, minutes, seconds)
     Box(
         modifier = modifier
             .height(165.dp)
@@ -575,8 +681,13 @@ fun StopEatTimer(modifier: Modifier, color: Color, setupAble: Boolean) {
                     var addSheet by remember {
                         mutableStateOf(false)
                     }
+                    val onAddSheetChange = { value: Boolean ->
+                        addSheet = value
+                    }
                     if (addSheet) {
-                        BottomSheet(closeSheet = { addSheet = false }, { StopEatEdit() })
+                        BottomSheet(
+                            closeSheet = { addSheet = false },
+                            { StopEatEdit(userHealthInfo, onAddSheetChange, userHealthViewModel) })
                     }
                     Image(
                         painter = painterResource(id = R.drawable.gear),
@@ -591,7 +702,7 @@ fun StopEatTimer(modifier: Modifier, color: Color, setupAble: Boolean) {
             Row {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "14:41:10",
+                    text = timeText,
                     color = Color(0xFF37750C),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 32.sp
@@ -602,20 +713,50 @@ fun StopEatTimer(modifier: Modifier, color: Color, setupAble: Boolean) {
             Row {
                 Text(text = "시작 시간", color = Color(0xff9095A1), fontSize = 12.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "20:00", color = Color(0xff171A1F), fontSize = 12.sp)
+                Text(
+                    text = if (userHealthInfo.intermittentYn) {
+                        userHealthInfo.intermittentStartTime.split(":").take(2)
+                            .joinToString(":")
+                    } else "00:00", color = Color(0xff171A1F), fontSize = 12.sp
+                )
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row {
                 Text(text = "단식 시간", color = Color(0xff9095A1), fontSize = 12.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "16시간", color = Color(0xff171A1F), fontSize = 12.sp)
+                Text(
+                    text = if (userHealthInfo.intermittentYn) {
+                        calculate(
+                            userHealthInfo.intermittentStartTime,
+                            userHealthInfo.intermittentEndTime
+                        )
+                    } else "0 시간", color = Color(0xff171A1F), fontSize = 12.sp
+                )
             }
         }
     }
 }
 
+fun calculate(start: String, end: String): String {
+    val startHour = start.split(":")[0].toInt()
+    val endHour = end.split(":")[0].toInt()
+    val difference = if (endHour >= startHour) {
+        endHour - startHour
+    } else {
+        (24 - startHour) + endHour
+    }
+
+    return "$difference 시간"
+}
+
 @Composable
-fun EditWeight(modifier: Modifier, color: Color, setupAble: Boolean) {
+fun EditWeight(
+    modifier: Modifier,
+    color: Color,
+    setupAble: Boolean,
+    userHealthInfo: UserHealthResDto,
+    userHealthViewModel: UserHealthViewModel
+) {
     Box(
         modifier = modifier
             .height(165.dp)
@@ -633,8 +774,13 @@ fun EditWeight(modifier: Modifier, color: Color, setupAble: Boolean) {
                 var addSheet by remember {
                     mutableStateOf(false)
                 }
+                val onAddSheetChange = { value: Boolean ->
+                    addSheet = value
+                }
                 if (addSheet) {
-                    BottomSheet(closeSheet = { addSheet = false }, { AddWeight() })
+                    BottomSheet(
+                        closeSheet = { addSheet = false },
+                        { AddWeight(onAddSheetChange, userHealthViewModel) })
                 }
                 Text(
                     text = "체중 등록",
@@ -659,7 +805,7 @@ fun EditWeight(modifier: Modifier, color: Color, setupAble: Boolean) {
             Row {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "70Kg",
+                    text = "${userHealthInfo.weight}Kg",
                     color = Color(0xFF9C7F00),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 32.sp
@@ -670,13 +816,21 @@ fun EditWeight(modifier: Modifier, color: Color, setupAble: Boolean) {
             Row {
                 Text(text = "저번달 몸무게", color = Color(0xff9095A1), fontSize = 12.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "68kg", color = Color(0xff171A1F), fontSize = 12.sp)
+                Text(
+                    text = "${userHealthInfo.weightLastMonth}kg",
+                    color = Color(0xff171A1F),
+                    fontSize = 12.sp
+                )
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row {
                 Text(text = "올해 평균", color = Color(0xff9095A1), fontSize = 12.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(text = "72kg", color = Color(0xff171A1F), fontSize = 12.sp)
+                Text(
+                    text = "${userHealthInfo.weightThisYear}kg",
+                    color = Color(0xff171A1F),
+                    fontSize = 12.sp
+                )
             }
         }
     }

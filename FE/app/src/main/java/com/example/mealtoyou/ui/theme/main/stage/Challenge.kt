@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
-import com.example.mealtoyou.ui.theme.group.StopEatEdit
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.CircleProgressBar
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar

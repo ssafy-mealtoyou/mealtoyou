@@ -9,6 +9,7 @@ import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
 
 import com.example.mealtoyou.api.SupplementApiService
+import com.example.mealtoyou.api.UserApiService
 
 import com.example.mealtoyou.auth.AuthInterceptor
 
@@ -49,7 +50,7 @@ object RetrofitClient {
 
     val healthInstance: HealthApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8083/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -57,8 +58,8 @@ object RetrofitClient {
         retrofit.create(HealthApiService::class.java)
     }
 
-    val foodSearchInstance: FoodSearchApiService by lazy{
-        val retrofit=Retrofit.Builder()
+    val foodSearchInstance: FoodSearchApiService by lazy {
+        val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
@@ -66,8 +67,8 @@ object RetrofitClient {
         retrofit.create(FoodSearchApiService::class.java)
     }
 
-    val fcmInstance: FcmApiService by lazy{
-        val retrofit=Retrofit.Builder()
+    val fcmInstance: FcmApiService by lazy {
+        val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
@@ -88,7 +89,7 @@ object RetrofitClient {
 
     val supplementInstance: SupplementApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://70.12.247.142:8086/")
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
@@ -114,5 +115,14 @@ object RetrofitClient {
 
         retrofit.create(CommunityApiService::class.java)
 
+    }
+
+    val userInstance: UserApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+        retrofit.create(UserApiService::class.java)
     }
 }
