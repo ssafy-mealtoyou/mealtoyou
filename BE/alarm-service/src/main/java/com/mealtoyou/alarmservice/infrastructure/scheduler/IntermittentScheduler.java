@@ -29,7 +29,7 @@ public class IntermittentScheduler {
 
 	@Scheduled(cron = "0 * * * * *")
 	private void noticeIntermittentEnd() {
-		schedulerService.noticeIntermittentStart()
+		schedulerService.noticeIntermittentEnd()
 			.collectList()
 			.flatMapMany(tokens -> Flux.fromIterable(tokens)
 				.flatMap(token -> fcmService.sendMessageByToken("MealToYou 단식알림", "단식 시작 시간입니다", token)))
