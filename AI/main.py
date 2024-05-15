@@ -148,10 +148,10 @@ async def get_recommendations(user_id: UserIDRequest,
         dietFood = {
           'name': food_info['식품명'],
           'imageUrl': '',  # 실제 이미지 URL이 필요
-          'calories': float(food_info['에너지(㎉)']),
-          'carbohydrate': float(food_info['탄수화물(g)']),
-          'protein': float(food_info['단백질(g)']),
-          'fat': float(food_info['지방(g)'])
+          'calories': round(float(food_info['에너지(㎉)']), 2),
+          'carbohydrate': round(float(food_info['탄수화물(g)']), 2),
+          'protein': round(float(food_info['단백질(g)']), 2),
+          'fat': round(float(food_info['지방(g)']), 2)
         }
         dietFoods.append(dietFood)
       # dietFoods 리스트에서 칼로리의 합과 각 영양소의 합 계산
