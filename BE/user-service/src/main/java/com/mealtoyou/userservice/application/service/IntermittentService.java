@@ -19,29 +19,51 @@ public class IntermittentService {
 
 	public Mono<String> updateTime(String token, IntermittentRequestDto intermittentRequestDto) {
 		Long userId = jwtTokenProvider.getUserId(token);
-
-		Mono<Void> updateUserMono = userRepository.findById(userId)
+		return userRepository.findById(userId)
 			.flatMap(user -> {
-				if (!user.isIntermittentFasting()) {
-					user.updateIntermittent();
-					return userRepository.save(user).then();
+				boolean shouldUpdateUser = intermittentRequestDto.getIntermittentYn() != user.isIntermittentFasting();
+				if (shouldUpdateUser) {
+					user.updateIntermittent(intermittentRequestDto.getIntermittentYn());
+					return userRepository.save(user).then(updateIntermittentInfo(userId, intermittentRequestDto));
+				} else {
+					return updateIntermittentInfo(userId, intermittentRequestDto);
 				}
-				return Mono.empty();
-			});
+			})
+			.thenReturn("저장 성공");
+	}
 
-		updateUserMono.then(intermittentRepository.findByUserId(userId)
+	private Mono<Void> updateIntermittentInfo(Long userId, IntermittentRequestDto intermittentRequestDto) {
+		if (!intermittentRequestDto.getIntermittentYn()) {
+			return intermittentRepository.findByUserId(userId).flatMap(intermittentRepository::delete).then();
+		}
+		return intermittentRepository.findByUserId(userId)
 			.flatMap(intermittent -> {
 				intermittent.updateTime(intermittentRequestDto);
 				return intermittentRepository.save(intermittent);
-			}).switchIfEmpty(Mono.defer(() -> {
+			})
+			.switchIfEmpty(Mono.defer(() -> {
 				Intermittent newIntermittent = Intermittent.builder()
 					.userId(userId)
 					.startTime(intermittentRequestDto.getStartTime())
 					.endTime(intermittentRequestDto.getEndTime())
 					.build();
 				return intermittentRepository.save(newIntermittent);
-			})).then(Mono.just("저장 성공"))
-		).subscribe();
-		return Mono.just("저장 성공");
+			}))
+			.then();
 	}
+
+	// public Mono<Map<String, String>> getIntermittent(String token) {
+	// 	Long userId = jwtTokenProvider.getUserId(token);
+	// 	return userRepository.findById(userId).flatMap(user -> {
+	// 		if (user.isIntermittentFasting()) {
+	// 			return intermittentRepository.findByUserId(userId)
+	// 				.map(intermittent -> Map.of("intermittentYn", "true",
+	// 					"startTime", intermittent.getStartTime().toString(),
+	// 					"endTime", intermittent.getEndTime().toString()));
+	// 		} else {
+	// 			return Mono.just(Map.of("intermittentYn", "false", "startTime", "00:00", "endTime", "00:00"));
+	// 		}
+	// 	});
+	// }
+
 }

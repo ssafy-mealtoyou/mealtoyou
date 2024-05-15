@@ -57,16 +57,17 @@ public class User {
 
 	private String role;
 
-    public void updateUserInfo(UserInfoRequestDto u,String imageUrl) {
-        this.nickname = u.nickname();
-        this.gender = u.gender();
-        this.age = u.age();
-        this.height = u.height();
-        this.weight = u.weight();
-        if(imageUrl!=null){
-            this.userImageUrl = imageUrl;
-        }
-    }
+	public void updateUserInfo(UserInfoRequestDto u, String imageUrl) {
+		this.nickname = u.nickname();
+		this.gender = u.gender();
+		this.age = u.age();
+		this.height = u.height();
+		this.weight = u.weight();
+		if (imageUrl != null) {
+			this.userImageUrl = imageUrl;
+		}
+	}
+
 	@Column("fcm_token")
 	private String fcmToken;
 
@@ -81,8 +82,8 @@ public class User {
 		// this.goalEndDate = u.goalEndDate();
 	}
 
-	public void updateIntermittent() {
-		this.isIntermittentFasting = !this.isIntermittentFasting;
+	public void updateIntermittent(boolean b) {
+		this.isIntermittentFasting = b;
 	}
 
 	public void updateGoal(UserGoalRequestDto dto) {
@@ -93,7 +94,6 @@ public class User {
 	public void updateWeight(Integer weight) {
 		this.weight = weight;
 	}
-
 
 	public void updateUserFcmToken(FcmRequestDto fcmRequestDto) {
 		this.fcmToken = fcmRequestDto.getFcmToken();
