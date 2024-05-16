@@ -394,7 +394,7 @@ private fun DetailScreen(name: String, function: () -> Unit) {
                         val pagerState = rememberPagerState(
                             pageCount = { count }  // 총 페이지 수
                         )
-                        DietBox(diet = data.communityDietList, pagerState = pagerState)
+                        DietBox(diet = data.communityDietList, pagerState = pagerState, b = false)
                     }
                 }
 

@@ -1,8 +1,10 @@
 package com.example.mealtoyou.retrofit
 
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.api.AuthApiService
 import com.example.mealtoyou.api.CommunityApiService
 import com.example.mealtoyou.api.Diet2ApiService
+import com.example.mealtoyou.api.DietApiService
 import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
@@ -28,7 +30,9 @@ object RetrofitClient {
 //    private const val BASE_URL = "http://192.168.0.25:8080/"
     private const val BASE_URL = "https://a102.mgbg.kr/"
     private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(AuthInterceptor(MainApplication.prefs.getValue("accessToken")))
+//        .addInterceptor(AuthInterceptor(MainApplication.prefs.getValue("accessToken")))
+        .addInterceptor(AuthInterceptor("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs"))
+
         .addInterceptor(LoggingInterceptor())  // LoggingInterceptor 추가
         .build()
     private val gson = GsonBuilder()
@@ -79,7 +83,7 @@ object RetrofitClient {
 
     val chatInstance: ChatApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$BASE_URL:8084/")
+            .baseUrl("http://70.12.247.142:8084/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -91,8 +95,7 @@ object RetrofitClient {
     val supplementInstance: SupplementApiService by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         retrofit.create(SupplementApiService::class.java)
@@ -117,6 +120,15 @@ object RetrofitClient {
 
         retrofit.create(CommunityApiService::class.java)
 
+    }
+
+    val dietInstance: DietApiService by lazy {
+        val retrofit = Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .client(okHttpClient)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
+        retrofit.create(DietApiService::class.java)
     }
 
     val userInstance: UserApiService by lazy {
