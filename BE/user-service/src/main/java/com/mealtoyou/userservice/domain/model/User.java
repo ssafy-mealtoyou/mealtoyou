@@ -79,18 +79,14 @@ public class User {
 		this.isIntermittentFasting = b;
 	}
 
-	// public void updateGoal(UserGoalRequestDto dto) {
-	// 	this.goalWeight = dto.goalWeight();
-	// 	this.goalEndDate = dto.goalEndDate();
-	// }
-	public void updateGoal(Integer goalWeight, LocalDate goalEndDate) {
-		// Update goal logic
-		this.goalWeight = goalWeight;
-		this.goalEndDate = goalEndDate;
-	}
-	public void updateWeight(Integer weight) {
+	public void updateGoal(UserGoalRequestDto dto) {
 		this.goalStartWeight = this.weight;
 		this.goalStartDate = LocalDate.now();
+		this.goalWeight = dto.goalWeight();
+		this.goalEndDate = dto.getParsedGoalEndDate();
+	}
+
+	public void updateWeight(Integer weight) {
 		this.weight = weight;
 	}
 
