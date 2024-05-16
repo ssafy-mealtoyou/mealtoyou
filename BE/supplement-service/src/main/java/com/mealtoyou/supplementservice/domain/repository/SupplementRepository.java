@@ -16,5 +16,7 @@ public interface SupplementRepository extends ReactiveCrudRepository<Supplement,
 
 	Flux<Supplement> findByUserId(Long userId);
 
+	Mono<Supplement> findBySupplementId(Long supplementId);
+
 	Flux<Supplement> findAllByAlertTime(LocalTime alert);
 }
