@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.shared
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -39,7 +39,9 @@ import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationContent
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DietBox(diet: List<Diet>?, pagerState: PagerState?) {
+fun DietBox(diet: List<Diet>?, pagerState: PagerState?, b: Boolean) {
+
+    Log.d("식단~~",diet.toString())
 
     var sheetOpen by remember { mutableStateOf(false) }
     var editable by remember { mutableStateOf(true) }
@@ -67,7 +69,7 @@ fun DietBox(diet: List<Diet>?, pagerState: PagerState?) {
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color.White)
                     ) {
-                        RecommendationContent(false, diet[page])
+                        RecommendationContent(b, diet[page])
                     }
                 }
             }

@@ -2,7 +2,15 @@ from pydantic import BaseModel
 import pandas as pd
 
 class Info(BaseModel):
-  kind : str
+  user_id: int
+  food_name: str
+  food_calories: float
+  food_carbohydrate: float
+  food_protein: float
+  food_fat: float
+
+class NutrientDiff(BaseModel):
+  food_name: str
   target_calories: float
   target_carbs: float
   target_protein: float
@@ -11,7 +19,6 @@ class Info(BaseModel):
   now_carbs: float
   now_protein: float
   now_fat: float
-
 
 def calculate_score(row, diff):
   """
@@ -40,9 +47,9 @@ def get_otherFoods(info):
     'protein': info.target_protein - info.now_protein,
     'fat': info.target_fat - info.now_fat
   }
-
+  category = df_nutrients.loc[df_nutrients['식품명'] == info.food_name, '종류'].values[0]
   # 같은 종류의 음식만 확인
-  filtered_df = df_nutrients[df_nutrients['종류'] == info.kind]
+  filtered_df = df_nutrients[df_nutrients['종류'] == category]
 
   # 각 음식에 대한 점수 및 차이 계산
   def calculate_score_and_diff(row):

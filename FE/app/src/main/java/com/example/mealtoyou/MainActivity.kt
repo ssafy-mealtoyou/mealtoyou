@@ -52,7 +52,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.example.mealtoyou.viewmodel.HealthViewModel
-import com.example.mealtoyou.data.repository.PreferenceUtil
 import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.example.mealtoyou.viewmodel.AIFeedbackViewModel
@@ -101,7 +100,8 @@ class MainActivity : ComponentActivity() {
 
         if (!isInstalled) {
             errorMessage =
-                "Health Connect application is required to use this app. Please install it from the Play Store."
+                "데이터 자동 연동을 원하시면 헬스 커넥트 설치 및 권한을 허용해주시길 바랍니다"
+//                "Health Connect application is required to use this app. Please install it from the Play Store."
             showDialog = true
         } else {
             healthConnectClient = HealthConnectClient.getOrCreate(this)
@@ -220,8 +220,8 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination =startDestination,
-//                    startDestination = "mainPage",
+                    startDestination ="mainPage",
+//                    startDestination = "마이",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,

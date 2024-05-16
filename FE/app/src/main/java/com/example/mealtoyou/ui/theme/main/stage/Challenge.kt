@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,11 +45,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.UserGoalRequestData
+import com.example.mealtoyou.retrofit.RetrofitClient
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.CircleProgressBar
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar
 import com.example.mealtoyou.viewmodel.UserViewModel
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
@@ -188,10 +194,22 @@ fun ChallengeSetup() {
     val currentYear = calendar.get(Calendar.YEAR)
     val currentMonth = calendar.get(Calendar.MONTH)
     val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+
+    var goalWeight by remember { mutableStateOf("") }
+    var selectedDate by remember { mutableStateOf(LocalDate.of(currentYear, currentMonth + 1, currentDay).toString()) }
+
     Column {
         Text(text = "목표 몸무게", color = Color(0xFF9095A1))
         Spacer(modifier = Modifier.height(12.dp))
-        NumberTextField()
+        TextField(
+            value = goalWeight,
+            onValueChange = {
+                if (it.all { char -> char.isDigit() }) {
+                    goalWeight = it
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = "기간 설정", color = Color(0xFF9095A1))
         DatePicker(
@@ -199,10 +217,35 @@ fun ChallengeSetup() {
             selectedMonth = currentMonth,
             selectedYear = currentYear
         ) { day, month, year ->
+            selectedDate = LocalDate.of(year, month + 1, day).toString()
             Log.d("DatePicker", "Selected date: $year-${month + 1}-$day")
         }
         Button(
-            onClick = { },
+            onClick = {
+                val goalWeightValue = goalWeight.toIntOrNull()
+                if (goalWeightValue != null) {
+                    val requestDto = UserGoalRequestData(goalWeightValue, selectedDate)
+                    RetrofitClient.userInstance.updateGoal(requestDto).enqueue(object : Callback<Void> {
+                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            if (response.isSuccessful) {
+                                Log.d("API", "Goal updated successfully")
+                                // 성공 시 처리
+                            } else {
+                                Log.e("API", "Failed to update goal")
+                                // 실패 시 처리
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Void>, t: Throwable) {
+                            Log.e("API", "Error: ${t.message}")
+                            // 오류 처리
+                        }
+                    })
+                } else {
+                    Log.e("Input", "Invalid goal weight")
+                    // 잘못된 입력 처리
+                }
+            },
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(

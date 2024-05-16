@@ -1,5 +1,6 @@
 package com.example.mealtoyou.api
 
+import com.example.mealtoyou.data.UserGoalRequestData
 import com.example.mealtoyou.data.model.response.UserHealthResDto
 import retrofit2.Call
 import retrofit2.Response
@@ -20,4 +21,9 @@ interface UserApiService {
 
     @GET("api/user-service/users/health")
     suspend fun getUserHealth(): Response<UserHealthResDto>
+
+    @PUT("api/user-service/users/goal")
+    fun updateGoal(
+        @Body requestDto: UserGoalRequestData
+    ): Call<Void>
 }
