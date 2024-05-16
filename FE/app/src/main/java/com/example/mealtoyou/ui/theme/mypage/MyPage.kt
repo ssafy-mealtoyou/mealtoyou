@@ -662,13 +662,14 @@ fun StopEatTimer(
 ) {
 
     var remainingSeconds by remember { mutableStateOf(0) }
-    var startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
-    var endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
-    var currentTime = LocalTime.now().toSecondOfDay()
+
     Log.d("남은시간",userHealthInfo.intermittentYn.toString())
     // LaunchedEffect를 사용하여 타이머 로직을 구현합니다.
     LaunchedEffect(key1 = userHealthInfo.intermittentYn) {
         if (userHealthInfo.intermittentYn) {
+            var startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
+            var endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
+            var currentTime = LocalTime.now().toSecondOfDay()
             // 종료 시간이 시작 시간보다 작은 경우, 즉 자정을 넘어가는 경우
             val adjustedEndTime = if (endTime <= startTime) endTime + 24 * 3600 else endTime
             val adjustedCurrentTime =
