@@ -22,6 +22,14 @@ public class ChatGPTRequest implements Serializable {
 	private List<ChatGptMessage> messages;
 	//    @JsonProperty("top_p")
 	//    private Double topP;
+	@JsonProperty("response_format")
+	private ResponseFormat responseFormat;
+
+	@Getter
+	@Builder
+	public static class ResponseFormat {
+		private String Type;
+	}
 
 	@Getter
 	@Builder
