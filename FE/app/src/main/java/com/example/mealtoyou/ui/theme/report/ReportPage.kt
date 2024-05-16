@@ -223,12 +223,7 @@ fun DataDisplayBox(
                         Spacer(modifier = Modifier.height(15.dp))
                         BodyInfoRow(bodyData)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Tempor mollit labore eiusmod excepteur mollit adipisicing ullamco adipisicing dolore sunt ut minim dolor qui ipsum esse laboris. Sit voluptate consectetur p",
-                            color = Color(0xFF9095A1),
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp
-                        )
+
                     }
 
                     1 -> {
