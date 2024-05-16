@@ -178,7 +178,7 @@ class MainActivity : ComponentActivity() {
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
         val targetTime = LocalTime.of(
-            if (currentTime.minute >= 50) currentTime.hour + 1 else currentTime.hour,
+            if (currentTime.minute >= 50) (currentTime.hour + 1) % 24 else currentTime.hour,
             50
         )
         val delay = Duration.between(currentTime, targetTime).toMinutes().coerceAtLeast(0L)
