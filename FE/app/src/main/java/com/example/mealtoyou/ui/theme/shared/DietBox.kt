@@ -40,12 +40,7 @@ import com.example.mealtoyou.ui.theme.main.food.nomal.RecommendationContent
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DietBox(diet: List<Diet>?, pagerState: PagerState?, b: Boolean) {
-
     Log.d("식단~~",diet.toString())
-
-    var sheetOpen by remember { mutableStateOf(false) }
-    var editable by remember { mutableStateOf(true) }
-
     if (diet != null) {
         Column(modifier = Modifier.fillMaxWidth()) {
             if (pagerState != null) {
@@ -126,29 +121,5 @@ fun DietBox(diet: List<Diet>?, pagerState: PagerState?, b: Boolean) {
             }
         }
     }
-
-    if (editable) {
-        Row(
-            horizontalArrangement = Arrangement.End, modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        ) {
-            Button(
-                onClick = { sheetOpen = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
-                shape = RoundedCornerShape(12),
-                modifier = Modifier
-                    .width(100.dp)
-                    .height(55.dp)
-            ) {
-                Text("등록하기", color = Color.White)
-            }
-        }
-    }
-
-    if (sheetOpen) {
-        BottomSheet(closeSheet = { sheetOpen = false }) { AddDiet() }
-    }
-
 }
 
