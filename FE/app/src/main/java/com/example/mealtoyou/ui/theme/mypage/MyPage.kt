@@ -867,7 +867,7 @@ fun EditWeight(
                 Text(text = "올해 평균", color = Color(0xff9095A1), fontSize = 12.sp)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "${userHealthInfo.weightThisYear}kg",
+                    text = String.format("%.1fkg", userHealthInfo.weightThisYear),
                     color = Color(0xff171A1F),
                     fontSize = 12.sp
                 )
