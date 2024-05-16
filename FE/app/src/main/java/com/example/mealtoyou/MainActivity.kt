@@ -101,7 +101,8 @@ class MainActivity : ComponentActivity() {
 
         if (!isInstalled) {
             errorMessage =
-                "Health Connect application is required to use this app. Please install it from the Play Store."
+                "데이터 자동 연동을 원하시면 헬스 커넥트 설치 및 권한을 허용해주시길 바랍니다"
+//                "Health Connect application is required to use this app. Please install it from the Play Store."
             showDialog = true
         } else {
             healthConnectClient = HealthConnectClient.getOrCreate(this)
