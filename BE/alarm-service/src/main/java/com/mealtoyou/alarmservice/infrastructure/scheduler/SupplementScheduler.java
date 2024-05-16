@@ -28,8 +28,7 @@ public class SupplementScheduler {
 				String token = entry.getKey();
 				List<String> supplements = entry.getValue();
 				return Flux.fromIterable(supplements)
-					.flatMap(supplement -> fcmService.sendMessageByToken("MealToYou 영양제 알림", supplement + " 복용시간입니다",
-						token));
+					.flatMap(supplement -> fcmService.sendMessageByToken(supplement, token, true));
 			})
 			.then()
 			.subscribe();

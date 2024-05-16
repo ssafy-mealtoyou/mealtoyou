@@ -1,6 +1,5 @@
 package com.mealtoyou.supplementservice.domain.model;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;
@@ -28,4 +27,8 @@ public class Supplement {
 
 	@Column("taken_yn")
 	private Boolean takenYn;
+
+	public void updateSupplementTakenYn(boolean b) {
+		this.takenYn = b;
+	}
 }

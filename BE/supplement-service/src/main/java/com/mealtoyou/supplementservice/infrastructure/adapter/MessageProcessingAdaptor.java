@@ -27,6 +27,7 @@ public class MessageProcessingAdaptor {
 		LocalTime alert = LocalTime.parse(message.replace("\"", ""));
 		return supplementRepository.findAllByAlertTime(alert).collectList().map(list -> list.stream()
 			.collect(Collectors.groupingBy(Supplement::getUserId,
-				Collectors.mapping(Supplement::getName, Collectors.toList()))));
+				Collectors.mapping(supplement -> supplement.getSupplementId() + " " + supplement.getName(),
+					Collectors.toList()))));
 	}
 }
