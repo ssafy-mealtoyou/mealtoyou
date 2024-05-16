@@ -1,13 +1,16 @@
 package com.example.mealtoyou.ui.theme.main.report
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,8 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar
+import com.example.mealtoyou.viewmodel.UserViewModel
 
 @Composable
 fun ProgressColumn(progress: Float, color: Color, text: String) {
@@ -39,13 +44,18 @@ fun ProgressColumn(progress: Float, color: Color, text: String) {
 }
 
 @Composable
-fun TodayReportBox() {
+fun TodayReportBox(userViewModel: UserViewModel = viewModel()) {
+    val userHomeResponse = userViewModel.userHomeResponse
     val items = listOf(
-        0.66f to Pair(Color(0xFF6D31ED), "식단"),
-        0.50f to Pair(Color(0xFFFFD317), "영양"),
-        0.70f to Pair(Color(0xFF15ABFF), "수분"),
-        0.85f to Pair(Color(0xFF62CD14), "활동"),
-        0.54f to Pair(Color(0xFFF9623E), "수면")
+        userHomeResponse?.daySummary?.dietPer to Pair(Color(0xFF6D31ED), "식단"),
+        userHomeResponse?.daySummary?.caloriesPer to Pair(Color(0xFFFFD317), "영양"),
+        userHomeResponse?.daySummary?.activityPer to Pair(Color(0xFF62CD14), "활동"),
+    )
+
+    val descriptions = listOf(
+        "식단: 하루 3끼 섭취 비율",
+        "영양: 하루 칼로리 섭취 비율",
+        "활동: 하루 걸음 수 충족 비율",
     )
 
     Box(
@@ -71,10 +81,35 @@ fun TodayReportBox() {
             )
             Spacer(Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
-                Spacer(Modifier.weight(1f)) // 레이아웃의 좌우 균형을 위해
-                items.forEach { (progress, details) ->
-                    ProgressColumn(progress = progress, color = details.first, text = details.second)
-                    Spacer(Modifier.weight(1f))
+                items.forEachIndexed { index, (progress, details) ->
+                    Column {
+                        if (progress != null) {
+                            ProgressColumn(progress = (progress / 100f), color = details.first, text = details.second)
+                        } else {
+                            ProgressColumn(progress = 0f, color = details.first, text = details.second)
+                        }
+                    }
+                    // 아이템 간에 16.dp의 여백 추가
+                    if (index < items.size - 1) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.width(32.dp))
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(16.dp) // Text 컴포저블들 사이에 동일한 여백 설정
+                ) {
+                    descriptions.forEach { text ->
+                        Text(
+                            text = text,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = Pretend,
+                            fontSize = 12.sp,
+                            color = Color(0xFF323743),
+//                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
         }
@@ -82,7 +117,8 @@ fun TodayReportBox() {
 }
 
 @Composable
-fun MyTodayReport() {
+fun MyTodayReport(
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

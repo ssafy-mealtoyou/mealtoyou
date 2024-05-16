@@ -1,6 +1,7 @@
 package com.mealtoyou.supplementservice.application.dto;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -11,5 +12,5 @@ public class SupplementResponseDto {
 	private Long supplementId;
 	private String name;
 	private Boolean takenYn;
-	private LocalDateTime alertTime;
+	private LocalTime alertTime;
 }

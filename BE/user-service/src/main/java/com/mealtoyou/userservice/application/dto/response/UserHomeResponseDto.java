@@ -15,13 +15,17 @@ public class UserHomeResponseDto {
 
 	private LocalDate goalEndDate;
 
+	private Double goalStartWeight;
+
+	private LocalDate goalStartDate;
+
+	private Double currentWeight;
+
 	@Getter
 	@Builder
 	public static class DaySummary {
 		private Integer dietPer;
-		private Integer carbohydratePer;
-		private Integer proteinPer;
-		private Integer fatPer;
+		private Integer caloriesPer;
 		private Integer activityPer;
 	}
 }

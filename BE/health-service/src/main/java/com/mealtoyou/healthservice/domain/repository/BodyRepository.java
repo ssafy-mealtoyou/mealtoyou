@@ -16,7 +16,7 @@ public interface BodyRepository extends ReactiveCrudRepository<Body, Long> {
 	@Query("SELECT * FROM user_health WHERE user_id=:userId and measured_date=:measuredDate")
 	Flux<Body> findByUserIdandMeasuredDate(Long userId, LocalDate measuredDate);
 
-	@Query("SELECT * FROM user_health WHERE user_id=:userId ORDER BY measured_date DESC limit :day")
+	@Query("SELECT * FROM user_health WHERE user_id=:userId ORDER BY measured_date limit :day")
 	Flux<Body> findByUserId(Long userId, int day);
 
 	// 지난달 평균 몸무게 가져오는 쿼리

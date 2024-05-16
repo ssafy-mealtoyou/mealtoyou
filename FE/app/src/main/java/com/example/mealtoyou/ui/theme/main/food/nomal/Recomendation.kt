@@ -54,7 +54,7 @@ fun RecommendationContent(editable: Boolean, diet: Diet?) {
     Box(contentAlignment = Alignment.Center) {
         if (showTemp.value) {
             if (diet != null) {
-                FoodDetail(selectedItem.value, showTemp, editable, diet)
+                FoodDetail(selectedItem.value, showTemp, editable)
             }
         } else {
             if (diet != null) {
@@ -66,7 +66,7 @@ fun RecommendationContent(editable: Boolean, diet: Diet?) {
 
 
 @Composable
-fun RecommendationHeader(diet: Diet) {
+fun RecommendationHeader() {
     Row {
         Text(
             text = "추천식단",
