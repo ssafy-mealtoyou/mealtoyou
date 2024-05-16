@@ -180,9 +180,14 @@ public class UserService {
 	}
 
 	public Mono<Void> updateGoal(long userId, UserGoalRequestDto requestDto) {
+		// return userRepository.findById(userId)
+		// 	.flatMap(user -> {
+		// 		user.updateGoal(requestDto);
+		// 		return userRepository.save(user).then();
+		// 	});
 		return userRepository.findById(userId)
 			.flatMap(user -> {
-				user.updateGoal(requestDto);
+				user.updateGoal(requestDto.goalWeight(), requestDto.getParsedGoalEndDate());
 				return userRepository.save(user).then();
 			});
 	}
