@@ -220,7 +220,7 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination =startDestination,
+                    startDestination ="mainPage",
 //                    startDestination = "마이",
                     enterTransition = {
                         slideIntoContainer(

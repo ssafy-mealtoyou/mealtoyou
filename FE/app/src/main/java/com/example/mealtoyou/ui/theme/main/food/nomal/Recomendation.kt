@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.Diet
+import com.example.mealtoyou.ui.theme.diet.DietFood
 import com.example.mealtoyou.ui.theme.main.food.NormalContent
 import com.example.mealtoyou.ui.theme.main.food.detail.FoodDetail
 
@@ -50,11 +51,12 @@ fun RecommendationBox(editable: Boolean) {
 fun RecommendationContent(editable: Boolean, diet: Diet?) {
     val showTemp = remember { mutableStateOf(false) }
     val selectedItem = remember { mutableStateOf("") }
+    val diets = remember { mutableStateOf<List<DietFood>>(emptyList()) }
 
     Box(contentAlignment = Alignment.Center) {
         if (showTemp.value) {
             if (diet != null) {
-                FoodDetail(selectedItem.value, showTemp, editable)
+                diet.dietFoods?.let { FoodDetail(it,selectedItem.value, showTemp, editable, diets) }
             }
         } else {
             if (diet != null) {

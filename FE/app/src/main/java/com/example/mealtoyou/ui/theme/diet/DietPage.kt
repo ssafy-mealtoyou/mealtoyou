@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.retrofit.RetrofitClient
 import com.example.mealtoyou.ui.theme.shared.DietBox
@@ -91,9 +90,9 @@ fun DietPage(viewModel: DietViewModel) {
                             pageCount = { count }  // 총 페이지 수
                         )
                         if(data.diets.isNotEmpty()) {
-                            DietBox(data.diets, pagerState)
+                            DietBox(data.diets, pagerState, false)
                         } else {
-                            DietBox(null, null)
+                            DietBox(null, null, false)
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))

@@ -234,8 +234,9 @@ fun ChatScreen() {
                             pageCount = { count }  // 총 페이지 수
                         )
                         DietBox(
-                            chatMessage.message.dailyDietsResponseDto?.diets,
-                            pagerState = pagerState
+                                chatMessage.message.dailyDietsResponseDto?.diets,
+                                pagerState = pagerState,
+                                false
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -324,7 +325,7 @@ fun SelectDiet(function: (message: String) -> Unit) {
         val pagerState = rememberPagerState(
             pageCount = { count }  // 총 페이지 수
         )
-        DietBox(diet = diets.value?.diets, pagerState = pagerState)
+        DietBox(diet = diets.value?.diets, pagerState = pagerState, b = false)
         Spacer(modifier = Modifier.height(10.dp))
         Button(
             onClick = {
