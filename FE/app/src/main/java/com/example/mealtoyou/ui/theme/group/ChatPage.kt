@@ -116,7 +116,7 @@ class ChatViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 val response =
-                    chatApiService.getUserDiets("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJDNW9LaVlLTlJYTCtJNWhvTEJsUW5nPT0iLCJpYXQiOjE3MTU0ODI1NDAsImV4cCI6MTcyMzI1ODU0MH0.xjix3Z-xEogbiBjD0CNTVUXLmPdmns2NgX5DIcx5fqs")
+                    chatApiService.getUserDiets(MainApplication.prefs.getValue("accessToken"))
                 if (response.isSuccessful) {
                     _diets.value = response.body()
                     Log.d("API Success", response.message())
