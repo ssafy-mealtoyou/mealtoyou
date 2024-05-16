@@ -40,8 +40,6 @@ import java.io.InputStream
 fun DietImageAnalyzeDialog(
     onImageSelected: (Bitmap) -> Unit // 이미지 선택 콜백 추가
 ) {
-    // 상태 관리를 위한 remember 사용
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     // Composable 함수 내에서 LocalContext.current 캡처
     val context = LocalContext.current

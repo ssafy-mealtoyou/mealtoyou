@@ -19,7 +19,7 @@ data class SwipeFoodItemModel(
 ) : Parcelable
 
 data class FoodDetectionResponseItem(
-    val className: Int,
+    val className: String,
     val foodName: String,
     val confidence: Float
 )

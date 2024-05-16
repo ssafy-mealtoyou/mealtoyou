@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,9 +60,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -73,6 +76,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
@@ -85,6 +89,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
@@ -92,13 +97,17 @@ import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
 import coil.compose.rememberImagePainter
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.FoodDetectionResponseItem
+import com.example.mealtoyou.data.FoodSearchData
 import com.example.mealtoyou.data.SwipeFoodItemModel
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.DietFood
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.ImageFromUrlOrResource
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
+import com.example.mealtoyou.viewmodel.DietViewModel
 import com.example.mealtoyou.viewmodel.FoodSearchViewModel
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 
 
@@ -342,6 +351,11 @@ private fun FoodBottomSheetContent(
     setContent: (String) -> Unit = {},
     imageBoolean: Boolean = false
 ) {
+    var selectedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val dietViewModel: DietViewModel = DietViewModel()
+    // DietViewModel에서 analyzeImageResult를 관찰
+    val analyzeImageResult by dietViewModel.analyzeImageResult.observeAsState(initial = null)
+
     val foodSearchViewModel: FoodSearchViewModel = viewModel()
     var showDialog by remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
@@ -354,14 +368,39 @@ private fun FoodBottomSheetContent(
         mutableStateListOf<SwipeFoodItemModel>()
     }
 
-    var showImagePickerDialog by remember { mutableStateOf(false) }
+    var showImagePickerDialog by remember { mutableStateOf(0) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var imageBoolean by remember { mutableStateOf(false) }
 
-    // 이미지 선택 창을 표시하도록 설정합니다.
-    // 실제 앱에서는 사용자 상호작용에 따라 이 값을 변경해야 합니다.
-    LaunchedEffect(Unit) {
-        showImagePickerDialog = true
+    // Composable 함수 내부
+    val coroutineScope = rememberCoroutineScope()
+
+    fun updateSwipeFoodItemList(resultList: List<FoodDetectionResponseItem>) {
+        Log.d("analyzeImageResult 1", resultList.toString())
+        resultList.forEach { foodDetectionResponseItem ->
+            if (foodDetectionResponseItem.className == "0" ||
+                foodDetectionResponseItem.className == "00000000" ||
+                foodDetectionResponseItem.foodName == "그릇")
+                return
+            Log.d("analyzeImageResult 2", foodDetectionResponseItem.foodName)
+            // 각각의 결과에 대해 foodSearchViewModel의 foodSearch 함수를 호출
+            // 이 예제에서는 foodDetectionResponseItem의 name을 키워드로 사용
+            foodSearchViewModel.foodSearch(foodDetectionResponseItem.foodName) { list ->
+                Log.d("analyzeImageResult 3", list.toString())
+                if (!list.isNullOrEmpty()){
+                    val foodItem: FoodSearchData = list[0]
+                    swipeFoodItemList.add(
+                        SwipeFoodItemModel(
+                            fid = foodItem.id,
+                            itemName = foodItem.name,
+                            itemImageUrl = "", // TODO: 이미지 링크 넣기
+                            energy = foodItem.energy,
+                            quantity = 1.0
+                        )
+                    )
+                    Log.d("analyzeImageResult", "선택된 음식 ${swipeFoodItemList.last()}")
+                }
+            }
+        }
     }
 
     Column(
@@ -371,66 +410,53 @@ private fun FoodBottomSheetContent(
     ) {
         if (!showDialog) {
 
-            if (showImagePickerDialog) {
-                // 이미지 입력 창을 표시합니다.
-                AlertDialog(
-                    onDismissRequest = {
-                        showImagePickerDialog = false
-                    },
-                    title = { Text("이미지 선택") },
-                    text = { Text("이미지를 선택해 주세요.") },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                // 이미지 선택 로직 구현
-                                // 예시에서는 대화 상자를 닫고 imageBoolean 값을 true로 설정합니다.
-                                showImagePickerDialog = false
-                                imageBoolean = true
-                                // 실제 앱에서는 여기서 이미지 피커를 열고 사용자의 이미지 선택을 처리해야 합니다.
-                            }
-                        ) {
-                            Text("선택")
-                        }
-                    }
-                )
-            } else if (imageBoolean) {
+            if (imageBoolean) {
                 // 선택된 이미지를 표시하고 서버로 전송
+                if (showImagePickerDialog == 0)
+                    showImagePickerDialog = 1
                 Box(
                     modifier = Modifier
-                        .height(200.dp)
+                        .heightIn(max = 200.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     // 사용자가 선택한 이미지를 표시합니다.
                     // 예시에서는 임시 이미지를 사용합니다.
-                    Image(
-                        painter = painterResource(id = R.drawable.sample_food),
-                        contentDescription = "샘플 음식 이미지",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                    selectedImageBitmap?.let { bitmap ->
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .align(Alignment.Center)// Set the height to fill the maximum available height
+                            // Remove the width setting. The width will be automatically determined based on the aspect ratio.
+                            ,
+                            contentScale = ContentScale.FillHeight // Set the content scale to fill the height while maintaining the aspect ratio
+                        )
+                    }
                     // 서버로 이미지를 전송하고 음식 목록을 검색하는 로직을 구현해야 합니다.
                 }
             }
 
-//            if (imageBoolean) {
-//                // TODO 이미지 입력 받는 창이 뜬 후 입력 받아서,
-//                //  1. 입력 받은 이미지를 아래 Image 컴포넌트에 넣기
-//                //  2. 해당 이미지를 서버에 전송하고 음식 리스트를 전달받고 목록에 추가
-//                Box(
-//                    modifier = Modifier
-//                        .height(200.dp)
-//                        .fillMaxWidth()
-//                        .clip(RoundedCornerShape(8.dp))
-//                ) {
-//                    Image(
-//                        painter = painterResource(id = R.drawable.sample_food),
-//                        contentDescription = "Sample Food Image",
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentScale = ContentScale.Crop
-//                    )
-//                }
-//            }
+            // 다이얼로그 표시
+            ShowDietImageAnalyzeDialog(
+                showDialog = showImagePickerDialog == 1,
+                onDismiss = { showImagePickerDialog = 2 }, // 다이얼로그 닫기
+                onImageSelected = { bitmap ->
+                    coroutineScope.launch {
+                        dietViewModel.analyzeImage(bitmap) { result ->
+                            result?.let {
+                                // 성공적으로 데이터를 받아온 경우의 처리
+                                updateSwipeFoodItemList(result)
+                            } ?: run {
+                                // 데이터를 받아오지 못한 경우의 처리
+                            }
+                        }
+                    }
+                    selectedImageBitmap = bitmap
+                    showImagePickerDialog = 2 // 이미지 선택 후 다이얼로그 닫기
+                }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
             Box(

@@ -166,7 +166,7 @@ object RetrofitClient {
 
     val dietImageInstance: DietImageApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://localhost:8180")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

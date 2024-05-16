@@ -10,6 +10,6 @@ interface DietApiService {
     @GET("/test")
     suspend fun test() : Response<String>
 
-    @POST("/api/diets")
+    @POST("/api/food-service/api/diets")
     suspend fun createDiet(@Body foodRequestItemList: List<FoodRequestItem>): Response<Void>
 }
