@@ -186,10 +186,10 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
           dietFood = {
             'name': selected_food['식품명'],
             'imageUrl': '',  # 실제 이미지 URL이 필요
-            'calories': float(selected_food['에너지(㎉)']),
-            'carbohydrate': float(selected_food['탄수화물(g)']),
-            'protein': float(selected_food['단백질(g)']),
-            'fat': float(selected_food['지방(g)'])
+            'calories': round(float(selected_food['에너지(㎉)']),2),
+            'carbohydrate': round(float(selected_food['탄수화물(g)']),2),
+            'protein': round(float(selected_food['단백질(g)']),2),
+            'fat': round(float(selected_food['지방(g)']),2)
           }
           dietFoods.append(dietFood)
 

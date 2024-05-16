@@ -1,14 +1,18 @@
 package com.example.mealtoyou.retrofit
 
 import com.example.mealtoyou.api.AIFeedbackApiService
+import com.example.mealtoyou.MainActivity
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.api.AuthApiService
 import com.example.mealtoyou.api.CommunityApiService
 import com.example.mealtoyou.api.Diet2ApiService
 import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
+
 import com.example.mealtoyou.api.SupplementApiService
 import com.example.mealtoyou.api.UserApiService
+
 import com.example.mealtoyou.auth.AuthInterceptor
 import com.example.mealtoyou.auth.LoggingInterceptor
 import com.example.mealtoyou.ui.theme.group.ChatApiService
@@ -58,20 +62,18 @@ object RetrofitClient {
         retrofit.create(HealthApiService::class.java)
     }
 
-    val foodSearchInstance: FoodSearchApiService by lazy{
-        val retrofit=Retrofit.Builder()
-//            .baseUrl("http://70.12.247.142:8081/")
-            .baseUrl("$BASE_URL:8084")
+    val foodSearchInstance: FoodSearchApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
         retrofit.create(FoodSearchApiService::class.java)
     }
 
-    val fcmInstance: FcmApiService by lazy{
-        val retrofit=Retrofit.Builder()
-//            .baseUrl("http://70.12.247.142:8082/")
-            .baseUrl("$BASE_URL")
+    val fcmInstance: FcmApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()

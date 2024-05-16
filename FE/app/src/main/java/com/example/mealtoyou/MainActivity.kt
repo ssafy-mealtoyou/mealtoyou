@@ -35,7 +35,7 @@ import com.example.mealtoyou.handler.HealthEventHandler
 import com.example.mealtoyou.ui.theme.diet.DietPage
 import com.example.mealtoyou.ui.theme.group.ChatScreen
 import com.example.mealtoyou.ui.theme.group.GroupPage
-import com.example.mealtoyou.ui.theme.group.MyPage
+import com.example.mealtoyou.ui.theme.mypage.MyPage
 import com.example.mealtoyou.ui.theme.login.LoginPage
 import com.example.mealtoyou.ui.theme.main.MainPage
 import com.example.mealtoyou.ui.theme.report.ReportPage
@@ -178,7 +178,7 @@ class MainActivity : ComponentActivity() {
     private fun setupPeriodicWork() {
         val currentTime = LocalTime.now()
         val targetTime = LocalTime.of(
-            if (currentTime.minute >= 50) (currentTime.hour + 1) % 24 else currentTime.hour,
+            if (currentTime.minute >= 50) (currentTime.hour + 1)%24 else currentTime.hour,
             50
         )
         val delay = Duration.between(currentTime, targetTime).toMinutes().coerceAtLeast(0L)
@@ -264,7 +264,7 @@ class MainActivity : ComponentActivity() {
                         GroupPage(navController)
                     }
                     composable("마이") {
-                        MyPage(supplementViewModel, healthViewModel)
+                        MyPage(supplementViewModel, healthViewModel,navController)
                     }
                     composable("chat") {
                         ChatScreen()
