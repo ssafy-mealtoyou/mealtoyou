@@ -17,9 +17,11 @@ import com.google.firebase.messaging.Notification;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FcmService {
 
@@ -44,6 +46,7 @@ public class FcmService {
 
 	public Mono<Void> sendMessageByToken(String title, String body, String token) {
 		return Mono.fromCallable(() -> {
+			log.info("알림 전송 {} {} {}", title, body, token);
 			try {
 				FirebaseMessaging.getInstance().send(Message.builder()
 					.setNotification(Notification.builder()
