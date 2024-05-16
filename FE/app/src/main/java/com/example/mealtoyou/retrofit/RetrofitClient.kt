@@ -12,6 +12,7 @@ import com.example.mealtoyou.api.HealthApiService
 
 import com.example.mealtoyou.api.SupplementApiService
 import com.example.mealtoyou.api.UserApiService
+import com.example.mealtoyou.api.User2ApiService
 
 import com.example.mealtoyou.auth.AuthInterceptor
 import com.example.mealtoyou.auth.LoggingInterceptor
@@ -141,6 +142,14 @@ object RetrofitClient {
         retrofit.create(Diet2ApiService::class.java)
     }
 
+    val user2Instance: User2ApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+        retrofit.create(User2ApiService::class.java)
+    }
     val aiFeedbackInstance: AIFeedbackApiService by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)

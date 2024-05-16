@@ -13,7 +13,6 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -46,13 +45,12 @@ public class FcmService {
 
 	public Mono<Void> sendMessageByToken(String title, String body, String token) {
 		return Mono.fromCallable(() -> {
-			log.info("알림 전송 {} {} {}", title, body, token);
 			try {
+				log.info("알림 전송 {} {} {}", title, body, token);
 				FirebaseMessaging.getInstance().send(Message.builder()
-					.setNotification(Notification.builder()
-						.setTitle(title)
-						.setBody(body)
-						.build())
+					.putData("title", title) // 데이터의 키-값 쌍으로 'title'과 'body'를 추가
+					.putData("body", body)
+					.putData("clickAction", "clickAction")
 					.setToken(token)
 					.build());
 				System.out.println(LocalTime.now() + token);

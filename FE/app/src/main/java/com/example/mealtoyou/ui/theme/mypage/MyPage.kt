@@ -60,14 +60,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.health.connect.client.HealthConnectClient
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.UserHealthInfoUpdateData
 import com.example.mealtoyou.data.model.response.UserHealthResDto
 import com.example.mealtoyou.handler.HealthEventHandler
 import com.example.mealtoyou.handler.UserEventHandler
+import com.example.mealtoyou.retrofit.RetrofitClient
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.main.stage.Challenge
 import com.example.mealtoyou.ui.theme.main.stage.DrugInfo
@@ -80,6 +83,33 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.util.concurrent.TimeUnit
+
+class User2ViewModel : ViewModel() {
+    private val user2ApiService = RetrofitClient.user2Instance
+
+    fun fetchData(
+        authorization: String,
+        requestDto: UserHealthInfoUpdateData,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = user2ApiService.postHealthInfo(authorization, requestDto)
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    Log.d("_dailyDiets", data.toString())
+                    onSuccess()
+                } else {
+                    val errorMessage =
+                        "Error: ${response.code()} ${response.message()}"
+                    Log.e("error", errorMessage)
+                }
+            } catch (e: Exception) {
+                Log.e("error", "2번 에러입니다.")
+            }
+        }
+    }
+}
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -148,7 +178,7 @@ fun MyPage(
                             .background(Color.White)
                             .padding(14.dp)
                     ) {
-                        val healthData by healthViewModel._bodyResult.collectAsState()
+//                        val healthData by healthViewModel._bodyResult.collectAsState()
                         Column {
                             Text(
                                 text = "나의 체성분 정보",
@@ -167,9 +197,9 @@ fun MyPage(
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "${healthData?.skeletalMuscle ?: 0}kg",
+                                    text = "${userHealthInfo?.inbodyBoneMuscle ?: 0}kg",
                                     color = Color(0xff171A1F),
-                                    fontSize = 32.sp,
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(Modifier.width(20.dp))
@@ -181,9 +211,9 @@ fun MyPage(
                                 )
                                 Spacer(Modifier.width(15.dp))
                                 Text(
-                                    text = "${healthData?.bodyFat ?: 0}kg",
+                                    text = "${userHealthInfo?.inbodyBodyFat ?: 0}kg",
                                     color = Color(0xff171A1F),
-                                    fontSize = 32.sp,
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -197,7 +227,15 @@ fun MyPage(
                                 if (addSheet) {
                                     BottomSheet(
                                         closeSheet = { addSheet = false },
-                                        { AddDetailWeight() })
+                                        {
+                                            AddDetailWeight(onSuccess = {
+                                                addSheet = false
+//                                                refreshMyPage = !refreshMyPage
+                                                userHealthViewModel.viewModelScope.launch {
+                                                    userHealthViewModel.refreshUserHealth()
+                                                }
+                                            })
+                                        })
                                 }
                                 Button(
                                     onClick = { addSheet = true },
@@ -218,7 +256,16 @@ fun MyPage(
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Button(
-                                    onClick = {healthEventHandlerState.value?.readHealthData(healthViewModel)},
+                                    onClick = {
+                                        healthEventHandlerState.value?.readHealthData(
+                                            healthViewModel,
+                                            onSuccess = {
+                                                userHealthViewModel.viewModelScope.launch {
+                                                    userHealthViewModel.refreshUserHealth()
+                                                }
+                                            }
+                                        )
+                                    },
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(
@@ -286,7 +333,7 @@ fun MyPage(
                     Challenge(Modifier.weight(9f), Color(0xFFF5F1FE), true)
 
                     Spacer(Modifier.weight(1f))
-                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true,supplementViewModel)
+                    DrugInfo(Modifier.weight(9f), Color(0xFFF0F9FF), true, supplementViewModel)
                 }
                 Row(
                     modifier = Modifier
@@ -448,20 +495,88 @@ fun AddWeight(onAddSheetChange: (Boolean) -> Unit, userHealthViewModel: UserHeal
 }
 
 @Composable
-fun AddDetailWeight() {
+private fun NumberTextField2(onValueChanged: (String) -> Unit) {
+    val text = remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val textStyle = TextStyle(
+        color = Color(0xFF171A1F),
+        fontSize = 16.sp,
+        lineHeight = 50.sp,
+        textAlign = TextAlign.Center,
+    )
+
+    BasicTextField(
+        value = text.value,
+        onValueChange = {
+            text.value = it
+            onValueChanged(it) // 값이 변경될 때마다 전달
+        },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(46.dp)
+            .clip(RoundedCornerShape(8.dp)),
+        textStyle = textStyle,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Number // 숫자 키보드로 변경
+        ),
+        keyboardActions = KeyboardActions(onDone = {
+            keyboardController?.hide() // 키보드 숨김 처리
+        }),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFFF3F4F6))
+                    .fillMaxWidth()
+                    .padding(horizontal = 11.dp, vertical = 0.dp), // 가로 패딩만 적용
+                contentAlignment = Alignment.Center // Box 내부에서 요소들을 중앙에 배치
+            ) {
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+                    innerTextField()
+                    Text(text = "Kg", color = Color.Black)
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
+            }
+        }
+    )
+}
+
+
+@Composable
+fun AddDetailWeight(onSuccess: () -> Unit) {
+    val viewModel: User2ViewModel = viewModel()
+    val (skeletalMuscle, setSkeletalMuscle) = remember { mutableStateOf("") } // 골격근량 값
+    val (bodyFat, setBodyFat) = remember { mutableStateOf("") } // 체지방량 값
     Column {
         Text("체성분 정보 등록", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xff171A1F))
         Spacer(modifier = Modifier.height(16.dp))
         Text("골격근량", fontSize = 12.sp, color = Color(0xff9095A1))
         Spacer(modifier = Modifier.height(7.dp))
-//        NumberTextField()
+        NumberTextField2(onValueChanged = { value ->
+            setSkeletalMuscle(value)
+        })
         Spacer(modifier = Modifier.height(16.dp))
         Text("체지방량", fontSize = 12.sp, color = Color(0xff9095A1))
         Spacer(modifier = Modifier.height(7.dp))
-//        NumberTextField()
+        NumberTextField2(onValueChanged = { value ->
+            setBodyFat(value)
+        })
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { },
+            onClick = {
+                // 입력된 값을 UserHealthInfoUpdateData에 넣어서 사용
+                val updateData = UserHealthInfoUpdateData(
+                    skeletalMuscle = skeletalMuscle.toIntOrNull() ?: 0,
+                    bodyFat = bodyFat.toIntOrNull() ?: 0
+                )
+                viewModel.fetchData(MainApplication.prefs.getValue("accessToken"), updateData) {
+                    onSuccess()
+                }
+
+            },
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(
@@ -528,8 +643,8 @@ fun StopEatEdit(
                 Log.d("시작끝", endHour.toString())
                 UserEventHandler().sendUserIntermittent(
                     isFastingEnabled.value.toString(),
-                    String.format("%02d:%02d",hour,minute),
-                    String.format("%02d:%02d",endHour,minute)
+                    String.format("%02d:%02d", hour, minute),
+                    String.format("%02d:%02d", endHour, minute)
                 )
                 userHealthViewModel.viewModelScope.launch {
                     userHealthViewModel.refreshUserHealth()
@@ -662,23 +777,24 @@ fun StopEatTimer(
 ) {
 
     var remainingSeconds by remember { mutableStateOf(0) }
-    var startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
-    var endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
-    var currentTime = LocalTime.now().toSecondOfDay()
+
     Log.d("남은시간",userHealthInfo.intermittentYn.toString())
     // LaunchedEffect를 사용하여 타이머 로직을 구현합니다.
     LaunchedEffect(key1 = userHealthInfo.intermittentYn) {
         if (userHealthInfo.intermittentYn) {
+            val startTime = LocalTime.parse(userHealthInfo.intermittentStartTime).toSecondOfDay()
+            val endTime = LocalTime.parse(userHealthInfo.intermittentEndTime).toSecondOfDay()
+            val currentTime = LocalTime.now().toSecondOfDay()
             // 종료 시간이 시작 시간보다 작은 경우, 즉 자정을 넘어가는 경우
             val adjustedEndTime = if (endTime <= startTime) endTime + 24 * 3600 else endTime
             val adjustedCurrentTime =
                 if (currentTime < startTime) currentTime + 24 * 3600 else currentTime
 
             // 종료 시간까지 남은 시간 계산
-            var remaining = adjustedEndTime - adjustedCurrentTime
-            Log.d("단식 남은 시간",remaining.toString())
+            val remaining = adjustedEndTime - adjustedCurrentTime
+            Log.d("단식 남은 시간", remaining.toString())
             // 남은 시간이 양수인 경우
-            if (endTime!=startTime && remaining > 0) {
+            if (endTime != startTime && remaining > 0) {
                 remainingSeconds = remaining
             }
         }
