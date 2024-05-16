@@ -22,7 +22,7 @@ public class IntermittentScheduler {
 		schedulerService.noticeIntermittentStart()
 			.collectList()
 			.flatMapMany(tokens -> Flux.fromIterable(tokens)
-				.flatMap(token -> fcmService.sendMessageByToken("MealToYou 단식알림", "단식 시작 시간입니다", token)))
+				.flatMap(token -> fcmService.sendMessageByToken("", token, false)))
 			.then()
 			.subscribe();
 	}
@@ -32,7 +32,7 @@ public class IntermittentScheduler {
 		schedulerService.noticeIntermittentEnd()
 			.collectList()
 			.flatMapMany(tokens -> Flux.fromIterable(tokens)
-				.flatMap(token -> fcmService.sendMessageByToken("MealToYou 단식알림", "단식 종료 시간입니다", token)))
+				.flatMap(token -> fcmService.sendMessageByToken("", token, false)))
 			.then().subscribe();
 	}
 }
