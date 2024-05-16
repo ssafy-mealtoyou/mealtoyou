@@ -262,6 +262,7 @@ fun getBmiCategory(bmi: Double): String {
 fun BodyInfoRow(bodyData: List<BodyResponseData>?) {
     val bmiCategory = bodyData?.last()?.let { getBmiCategory(it.bmi) }
     val bmiValue = bodyData?.last()?.bmi
+    Log.d("bmi","${bmiValue}")
     val formattedBmi = String.format("%.1f", bmiValue)
     Row {
         if (bodyData != null) {
