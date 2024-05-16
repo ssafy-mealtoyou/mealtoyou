@@ -2,6 +2,7 @@ package com.example.mealtoyou.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.mealtoyou.MainApplication
 
 class PreferenceUtil(context:Context) {
     private val prefs: SharedPreferences=context.getSharedPreferences("name",Context.MODE_PRIVATE)

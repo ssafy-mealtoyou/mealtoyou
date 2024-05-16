@@ -81,12 +81,17 @@ fun bodyModel(bodyData: List<BodyResponseData>): CartesianChartModel {
 fun exerciseModel(bodyData: List<ExerciseData>): CartesianChartModel {
     val steps = bodyData.map { it.steps.toFloat() }
     val caloriesBurned = bodyData.map { it.caloriesBurned.toFloat() }
-    Log.d("step","${steps.get(0).toFloat()}")
+
+    if (steps.isNotEmpty()) {
+        Log.d("step","${steps[0]}")
+    } else {
+        Log.d("step","step is empty")
+    }
 
     return CartesianChartModel(
         LineCartesianLayerModel.build {
-            series(steps)
-            series(caloriesBurned)
+            series(steps.ifEmpty { listOf(0.0f) })
+            series(caloriesBurned.ifEmpty { listOf(0.0f) })
         }
     )
 }
@@ -218,12 +223,7 @@ fun DataDisplayBox(
                         Spacer(modifier = Modifier.height(15.dp))
                         BodyInfoRow(bodyData)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Tempor mollit labore eiusmod excepteur mollit adipisicing ullamco adipisicing dolore sunt ut minim dolor qui ipsum esse laboris. Sit voluptate consectetur p",
-                            color = Color(0xFF9095A1),
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp
-                        )
+
                     }
 
                     1 -> {
@@ -261,14 +261,16 @@ fun getBmiCategory(bmi: Double): String {
 @Composable
 fun BodyInfoRow(bodyData: List<BodyResponseData>?) {
     val bmiCategory = bodyData?.last()?.let { getBmiCategory(it.bmi) }
-
+    val bmiValue = bodyData?.last()?.bmi
+    Log.d("bmi","${bmiValue}")
+    val formattedBmi = String.format("%.1f", bmiValue)
     Row {
         if (bodyData != null) {
             InfoColumn("기초 대사량", "${bodyData.last().bmr}kcal")
         }
         Spacer(modifier = Modifier.width(17.dp))
         if (bodyData != null) {
-            InfoColumn("bmi 지수", "${bodyData.last().bmi} ($bmiCategory)")
+            InfoColumn("bmi 지수", "$formattedBmi ($bmiCategory)")
         }
 //        Spacer(modifier = Modifier.width(17.dp))
 //        InfoColumn("CID 유형", "표준체중 일반형(I자)")

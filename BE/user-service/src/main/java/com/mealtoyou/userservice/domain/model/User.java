@@ -80,13 +80,13 @@ public class User {
 	}
 
 	public void updateGoal(UserGoalRequestDto dto) {
+		this.goalStartWeight = this.weight;
+		this.goalStartDate = LocalDate.now();
 		this.goalWeight = dto.goalWeight();
-		this.goalEndDate = dto.goalEndDate();
+		this.goalEndDate = dto.getParsedGoalEndDate();
 	}
 
 	public void updateWeight(Integer weight) {
-		this.goalStartWeight = this.weight;
-		this.goalStartDate = LocalDate.now();
 		this.weight = weight;
 	}
 

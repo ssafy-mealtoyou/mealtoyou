@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.main.food.detail
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -21,9 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,8 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mealtoyou.R
+import com.example.mealtoyou.data.FoodNutrient
+import com.example.mealtoyou.retrofit.RetrofitClient
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.Diet
+import com.example.mealtoyou.ui.theme.diet.DietFood
 import com.example.mealtoyou.ui.theme.shared.CloseButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -90,20 +96,71 @@ private fun ActionButton(
 
 @Composable
 fun FoodDetail(
-    selectedItem: String,
-    showTemp: MutableState<Boolean>,
-    editable: Boolean,
+        dietFoods: List<DietFood>,
+        selectedItem: String,
+        showTemp: MutableState<Boolean>,
+        editable: Boolean,
+        diets: MutableState<List<DietFood>>
+
 ) {
     val isLoading = remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
+
+    Log.d("321321",dietFoods.toString())
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            try {
+                val selectedFood = dietFoods?.find { it.name == selectedItem }
+                Log.d("123123",selectedFood.toString())
+                selectedFood?.let { food ->
+                    // 네트워크 요청을 직접 실행합니다.
+                    val result = RetrofitClient.dietInstance.recommendOtherFood(
+                            FoodNutrient(
+                                    1,
+                                    food.name,
+                                    food.calories,
+                                    food.carbohydrate,
+                                    food.protein,
+                                    food.fat
+                            )
+                    )
+                    Log.d("123123",result.toString())
+                    // 결과를 로그에 기록합니다.
+                    Log.d("FetchRecommendation", "Result: $result")
+
+                    // 결과를 diets에 할당합니다.
+                    diets.value = result
+
+                    // 로딩 상태를 false로 설정합니다.
+                    isLoading.value = false
+                } ?: run {
+                    // selectedFood가 null인 경우를 처리합니다.
+                    Log.e("FetchRecommendation", "Selected food not found")
+                    isLoading.value = false
+                }
+            } catch (e: Exception) {
+                // 에러를 처리하고 로그에 기록합니다.
+                Log.e("FetchRecommendation", "Error fetching recommendation", e)
+                isLoading.value = false
+            }
+        }
+    }
+    val selectedDiet = dietFoods.find { it.name == selectedItem }
+    var centralDiet by remember { mutableStateOf(selectedDiet) }
+
+    Log.d("bbbbb",centralDiet.toString())
+
 
     Column(Modifier.padding(12.dp)) {
 
         if (isLoading.value) {
             LoadingSpinner()
         } else {
-            DetailHeader(selectedItem, showTemp)
-            ContentBody(editable)
+            DetailHeader(centralDiet?.name ?: "", showTemp)
+            ContentBody(dietFoods,centralDiet,diets, editable, onSelectDiet = {
+                centralDiet = it
+            })
+
         }
     }
 
@@ -150,16 +207,16 @@ private fun InnerText(text: String) {
 }
 
 @Composable
-private fun OverlayImage(text: String) {
+private fun OverlayImage(diet: DietFood, onSelect: (DietFood) -> Unit) {
     Box(
-        modifier = Modifier
+            modifier = Modifier
             .height(72.dp)
             .width(75.dp)
             .clip(RoundedCornerShape(8.dp))
     ) {
         Image(
             painter = painterResource(id = R.drawable.sample_food),
-            contentDescription = "Sample Food Image",
+                contentDescription = diet.name,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -169,7 +226,7 @@ private fun OverlayImage(text: String) {
                 .background(Color(0xFF171A1F).copy(alpha = 0.7f))
         )
         Text(
-            text = text,
+            text = diet.name,
             color = Color.White,
             fontSize = 12.sp,
             fontFamily = Pretend,
@@ -180,47 +237,55 @@ private fun OverlayImage(text: String) {
 }
 
 @Composable
-private fun ContentBody(editable: Boolean) {
+private fun ContentBody(dietFoods: List<DietFood>, centralDiet: DietFood?, diets: MutableState<List<DietFood>>, editable: Boolean, onSelectDiet: (DietFood) -> Unit) {
     Column {
         Spacer(modifier = Modifier.height(10.dp))
         Row {
-            Image(
-                painter = painterResource(id = R.drawable.sample_food),
-                contentDescription = "Sample Food Image",
-                modifier = Modifier
-                    .height(230.dp)
-                    .fillMaxWidth(0.745f)
-                    .clip(RoundedCornerShape(8.dp)),
+            centralDiet?.let {
+                Image(
+                        painter = painterResource(id = R.drawable.sample_food),
+                        contentDescription = it.name,
+                        modifier = Modifier
+                                .height(230.dp)
+                                .fillMaxWidth(0.745f)
+                                .clip(RoundedCornerShape(8.dp)),
 
-                contentScale = ContentScale.Crop
-            )
+                        contentScale = ContentScale.Crop
+                )
+            }
+
             Spacer(modifier = Modifier.weight(1f))
             Column {
-                OverlayImage("돈까스")
-                Spacer(modifier = Modifier.height(7.dp))
-                OverlayImage("치킨")
-                Spacer(modifier = Modifier.height(7.dp))
-                OverlayImage("바오밥나무")
+                diets.value.take(3).forEach { diet ->
+                    OverlayImage(diet, onSelect = onSelectDiet)
+                    Spacer(modifier = Modifier.height(7.dp))
+                }
+
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Column {
-            Row {
-                InnerText(text = "탄수화물")
-                Spacer(modifier = Modifier.weight(1f))
-                InnerText(text = "102g")
+        centralDiet?.let {
+            Column {
+                Row {
+                    InnerText(text = "탄수화물")
+                    Spacer(modifier = Modifier.weight(1f))
+                    InnerText(text = String.format("%.2f g", it.carbohydrate))
+                }
+                Row {
+                    InnerText(text = "단백질")
+                    Spacer(modifier = Modifier.weight(1f))
+                    InnerText(text = String.format("%.2f g", it.protein))
+                }
+                Row {
+                    InnerText(text = "지방")
+                    Spacer(modifier = Modifier.weight(1f))
+                    InnerText(text = String.format("%.2f g", it.fat))
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
-            Row {
-                InnerText(text = "단백질")
-                Spacer(modifier = Modifier.weight(1f))
-                InnerText(text = "102g")
-            }
-            Row {
-                InnerText(text = "지방")
-                Spacer(modifier = Modifier.weight(1f))
-                InnerText(text = "102g")
-            }
+
         }
+
         Spacer(modifier = Modifier.weight(1f))
         if (editable) {
             Buttons()
