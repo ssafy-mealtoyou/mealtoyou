@@ -8,7 +8,7 @@ class PreferenceUtil(context:Context) {
     private val prefs: SharedPreferences=context.getSharedPreferences("name",Context.MODE_PRIVATE)
 
     fun getValue(key: String) : String {
-        return prefs.getString(key, MainApplication.prefs.getValue("accessToken")).toString()
+        return prefs.getString(key, "").toString()
     }
     fun setValue(key: String, value: String) {
         prefs.edit().putString(key, value).apply()
