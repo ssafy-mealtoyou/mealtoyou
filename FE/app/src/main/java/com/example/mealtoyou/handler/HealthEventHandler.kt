@@ -75,9 +75,10 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
 
                     val healthData = HealthData(bmr, measuredDate, bodyFat,skeletalMuscle,weight)
 //                    if (bmr !== 0.0 && bodyFat !== 0.0 && weight !== 0.0 && skeletalMuscle !== 0.0) {
-                    sendHealthData(healthData = healthData)
+                    sendHealthData(healthData = healthData) {
+                        onSuccess.invoke()
+                    }
                     viewModel._bodyResult.value= HealthData(bmr, measuredDate, bodyFat, skeletalMuscle, weight)
-                    onSuccess()
 //                    }
                 } catch (e: Exception) {
                     Log.e("HealthData", "Error reading health data: ${e.message}")
@@ -89,11 +90,12 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
         }
     }
 
-    fun sendHealthData(healthData: HealthData) {
+    fun sendHealthData(healthData: HealthData, onSuccess: () -> Unit) {
         RetrofitClient.healthInstance.postHealthData(healthData).enqueue(object :
             Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
+                    onSuccess()
                     Log.d("API", "Data sent successfully")
                 } else {
                     Log.e("API", "Failed to send data, response code: ${response.code()} + ${response.message()}")

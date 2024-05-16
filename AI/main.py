@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, Exercise, UserHealth, FoodCombination, User, \
   Diet
 from food_recommendation import get_food_recommendations, NutrientInfo
-from other_foods_recommendation import get_otherFoods, Info
+from other_foods_recommendation import get_otherFoods, Info, NutrientDiff
 import py_eureka_client.eureka_client as eureka_client
 import os
 import socket
@@ -100,17 +100,11 @@ async def get_recommendations(user_id: UserIDRequest,
   morning_start = time(6, 0)
   morning_end = time(11, 30)
   afternoon_end = time(17, 30)
-  print(5555555555555)
-  print(current_time)
-  print(morning_start)
-  print(morning_end)
-  print(afternoon_end)
   if morning_start <= current_time <= morning_end:
     calories = calories // 3
   elif morning_end < current_time <= afternoon_end:
     calories = calories // 2
 
-  print("calories: ", calories)
   if calories is None:
     return user_id, "Error: Could not calculate calories"
 
@@ -200,15 +194,54 @@ async def get_recommendations(user_id: UserIDRequest,
 
 # 음식 수정 api
 @app.post("/asd")
-def find_other_foods(info: Info):
-  return get_otherFoods(info)
+def find_other_foods(info: Info,db: Session = Depends(get_db)):
+  user_data = db.query(User).filter(User.user_id == info.user_id).first()
+  goal_weight = user_data.goal_weight
+  current_weight = user_data.weight
+  if (goal_weight is None):
+    goal_weight = current_weight
+  carb_ratio, protein_ratio, fat_ratio = get_nutrient_ratios(current_weight,
+                                                             goal_weight)
+  calories = calculate_calories(info.user_id, db)
+  # 한끼 최소 500칼로리
+  if (calories < 500):
+    calories = 500
+  kst = pytz.timezone('Asia/Seoul')
+  current_time = datetime.now(kst).time()
+
+  morning_start = time(6, 0)
+  morning_end = time(11, 30)
+  afternoon_end = time(17, 30)
+  if morning_start <= current_time <= morning_end:
+    calories = calories // 3
+  elif morning_end < current_time <= afternoon_end:
+    calories = calories // 2
+
+  carbs_calories = calories * carb_ratio
+  protein_calories = calories * protein_ratio
+  fat_calories = calories * fat_ratio
+
+  carbs = round(carbs_calories / 4, 2)
+  proteins = round(protein_calories / 4, 2)
+  fats = round(fat_calories / 9, 2)
+
+  diff = NutrientDiff(
+      food_name=info.food_name,
+      target_calories=calories,
+      target_carbs=carbs,
+      target_protein=proteins,
+      target_fat=fats,
+      now_calories=calories - info.food_calories,
+      now_carbs=carbs - info.food_carbohydrate,
+      now_protein=proteins - info.food_protein,
+      now_fat=fats - info.food_fat
+  )
+  return get_otherFoods(diff)
 
 
 def read_user_health(user_id: int, db: Session = Depends(get_db)):
   user_health_data = db.query(UserHealth).filter(
       UserHealth.user_id == user_id).first()
-  print(user_health_data.bmr)
-  print(user_health_data)
 
 
 # 사용자의 칼로리 계산
@@ -289,7 +322,6 @@ def process_user(user, split_factor):
   user_id, current_weight = user
   with SessionLocal() as db:
     user_data = db.query(User).filter(User.user_id == user_id).first()
-    print(f"Processing {user_id}, {current_weight}, user data: {user_data}")
 
     goal_weight = user_data.goal_weight
     if (goal_weight is None):
@@ -301,7 +333,6 @@ def process_user(user, split_factor):
     # 한끼 최소 500칼로리
     if (calories < 500):
       calories = 500
-    print("calories: ", calories)
     if calories is None:
       return user_id, "Error: Could not calculate calories"
 
