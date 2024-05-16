@@ -81,12 +81,17 @@ fun bodyModel(bodyData: List<BodyResponseData>): CartesianChartModel {
 fun exerciseModel(bodyData: List<ExerciseData>): CartesianChartModel {
     val steps = bodyData.map { it.steps.toFloat() }
     val caloriesBurned = bodyData.map { it.caloriesBurned.toFloat() }
-    Log.d("step","${steps.get(0).toFloat()}")
+
+    if (steps.isNotEmpty()) {
+        Log.d("step","${steps[0]}")
+    } else {
+        Log.d("step","step is empty")
+    }
 
     return CartesianChartModel(
         LineCartesianLayerModel.build {
-            series(steps)
-            series(caloriesBurned)
+            series(steps.ifEmpty { listOf(0.0f) })
+            series(caloriesBurned.ifEmpty { listOf(0.0f) })
         }
     )
 }
