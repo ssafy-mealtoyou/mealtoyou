@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.ui.theme.main.feedback.MyFeedBack
 import com.example.mealtoyou.ui.theme.main.food.DateLabel
 import com.example.mealtoyou.ui.theme.main.report.MyTodayReport
@@ -39,7 +40,7 @@ fun MainPage(supplementViewModel: SupplementViewModel, userViewModel: UserViewMo
     LaunchedEffect(true) {
         userViewModel.updateUserHome()
         Log.d("MainPage", "LaunchedEffect called4")
-        supplementViewModel.loadDiets(1)
+        supplementViewModel.loadDiets(MainApplication.prefs.getValue("userId").toInt())
 
     }
 

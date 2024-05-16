@@ -1,5 +1,6 @@
 package com.example.mealtoyou.ui.theme.main.food.nomal
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -56,10 +57,43 @@ fun RecommendationContent(editable: Boolean, diet: Diet?) {
     Box(contentAlignment = Alignment.Center) {
         if (showTemp.value) {
             if (diet != null) {
-                diet.dietFoods?.let { FoodDetail(it,selectedItem.value, showTemp, editable, diets) }
+                diet.dietFoods?.let { dietFoods ->
+                    FoodDetail(
+                        dietFoods = dietFoods,
+                        selectedItem = selectedItem.value,
+                        showTemp = showTemp,
+                        editable = editable,
+                        diets = diets,
+                        onUpdate = { updatedDiet ->
+                            // Update the list of diets with the updatedDiet
+                            val updatedList = diet.dietFoods!!.toMutableList()
+                            val index = updatedList.indexOfFirst { it.name == selectedItem.value }
+                            if (index >= 0) {
+                                updatedList[index] = updatedDiet
+                                diet.dietFoods = updatedList
+
+                                val totalCalories = updatedList.sumOf { it.calories }.toInt()
+                                val totalCarbohydrate = updatedList.sumOf { it.carbohydrate }
+                                val totalProtein = updatedList.sumOf { it.protein }
+                                val totalFat = updatedList.sumOf { it.fat }
+
+                                val totalMacros = (totalCarbohydrate * 4) + (totalProtein * 4) + (totalFat * 9)
+                                val carbohydratePer = ((totalCarbohydrate * 4) / totalMacros * 100).toInt()
+                                val proteinPer = ((totalProtein * 4) / totalMacros * 100).toInt()
+                                val fatPer = ((totalFat * 9) / totalMacros * 100).toInt()
+
+                                diet.totalCalories = totalCalories
+                                diet.carbohydratePer = carbohydratePer
+                                diet.proteinPer = proteinPer
+                                diet.fatPer = fatPer
+                            }
+                        }
+                    )
+                }
             }
         } else {
             if (diet != null) {
+                Log.d("......",diet.toString())
                 NormalContent(showTemp, selectedItem, editable, diet)
             }
         }

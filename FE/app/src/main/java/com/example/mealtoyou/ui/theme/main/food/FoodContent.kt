@@ -62,7 +62,7 @@ fun NormalContent(
         NutrientInfo(diet)
 
         if (diet.dietFoods != null) {
-            FoodItems(showTemp, selectedItem, editable, diet.dietFoods)
+            FoodItems(showTemp, selectedItem, editable, diet.dietFoods!!)
         }
         else {
             Spacer(modifier = Modifier.height(9.dp))
