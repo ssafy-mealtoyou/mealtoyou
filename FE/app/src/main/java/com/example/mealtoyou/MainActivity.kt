@@ -52,7 +52,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.example.mealtoyou.viewmodel.HealthViewModel
-import com.example.mealtoyou.data.repository.PreferenceUtil
 import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.example.mealtoyou.ui.theme.group.SearchScreen
 import com.example.mealtoyou.viewmodel.AIFeedbackViewModel
@@ -222,7 +221,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination =startDestination,
-//                    startDestination = "mainPage",
+//                    startDestination = "마이",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
