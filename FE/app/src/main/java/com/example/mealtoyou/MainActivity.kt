@@ -48,8 +48,14 @@ import androidx.compose.ui.unit.sp
 import android.util.Log
 
 import androidx.activity.viewModels
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.mealtoyou.handler.FcmEventHandler
 import com.example.mealtoyou.viewmodel.HealthViewModel
+import com.example.mealtoyou.data.repository.PreferenceUtil
+import com.example.mealtoyou.ui.theme.diet.DietViewModel
+import com.example.mealtoyou.ui.theme.group.SearchScreen
+import com.example.mealtoyou.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -63,6 +69,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var healthEventHandler: HealthEventHandler
     private lateinit var googleSignInClient: GoogleSignInClient
 
+    private lateinit var userViewModel: UserViewModel
 
     @Composable
     fun SetupSystemBars() {
@@ -101,6 +108,9 @@ class MainActivity : ComponentActivity() {
         }
         val supplementViewModel: SupplementViewModel by viewModels()
         val healthViewModel: HealthViewModel by viewModels()
+
+        this.userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
+
         // 액티비티가 생성될 때 데이터 로드
         supplementViewModel.supplementScreen()
         // GoogleSignInOptions 설정
@@ -208,7 +218,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination =startDestination,
-                    // startDestination = "chat",
+//                    startDestination = "mainPage",
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -244,7 +254,8 @@ class MainActivity : ComponentActivity() {
                         ReportPage()
                     }
                     composable("식단") {
-                        DietPage()
+                        val viewModel: DietViewModel = viewModel() // viewModel 생성
+                        DietPage(viewModel)
                     }
                     composable("그룹") {
                         GroupPage(navController)

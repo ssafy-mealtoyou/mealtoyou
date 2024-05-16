@@ -6,8 +6,12 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PUT
+import com.example.mealtoyou.data.UserHomeResponse
 
 interface UserApiService {
+    @GET("api/user-service/users/home")
+    suspend fun getUserHomeSummary() : Response<UserHomeResponse>
+
     @PUT("api/user-service/users/weight")
     fun putUserWeight(@Body weight: Map<String, String>): Call<Void>
 

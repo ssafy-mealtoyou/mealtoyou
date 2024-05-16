@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,17 +42,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mealtoyou.R
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.CircleProgressBar
 import com.example.mealtoyou.ui.theme.shared.VerticalProgressBar
+import com.example.mealtoyou.viewmodel.UserViewModel
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
 
 @Composable
-fun WeightProgress(value: Float, text: String) {
+fun WeightProgress(value: Float, text: String, centerText: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        CircleProgressBar(value, 80.dp)
+        CircleProgressBar(value, 80.dp, centerText)
         Spacer(modifier = Modifier.height(9.dp))
         Text(
             text = text,
@@ -221,7 +225,65 @@ fun ChallengeSetup() {
 }
 
 @Composable
-fun Challenge(modifier: Modifier, color: Color, setupAble: Boolean) {
+fun Challenge(modifier: Modifier, color: Color, setupAble: Boolean, userViewModel: UserViewModel = viewModel()) {
+
+    val userHomeResponse = userViewModel.userHomeResponse
+
+    LaunchedEffect(true) {
+        userViewModel.updateUserHome()
+    }
+
+    fun getUserGoalWeightPer(): Float {
+        val ans: Float
+        val diffStart = userHomeResponse.goalWeight - userHomeResponse.goalStartWeight
+        val diffCurrent = userHomeResponse.currentWeight - userHomeResponse.goalStartWeight
+        ans = (diffCurrent / diffStart).toFloat()
+        if (ans.isNaN())
+            return 0f
+        return ans.coerceIn(0.0f, 1.0f)
+    }
+
+    fun getUserGoalDateDiff(): Int {
+        if (userHomeResponse.goalStartDate == "" || userHomeResponse.goalEndDate == "") return 0
+        return try {
+            val today = LocalDate.now()
+            val endDate = LocalDate.parse(userHomeResponse.goalEndDate)
+
+            if (today > endDate) 0 else ChronoUnit.DAYS.between(today, endDate).toInt()
+        } catch (e: Exception) {
+            // 예외 발생 시 로그를 남기고 0을 반환
+            e.printStackTrace()
+            0
+        }
+    }
+
+    fun getUserRemainingGoalDatePercentage(): Float {
+        if (userHomeResponse.goalStartDate == "" || userHomeResponse.goalEndDate == "") return 0f
+
+        try {
+            val startDate = LocalDate.parse(userHomeResponse.goalStartDate)
+            val endDate = LocalDate.parse(userHomeResponse.goalEndDate)
+            val today = LocalDate.now()
+
+            // 시작 날짜가 끝 날짜나 현재 날짜보다 후면 0을 반환
+            if (startDate > endDate || startDate > today) return 0f
+
+            // 전체 기간과 남은 기간을 계산
+            val totalDays = ChronoUnit.DAYS.between(startDate, endDate).toFloat()
+            val remainingDays = ChronoUnit.DAYS.between(today, endDate).toFloat()
+
+            // 남은 기간의 비율을 계산하여 반환
+            return if (totalDays == 0f) 0f else 1.0f - remainingDays / totalDays
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return 0f
+    }
+
+    val userGoalWeightPer = getUserGoalWeightPer()
+    val userRemainingGoalDate = getUserGoalDateDiff()
+    val userRemainingGoalDatePer = getUserRemainingGoalDatePercentage()
+
     Box(
         modifier = modifier
             .height(165.dp)
@@ -264,18 +326,19 @@ fun Challenge(modifier: Modifier, color: Color, setupAble: Boolean) {
 
             Spacer(modifier = Modifier.weight(1f))
             Row {
-                WeightProgress(value = 0.7f, "몸무게")
+                WeightProgress(value = userGoalWeightPer, "몸무게", "${userHomeResponse.currentWeight.toInt()}kg")
                 Spacer(modifier = Modifier.width(24.dp))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     VerticalProgressBar(
-                        progress = 0.7f,
+                        progress = userRemainingGoalDatePer,
                         color = Color(0xFF6D31ED),
                         width = 29.dp,
-                        height = 80.dp
+                        height = 80.dp,
+                        bgColor = if (setupAble) Color(0xFFCCCCCC) else Color(0xFFF3F4FF)
                     )
                     Spacer(modifier = Modifier.height(9.dp))
                     Text(
-                        text = "D-12",
+                        text = "D-$userRemainingGoalDate",
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = Pretend,
                         lineHeight = 20.sp,

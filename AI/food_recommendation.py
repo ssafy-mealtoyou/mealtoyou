@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import openai
@@ -6,14 +8,15 @@ from pydantic import BaseModel
 from scipy.optimize import differential_evolution
 from database import SessionLocal, FoodCombination
 from config import Config
+import os
 
 
 # openai API 키 인증
 openai.api_key = Config.OPENAI_API_KEY
 model = "gpt-3.5-turbo"
-
+redis_ip = os.getenv("REDIS", "localhost")
 # Redis 클라이언트 인스턴스 생성
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_client = redis.StrictRedis(host=redis_ip, port=6379, db=0)
 PERIOD = 60 * 60 * 24 * 3  # 3일간 캐싱
 
 # 기본 역할 설정
@@ -125,7 +128,7 @@ def objective(selections, category_data, target,total, active_categories):
 
   return np.sum(difference)
 
-def get_food_recommendations(nutrient_info,user_id=1, max_attempts=10):
+def get_food_recommendations(nutrient_info,user_id=1, max_attempts=15):
   # 데이터 불러오기
   df_nutrients = load_data()
   print(1231321)
@@ -145,6 +148,7 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=10):
 
   bounds = [(0, len(category_data[cat]) - 1) for cat in active_categories]
 
+  recommendations = []
   attempt = 0
   while attempt < max_attempts:
     result = differential_evolution(objective, bounds, args=(category_data, target, total, active_categories), strategy='best1bin', maxiter=2000, popsize=15, tol=0.1, mutation=(0.5, 1), recombination=0.7)
@@ -175,12 +179,37 @@ def get_food_recommendations(nutrient_info,user_id=1, max_attempts=10):
           selected_food = category_data[cat].iloc[selected_food_idx]
           print(f"Selected {cat}: {selected_food['식품명']}, Quantity: {selected_food['1회제공량']/to*total}(g/mg)")
 
+        dietFoods = []
+        for i, cat in enumerate(active_categories):
+          selected_food_idx = int(result.x[i])
+          selected_food = category_data[cat].iloc[selected_food_idx]
+          dietFood = {
+            'name': selected_food['식품명'],
+            'imageUrl': '',  # 실제 이미지 URL이 필요
+            'calories': round(float(selected_food['에너지(㎉)']),2),
+            'carbohydrate': round(float(selected_food['탄수화물(g)']),2),
+            'protein': round(float(selected_food['단백질(g)']),2),
+            'fat': round(float(selected_food['지방(g)']),2)
+          }
+          dietFoods.append(dietFood)
 
-        # Redis에 새로운 식단 조합을 저장
+
+      # Redis에 새로운 식단 조합을 저장
         redis_client.setex(key, PERIOD, "recommended")
+        diet_id = store_food_data(selected_foods, scaled_total_nutrients[0], scaled_total_nutrients[1], scaled_total_nutrients[2], scaled_total_nutrients[3])
+        # store_food_data(selected_foods,scaled_total_nutrients[0],scaled_total_nutrients[1],scaled_total_nutrients[2],scaled_total_nutrients[3])
 
-        store_food_data(selected_foods,scaled_total_nutrients[0],scaled_total_nutrients[1],scaled_total_nutrients[2],scaled_total_nutrients[3])
-        return FoodRecommendations(selected_foods=selected_foods, total_nutrients=scaled_total_nutrients)
+        recommendation = {
+          "dietId": diet_id,
+          "totalCalories": int(scaled_total_nutrients[0]),
+          "carbohydratePer": int(scaled_total_nutrients[1] / scaled_total_nutrients[0] * 100),
+          "proteinPer": int(scaled_total_nutrients[2] / scaled_total_nutrients[0] * 100),
+          "fatPer": int(scaled_total_nutrients[3] / scaled_total_nutrients[0] * 100),
+          'dietFoods': dietFoods
+        }
+        recommendations.append(recommendation)
+        return recommendations
+      #FoodRecommendations(selected_foods=selected_foods, total_nutrients=scaled_total_nutrients)
       else:
         print("Combination not suitable, retrying...")
     else:
@@ -210,6 +239,7 @@ def store_food_data(food_names, total_calories, carbs, protein, fat):
   try:
     session.add(food_combination)
     session.commit()
+    return food_combination.id
   except Exception as e:
     print("데이터 저장 중 오류 발생:", str(e))
     session.rollback()

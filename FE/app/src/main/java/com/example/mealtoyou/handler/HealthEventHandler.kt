@@ -90,7 +90,7 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     }
 
     fun sendHealthData(healthData: HealthData) {
-        RetrofitClient.healthInstance.postHealthData("Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk",healthData).enqueue(object :
+        RetrofitClient.healthInstance.postHealthData(healthData).enqueue(object :
             Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
@@ -161,7 +161,6 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     private suspend fun sendExerciseData(exerciseData: ExerciseData) {
         try {
             val response = RetrofitClient.healthInstance.postExerciseData(
-                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJVTTBCSFpOU3FMZENLN2hOV20xYnJnPT0iLCJpYXQiOjE3MTUxNDA4NzMsImV4cCI6MTcxNTIyNzI3M30.ZGIfU6HbKmcvvv75EzX0Y5uN2SaiAI8NTtpJ09yDsDk",
                 exerciseData
             )
             if (response.isSuccessful) {

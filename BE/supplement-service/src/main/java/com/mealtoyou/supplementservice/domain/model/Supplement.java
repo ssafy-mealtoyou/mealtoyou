@@ -1,5 +1,6 @@
 package com.mealtoyou.supplementservice.domain.model;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;

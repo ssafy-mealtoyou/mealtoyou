@@ -19,6 +19,8 @@ public record UserInfoResponseDto(
 	String userImageUrl,
 	Integer goalWeight,
 	LocalDate goalEndDate,
+	Double goalStartWeight,
+	LocalDate goalStartDate,
 	String role
 ) {
 	public static UserInfoResponseDto fromEntity(User user) {
@@ -34,6 +36,8 @@ public record UserInfoResponseDto(
 			.userImageUrl(user.getUserImageUrl())
 			.goalWeight(user.getGoalWeight())
 			.goalEndDate(user.getGoalEndDate())
+			.goalStartWeight(user.getGoalStartWeight())
+			.goalStartDate(user.getGoalStartDate())
 			.role(user.getRole())
 			.build();
 	}
