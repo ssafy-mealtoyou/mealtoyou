@@ -261,14 +261,15 @@ fun getBmiCategory(bmi: Double): String {
 @Composable
 fun BodyInfoRow(bodyData: List<BodyResponseData>?) {
     val bmiCategory = bodyData?.last()?.let { getBmiCategory(it.bmi) }
-
+    val bmiValue = bodyData?.last()?.bmi
+    val formattedBmi = String.format("%.1f", bmiValue)
     Row {
         if (bodyData != null) {
             InfoColumn("기초 대사량", "${bodyData.last().bmr}kcal")
         }
         Spacer(modifier = Modifier.width(17.dp))
         if (bodyData != null) {
-            InfoColumn("bmi 지수", "${bodyData.last().bmi} ($bmiCategory)")
+            InfoColumn("bmi 지수", "$formattedBmi ($bmiCategory)")
         }
 //        Spacer(modifier = Modifier.width(17.dp))
 //        InfoColumn("CID 유형", "표준체중 일반형(I자)")
