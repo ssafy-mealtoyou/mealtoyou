@@ -2,6 +2,11 @@ package com.example.mealtoyou.ui.theme.main.food.nomal
 
 import DietCreationViewModel
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
@@ -41,13 +46,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -334,7 +342,6 @@ private fun FoodBottomSheetContent(
     setContent: (String) -> Unit = {},
     imageBoolean: Boolean = false
 ) {
-    val initialState = imageBoolean
     val foodSearchViewModel: FoodSearchViewModel = viewModel()
     var showDialog by remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
@@ -347,27 +354,83 @@ private fun FoodBottomSheetContent(
         mutableStateListOf<SwipeFoodItemModel>()
     }
 
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageBoolean by remember { mutableStateOf(false) }
+
+    // 이미지 선택 창을 표시하도록 설정합니다.
+    // 실제 앱에서는 사용자 상호작용에 따라 이 값을 변경해야 합니다.
+    LaunchedEffect(Unit) {
+        showImagePickerDialog = true
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         if (!showDialog) {
-            if (imageBoolean) {
+
+            if (showImagePickerDialog) {
+                // 이미지 입력 창을 표시합니다.
+                AlertDialog(
+                    onDismissRequest = {
+                        showImagePickerDialog = false
+                    },
+                    title = { Text("이미지 선택") },
+                    text = { Text("이미지를 선택해 주세요.") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                // 이미지 선택 로직 구현
+                                // 예시에서는 대화 상자를 닫고 imageBoolean 값을 true로 설정합니다.
+                                showImagePickerDialog = false
+                                imageBoolean = true
+                                // 실제 앱에서는 여기서 이미지 피커를 열고 사용자의 이미지 선택을 처리해야 합니다.
+                            }
+                        ) {
+                            Text("선택")
+                        }
+                    }
+                )
+            } else if (imageBoolean) {
+                // 선택된 이미지를 표시하고 서버로 전송
                 Box(
                     modifier = Modifier
                         .height(200.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                 ) {
+                    // 사용자가 선택한 이미지를 표시합니다.
+                    // 예시에서는 임시 이미지를 사용합니다.
                     Image(
                         painter = painterResource(id = R.drawable.sample_food),
-                        contentDescription = "Sample Food Image",
+                        contentDescription = "샘플 음식 이미지",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
+                    // 서버로 이미지를 전송하고 음식 목록을 검색하는 로직을 구현해야 합니다.
                 }
             }
+
+//            if (imageBoolean) {
+//                // TODO 이미지 입력 받는 창이 뜬 후 입력 받아서,
+//                //  1. 입력 받은 이미지를 아래 Image 컴포넌트에 넣기
+//                //  2. 해당 이미지를 서버에 전송하고 음식 리스트를 전달받고 목록에 추가
+//                Box(
+//                    modifier = Modifier
+//                        .height(200.dp)
+//                        .fillMaxWidth()
+//                        .clip(RoundedCornerShape(8.dp))
+//                ) {
+//                    Image(
+//                        painter = painterResource(id = R.drawable.sample_food),
+//                        contentDescription = "Sample Food Image",
+//                        modifier = Modifier.fillMaxSize(),
+//                        contentScale = ContentScale.Crop
+//                    )
+//                }
+//            }
 
             Spacer(modifier = Modifier.height(16.dp))
             Box(
@@ -414,7 +477,6 @@ private fun FoodBottomSheetContent(
             ) {
                 Button(
                     onClick = {
-                        // TODO: 식단 등록 API 요청 전송
                         Log.d("request", "식단 등록 요청 전송 ${swipeFoodItemList.toList()}")
                         dietCreationViewModel.createDietFromSwipeFoodItems(swipeFoodItemList.toList())
                         setContent("default")
@@ -491,6 +553,7 @@ private fun FoodBottomSheetContent(
     }
 
 }
+
 
 @Composable
 fun AddDiet() {
