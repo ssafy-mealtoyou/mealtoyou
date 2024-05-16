@@ -2,6 +2,8 @@ package com.mealtoyou.alarmservice.application.service;
 
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -43,16 +45,28 @@ public class FcmService {
 		FirebaseApp.initializeApp(options);
 	}
 
-	public Mono<Void> sendMessageByToken(String title, String body, String token) {
+	public Mono<Void> sendMessageByToken(String data, String token, Boolean flag) {
+
 		return Mono.fromCallable(() -> {
 			try {
-				log.info("알림 전송 {} {} {}", title, body, token);
-				FirebaseMessaging.getInstance().send(Message.builder()
-					.putData("title", title) // 데이터의 키-값 쌍으로 'title'과 'body'를 추가
-					.putData("body", body)
-					.putData("clickAction", "clickAction")
-					.setToken(token)
-					.build());
+				log.info("알림 전송 {} {} {}", data, token, flag.toString());
+				if (flag) {
+					FirebaseMessaging.getInstance().send(Message.builder()
+						.putData("title", "영양제 알림") // 데이터의 키-값 쌍으로 'title'과 'body'를 추가
+						.putData("body",
+							Arrays.stream(data.split(" ")).skip(1).collect(Collectors.joining(" ")) + " 복용 시간 입니다!")
+						.putData("extraInformation", data.split(" ")[0])
+						.setToken(token)
+						.build());
+					System.out.println(LocalTime.now() + token);
+				} else {
+					FirebaseMessaging.getInstance().send(Message.builder()
+						.putData("title", "단식 알림") // 데이터의 키-값 쌍으로 'title'과 'body'를 추가
+						.putData("body", "단식 " + data + " 시간 입니다!")
+						.setToken(token)
+						.build());
+					System.out.println(LocalTime.now() + token);
+				}
 				System.out.println(LocalTime.now() + token);
 				return null; // Mono<Void>에 맞춰서 null 반환
 			} catch (FirebaseMessagingException e) {

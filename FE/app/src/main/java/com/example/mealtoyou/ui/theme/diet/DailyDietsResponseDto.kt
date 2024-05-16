@@ -10,12 +10,12 @@ data class DailyDietsResponseDto(
     val diets: List<Diet>
 )
 data class Diet(
-    val dietId: Int,
-    val totalCalories: Int,
-    val carbohydratePer: Int,
-    val proteinPer: Int,
-    val fatPer: Int,
-    val dietFoods: List<DietFood>?
+        val dietId: Int,
+        var totalCalories: Int,
+        var carbohydratePer: Int,
+        var proteinPer: Int,
+        var fatPer: Int,
+        var dietFoods: List<DietFood>?
 )
 
 data class DietFood(

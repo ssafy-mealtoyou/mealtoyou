@@ -1,6 +1,5 @@
 package com.mealtoyou.supplementservice.application.service;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -77,6 +76,16 @@ public class SupplementService {
 		return supplementRepository.deleteById(id)
 			.then(Mono.just("Supplement deleted successfully"))
 			.onErrorResume(e -> Mono.just("Failed to delete supplement: " + e.getMessage()));
+	}
+
+	public Mono<String> patchSupplement(String token, Long id) {
+		Long userId = jwtTokenProvider.getUserId(token);
+		return supplementRepository.findBySupplementId(id).flatMap(supplement -> {
+				supplement.updateSupplementTakenYn(true);
+				return supplementRepository.save(supplement);
+			})
+			.then(Mono.just("Supplement update successfully"))
+			.onErrorResume(e -> Mono.just("Failed to update supplement: " + e.getMessage()));
 	}
 
 	public Mono<Void> resetTakenYn() {
