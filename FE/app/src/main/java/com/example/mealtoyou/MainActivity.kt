@@ -55,6 +55,7 @@ import com.example.mealtoyou.viewmodel.HealthViewModel
 import com.example.mealtoyou.data.repository.PreferenceUtil
 import com.example.mealtoyou.ui.theme.diet.DietViewModel
 import com.example.mealtoyou.ui.theme.group.SearchScreen
+import com.example.mealtoyou.viewmodel.AIFeedbackViewModel
 import com.example.mealtoyou.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -70,6 +71,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private lateinit var userViewModel: UserViewModel
+    private lateinit var aiFeedbackViewModel: AIFeedbackViewModel
 
     @Composable
     fun SetupSystemBars() {
@@ -110,6 +112,7 @@ class MainActivity : ComponentActivity() {
         val healthViewModel: HealthViewModel by viewModels()
 
         this.userViewModel = ViewModelProvider(this)[UserViewModel::class.java]
+        this.aiFeedbackViewModel = ViewModelProvider(this)[AIFeedbackViewModel::class.java]
 
         // 액티비티가 생성될 때 데이터 로드
         supplementViewModel.supplementScreen()

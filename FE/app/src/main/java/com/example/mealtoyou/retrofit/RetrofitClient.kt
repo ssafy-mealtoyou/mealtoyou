@@ -1,5 +1,6 @@
 package com.example.mealtoyou.retrofit
 
+import com.example.mealtoyou.api.AIFeedbackApiService
 import com.example.mealtoyou.api.AuthApiService
 import com.example.mealtoyou.api.CommunityApiService
 import com.example.mealtoyou.api.Diet2ApiService
@@ -138,6 +139,14 @@ object RetrofitClient {
         retrofit.create(Diet2ApiService::class.java)
     }
 
-
+    val aiFeedbackInstance: AIFeedbackApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+//            .baseUrl("$LOCAL_HOST:8080")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+        retrofit.create(AIFeedbackApiService::class.java)
+    }
 
 }
