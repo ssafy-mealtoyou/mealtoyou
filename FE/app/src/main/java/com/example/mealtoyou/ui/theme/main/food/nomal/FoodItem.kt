@@ -85,6 +85,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -172,7 +173,9 @@ fun FoodItemSearch(
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.Transparent)
             ) {
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Box(
                         modifier = Modifier
                             .height(50.dp)
@@ -187,29 +190,36 @@ fun FoodItemSearch(
                         )
                     }
                     Spacer(modifier = Modifier.width(14.dp))
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = name,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = Color(0xFF171A1F)
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "$energy Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "$energy Kcal",
+                            fontSize = 10.sp,
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(14.dp))
                     Button(
                         onClick = onItemSelected,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                         shape = RoundedCornerShape(12),
                         modifier = Modifier
                             .width(78.dp)
-                            .fillMaxHeight()
-                            .padding(0.dp)
+                            .height(50.dp)
                     ) {
                         Text(
                             text = "선택",
