@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("com.google.gms.google-services")
+    id("kotlin-parcelize") // add
 }
 
 android {
@@ -116,7 +117,8 @@ dependencies {
     implementation (libs.okhttp)
     implementation (libs.squareup.logging.interceptor)
     implementation (libs.gson)
-    implementation("io.coil-kt:coil-compose:1.4.0")
+//    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // The view calendar library
     implementation("com.kizitonwose.calendar:view:2.5.1")
@@ -128,5 +130,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0")
 
 }
