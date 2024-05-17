@@ -40,7 +40,7 @@ class DietViewModel : ViewModel() {
     fun fetchData(authorization: String, date: String) {
         viewModelScope.launch {
             try {
-                val response = diet2ApiService.getDietList(authorization, date)
+                val response = diet2ApiService.getDietList(date)
                 if (response.isSuccessful) {
                     val data = response.body()
                     _dailyDiets.value = data

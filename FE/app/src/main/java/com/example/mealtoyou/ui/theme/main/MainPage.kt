@@ -38,9 +38,13 @@ fun MainPage(supplementViewModel: SupplementViewModel, userViewModel: UserViewMo
     val viewModel: SupplementViewModel = viewModel() // Assuming
     val dietsState = supplementViewModel.diets.collectAsState()
     LaunchedEffect(true) {
-        userViewModel.updateUserHome()
         Log.d("MainPage", "LaunchedEffect called4")
-        supplementViewModel.loadDiets(MainApplication.prefs.getValue("userId").toInt())
+        try {
+            userViewModel.updateUserHome()
+            supplementViewModel.loadDiets(MainApplication.prefs.getValue("userId").toInt())
+        } catch (e: Exception) {
+            Log.d("MainPage", "LaunchedEffect 오류 발생")
+        }
 
     }
 

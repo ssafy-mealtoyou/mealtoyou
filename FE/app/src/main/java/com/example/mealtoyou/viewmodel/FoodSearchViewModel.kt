@@ -11,9 +11,11 @@ class FoodSearchViewModel: ViewModel() {
     var foodSearchResult = mutableStateOf<List<FoodSearchData>?>(null)
         private set
 
-    fun foodSearch(keyword: String) {
+    fun foodSearch(keyword: String, onResult: (List<FoodSearchData>?) -> Unit = {}) {
         viewModelScope.launch {
-            foodSearchResult.value = FoodSearchRepository.sendFoodSearchData(keyword)
+            val result = FoodSearchRepository.sendFoodSearchData(keyword)
+            foodSearchResult.value = result
+            onResult(result) // 콜백을 통해 결과를 반환
         }
     }
 }

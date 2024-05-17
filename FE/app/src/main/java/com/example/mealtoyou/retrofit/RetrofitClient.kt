@@ -5,8 +5,9 @@ import com.example.mealtoyou.MainActivity
 import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.api.AuthApiService
 import com.example.mealtoyou.api.CommunityApiService
-import com.example.mealtoyou.api.Diet2ApiService
 import com.example.mealtoyou.api.DietApiService
+import com.example.mealtoyou.api.DietImageApiService
+import com.example.mealtoyou.api.Diet2ApiService
 import com.example.mealtoyou.api.FcmApiService
 import com.example.mealtoyou.api.FoodSearchApiService
 import com.example.mealtoyou.api.HealthApiService
@@ -162,6 +163,7 @@ object RetrofitClient {
             .build()
         retrofit.create(User2ApiService::class.java)
     }
+
     val aiFeedbackInstance: AIFeedbackApiService by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -170,6 +172,16 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
         retrofit.create(AIFeedbackApiService::class.java)
+    }
+
+    val dietImageInstance: DietImageApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        retrofit.create(DietImageApiService::class.java)
     }
 
 }
