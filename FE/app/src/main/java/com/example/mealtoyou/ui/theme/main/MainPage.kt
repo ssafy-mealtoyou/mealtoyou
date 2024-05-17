@@ -40,7 +40,11 @@ fun MainPage(supplementViewModel: SupplementViewModel, userViewModel: UserViewMo
     LaunchedEffect(true) {
         userViewModel.updateUserHome()
         Log.d("MainPage", "LaunchedEffect called4")
-        supplementViewModel.loadDiets(MainApplication.prefs.getValue("userId").toInt())
+//        supplementViewModel.loadDiets(MainApplication.prefs.getValue("userId").toInt())
+        try {
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
     }
 

@@ -10,7 +10,6 @@ import retrofit2.http.Query
 interface Diet2ApiService {
     @GET("api/food-service/api/diets")
     suspend fun getDietList(
-        @Header("Authorization") authorization: String,
         @Query("date") date: String
     ): Response<DailyDietsResponseDto>
 }
