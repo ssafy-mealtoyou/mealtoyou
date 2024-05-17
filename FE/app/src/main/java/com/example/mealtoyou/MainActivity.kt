@@ -145,6 +145,7 @@ class MainActivity : ComponentActivity() {
             sendFcmToken()
         }
         setupPeriodicWork()
+        askNotificationPermission()
     }
 
     @Composable
@@ -220,7 +221,7 @@ class MainActivity : ComponentActivity() {
             Surface(modifier = Modifier.padding(innerPadding)) {
                 NavHost(
                     navController = navController,
-                    startDestination ="mainPage",
+                    startDestination =startDestination,
 //                    startDestination = "마이",
                     enterTransition = {
                         slideIntoContainer(
