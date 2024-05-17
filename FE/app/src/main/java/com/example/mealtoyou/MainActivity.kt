@@ -145,6 +145,7 @@ class MainActivity : ComponentActivity() {
             sendFcmToken()
         }
         setupPeriodicWork()
+        askNotificationPermission()
     }
 
     @Composable
