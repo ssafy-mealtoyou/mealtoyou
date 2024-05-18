@@ -56,6 +56,9 @@ public class DietService {
     }
 
     public Mono<Void> createDiet(long userId, List<DietFoodRequestDto> dietFoodRequestDtoList) {
+        if (dietFoodRequestDtoList.isEmpty()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "요청된 음식 목록이 비어있습니다."));
+        }
         return Flux.fromIterable(dietFoodRequestDtoList)
             .flatMap(dto -> foodRepository.findByRid(dto.foodId())
                 .switchIfEmpty(Mono.error(
