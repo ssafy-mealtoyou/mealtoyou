@@ -287,32 +287,35 @@ private fun ContentBody(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            "대체 식품 추천",
-            color = Color(0xff171A1F),
-            fontFamily = Pretend,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            lineHeight = 26.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Column {
-            diets.value.take(3).forEach { diet ->
-                OverlayImage(diet, onSelect = {
-                    onSelectDiet(diet)
-                    Log.d("ContentBody", "Selected Diet: ${diet.name}")
-                })
-                Spacer(modifier = Modifier.height(7.dp))
+        if (diets.value.isNotEmpty()) {
+            Text(
+                "대체 식품 추천",
+                color = Color(0xff171A1F),
+                fontFamily = Pretend,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                lineHeight = 26.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column {
+                diets.value.take(3).forEach { diet ->
+                    OverlayImage(diet, onSelect = {
+                        onSelectDiet(diet)
+                        Log.d("ContentBody", "Selected Diet: ${diet.name}")
+                    })
+                    Spacer(modifier = Modifier.height(7.dp))
+                }
+
             }
+            Spacer(modifier = Modifier.height(12.dp))
 
+
+            Spacer(modifier = Modifier.weight(1f))
+            if (editable) {
+                Buttons(onUpdate = { onUpdate(centralDiet!!) }, currentDiet = centralDiet!!)
+            }
         }
-        Spacer(modifier = Modifier.height(12.dp))
 
-
-        Spacer(modifier = Modifier.weight(1f))
-        if (editable) {
-            Buttons(onUpdate = { onUpdate(centralDiet!!) }, currentDiet = centralDiet!!)
-        }
     }
 }
 
