@@ -86,7 +86,7 @@ object RetrofitClient {
 
     val chatInstance: ChatApiService by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl("$BASE_URL:8084/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

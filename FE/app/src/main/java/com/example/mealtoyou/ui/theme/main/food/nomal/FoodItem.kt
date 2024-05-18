@@ -60,7 +60,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -102,6 +101,7 @@ import com.example.mealtoyou.data.FoodSearchData
 import com.example.mealtoyou.data.SwipeFoodItemModel
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.DietFood
+import com.example.mealtoyou.ui.theme.group.defaultShadow
 import com.example.mealtoyou.ui.theme.shared.BottomSheet
 import com.example.mealtoyou.ui.theme.shared.ImageFromUrlOrResource
 import com.example.mealtoyou.ui.theme.shared.shadowModifier
@@ -109,6 +109,7 @@ import com.example.mealtoyou.viewmodel.DietViewModel
 import com.example.mealtoyou.viewmodel.FoodSearchViewModel
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
+import kotlin.math.round
 
 
 @Composable
@@ -153,8 +154,8 @@ fun IncrementDecrementButtons(
 
 @Composable
 fun FoodItemSearch(
-    name:String,
-    energy:Double,
+    name: String,
+    energy: Double,
     onItemSelected: () -> Unit = {}
 ) {
     Box(
@@ -228,7 +229,7 @@ fun FoodItemSearch(
 fun SwipeFoodItem(
     model: SwipeFoodItemModel = SwipeFoodItemModel(),
     onRemoveItem: (Long) -> Unit = {},
-    onQuantityChange: (id: Long, q: Double) -> Unit = {a, b -> }
+    onQuantityChange: (id: Long, q: Double) -> Unit = { a, b -> }
 ) {
     val df = remember { DecimalFormat("#.#") }
     val swipeableState = rememberSwipeableState(initialValue = 0)
@@ -288,14 +289,16 @@ fun SwipeFoodItem(
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "${df.format(model.energy)} Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "${df.format(model.energy)} Kcal",
+                            fontSize = 10.sp,
+                            color = Color(0xFF171A1F)
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     IncrementDecrementButtons(
                         quantity = model.quantity,
-                        onQuantityChange = {q -> onQuantityChange(model.fid, q)}
+                        onQuantityChange = { q -> onQuantityChange(model.fid, q) }
                     )
                 }
 
@@ -354,13 +357,12 @@ private fun FoodBottomSheetContent(
     var selectedImageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val dietViewModel: DietViewModel = DietViewModel()
     // DietViewModel에서 analyzeImageResult를 관찰
-    val analyzeImageResult by dietViewModel.analyzeImageResult.observeAsState(initial = null)
 
     val foodSearchViewModel: FoodSearchViewModel = viewModel()
     var showDialog by remember { mutableStateOf(false) }
     val textState = remember { mutableStateOf("") }
     val foodSearchResult = foodSearchViewModel.foodSearchResult.value
-    val dietCreationViewModel : DietCreationViewModel = remember {
+    val dietCreationViewModel: DietCreationViewModel = remember {
         DietCreationViewModel()
     }
 
@@ -379,14 +381,15 @@ private fun FoodBottomSheetContent(
         resultList.forEach { foodDetectionResponseItem ->
             if (foodDetectionResponseItem.className == "0" ||
                 foodDetectionResponseItem.className == "00000000" ||
-                foodDetectionResponseItem.foodName == "그릇")
+                foodDetectionResponseItem.foodName == "그릇"
+            )
                 return
             Log.d("analyzeImageResult 2", foodDetectionResponseItem.foodName)
             // 각각의 결과에 대해 foodSearchViewModel의 foodSearch 함수를 호출
             // 이 예제에서는 foodDetectionResponseItem의 name을 키워드로 사용
             foodSearchViewModel.foodSearch(foodDetectionResponseItem.foodName) { list ->
                 Log.d("analyzeImageResult 3", list.toString())
-                if (!list.isNullOrEmpty()){
+                if (!list.isNullOrEmpty()) {
                     val foodItem: FoodSearchData = list[0]
                     swipeFoodItemList.add(
                         SwipeFoodItemModel(
@@ -533,7 +536,7 @@ private fun FoodBottomSheetContent(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         // 여기에 서버로 데이터를 전송하는 코드를 추가합니다.
-                        Log.d("foodSearchKeyword",textState.value)
+                        Log.d("foodSearchKeyword", textState.value)
                         foodSearchViewModel.foodSearch(textState.value)
                     }
                 ),
@@ -547,7 +550,7 @@ private fun FoodBottomSheetContent(
                         Spacer(modifier = Modifier.height(15.dp))
                         FoodItemSearch(
                             name = foodItem.name,
-                            energy=foodItem.energy,
+                            energy = foodItem.energy,
                             onItemSelected = {
                                 swipeFoodItemList.add(
                                     SwipeFoodItemModel(
@@ -654,7 +657,8 @@ fun SwipeFoodItems(
     fun updateQuantity(id: Long, newQuantity: Double) {
         val index = swipeFoodItemModelList.indexOfFirst { it.fid == id }
         if (index != -1) {
-            swipeFoodItemModelList[index] = swipeFoodItemModelList[index].copy(quantity = newQuantity)
+            swipeFoodItemModelList[index] =
+                swipeFoodItemModelList[index].copy(quantity = newQuantity)
             Log.d("Work", "Updated quantity of item $id to $newQuantity")
         }
     }
@@ -666,7 +670,7 @@ fun SwipeFoodItems(
                     SwipeFoodItem(
                         model = item,
                         onRemoveItem = { id -> removeItem(id) },
-                        onQuantityChange = {id, newQuantity -> updateQuantity(id, newQuantity)}
+                        onQuantityChange = { id, newQuantity -> updateQuantity(id, newQuantity) }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -722,34 +726,40 @@ fun FoodItems(
 ) {
     val foodNameList = foodList.map { it.name }
     val foodCalories = foodList.map { it.calories }
-    val foodImages = foodList.map { it.imageUrl }
+    val foodColor = arrayOf(
+        Color(0xffF5F1FE),
+        Color(0xffF0FFE5),
+        Color(0xffE5F6FF),
+        Color(0xffFFFAE4),
+        Color(0xffF5F1FE),
+        Color(0xffF0FFE5),
+        Color(0xffE5F6FF),
+        Color(0xffFFFAE4),
+    )
+
 
     var sheetOpen by remember { mutableStateOf(false) }
 
     Column(Modifier.wrapContentWidth(), horizontalAlignment = Alignment.Start) {
-        foodNameList.chunked(3).forEachIndexed { rowIndex, chunk ->
-            Row(modifier = Modifier.padding(top = if (rowIndex == 0) 12.dp else 0.dp)) {
-                chunk.forEachIndexed { index, name ->
-                    if (index == 0 && chunk.size == 2) Spacer(Modifier.weight(1f))
-                    if (index == 1 && chunk.size == 2) Spacer(Modifier.width(6.dp))
-                    FoodItem(name, showTemp, selectedItem, foodCalories[(rowIndex * 3)+index], foodImages[(rowIndex * 3) + index])
-                    if (index == 1 && chunk.size == 2) Spacer(Modifier.weight(1f))
-                    if (index < chunk.size - 1 && chunk.size != 2) Spacer(Modifier.weight(1f))
-                }
+        Column {
+            foodNameList.forEachIndexed { rowIndex, name ->
+                Spacer(modifier = Modifier.height(12.dp))
+                FoodItem(name, showTemp, selectedItem, foodCalories[rowIndex], foodColor[rowIndex])
             }
-            if (rowIndex < (foodNameList.size -1) / 3) Spacer(modifier = Modifier.height(10.dp))
         }
         if (editable) {
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.End, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            ) {
                 Button(
                     onClick = { sheetOpen = true },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D31ED)),
                     shape = RoundedCornerShape(12),
                     modifier = Modifier
                         .width(100.dp)
-                        .height(55.dp)
+                        .height(40.dp)
                 ) {
                     Text("등록하기", color = Color.White)
                 }
@@ -769,62 +779,37 @@ fun FoodItem(
     showTemp: MutableState<Boolean>,
     selectedItem: MutableState<String>,
     calories: Double,
-    foodImage: String
+    backgroundColor: Color
 ) {
     Box(modifier = Modifier
-        .height(120.dp)
-        .width(104.dp)
+        .defaultShadow()
+        .background(backgroundColor,shape = RoundedCornerShape(8.dp))
+        .height(48.dp)
+        .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))
         .clickable {
             selectedItem.value = itemName
             showTemp.value = true
         }) {
-        Image(
-            painter = rememberImagePainter(
-                data = foodImage,
-                builder = {
-                    crossfade(true)
-                    placeholder(R.drawable.tm)
-                    error(R.drawable.tm)
-                }
-            ),
-            contentDescription = "Background Image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-        Column(Modifier.padding(6.dp)) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        Color.White, shape = RoundedCornerShape(8.dp)
-                    ) // 흰색 배경과 둥근 모서리 적용
-                    .padding(horizontal = 6.dp, vertical = 2.dp) // 텍스트 주변의 패딩
-            ) {
-                Text(
-                    text = itemName,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = Pretend,
-                    lineHeight = 17.sp,
-                    color = Color(0xFF171A1F)
-                )
-            }
-            Spacer(Modifier.height(13.dp))
-            Box(
-                modifier = Modifier
-                    .background(
-                        Color.DarkGray, shape = RoundedCornerShape(8.dp)
-                    ) // 흰색 배경과 둥근 모서리 적용
-                    .padding(horizontal = 5.dp, vertical = 1.dp) // 텍스트 주변의 패딩
-            ) {
-                Text(
-                    text = calories.toString() + "kcal",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = Pretend,
-                    color = Color.White
-                )
-            }
+        Row(Modifier.padding(15.dp)) {
+            Text(
+                text = itemName,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = Pretend,
+                lineHeight = 17.sp,
+                color = Color(0xFF171A1F)
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            Text(
+                text = round(calories).toString() + "kcal",
+                fontSize = 16.sp,
+                fontFamily = Pretend,
+                lineHeight = 17.sp,
+                color = Color(0xFF171A1F)
+            )
         }
     }
 }

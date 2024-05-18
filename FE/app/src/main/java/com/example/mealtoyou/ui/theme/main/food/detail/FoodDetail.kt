@@ -44,6 +44,7 @@ import com.example.mealtoyou.retrofit.RetrofitClient
 import com.example.mealtoyou.ui.theme.Pretend
 import com.example.mealtoyou.ui.theme.diet.Diet
 import com.example.mealtoyou.ui.theme.diet.DietFood
+import com.example.mealtoyou.ui.theme.group.defaultShadow
 import com.example.mealtoyou.ui.theme.shared.CloseButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -54,43 +55,43 @@ fun Buttons(onUpdate: (DietFood) -> Unit, currentDiet: DietFood) {
     Row {
         Spacer(Modifier.weight(1f))
         ActionButton(
-                text = "삭제하기",
-                onClick = { },
-                color = Color.Red,
-                backgroundColor = Color.White
+            text = "삭제하기",
+            onClick = { },
+            color = Color.Red,
+            backgroundColor = Color.White
         )
         Spacer(modifier = Modifier.width(12.dp))
         ActionButton(
-                text = "변경하기",
-                onClick = { onUpdate(currentDiet) },
-                color = Color.White,
-                backgroundColor = Color(0xFF6D31ED)
+            text = "변경하기",
+            onClick = { onUpdate(currentDiet) },
+            color = Color.White,
+            backgroundColor = Color(0xFF6D31ED)
         )
     }
 }
 
 @Composable
 private fun ActionButton(
-        text: String,
-        onClick: () -> Unit,
-        color: Color,
-        backgroundColor: Color
+    text: String,
+    onClick: () -> Unit,
+    color: Color,
+    backgroundColor: Color
 ) {
     Button(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-            shape = RoundedCornerShape(12),
-            modifier = Modifier
-                    .width(80.dp)
-                    .height(40.dp),
-            contentPadding = PaddingValues(0.dp)
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(12),
+        modifier = Modifier
+            .width(80.dp)
+            .height(40.dp),
+        contentPadding = PaddingValues(0.dp)
     ) {
         Text(
-                text = text,
-                color = color,
-                fontFamily = Pretend,
-                fontSize = 14.sp,
-                lineHeight = 14.sp
+            text = text,
+            color = color,
+            fontFamily = Pretend,
+            fontSize = 14.sp,
+            lineHeight = 14.sp
         )
     }
 }
@@ -98,37 +99,32 @@ private fun ActionButton(
 
 @Composable
 fun FoodDetail(
-        dietFoods: List<DietFood>,
-        selectedItem: String,
-        showTemp: MutableState<Boolean>,
-        editable: Boolean,
-        diets: MutableState<List<DietFood>>,
-        onUpdate: (DietFood) -> Unit
+    dietFoods: List<DietFood>,
+    selectedItem: String,
+    showTemp: MutableState<Boolean>,
+    editable: Boolean,
+    diets: MutableState<List<DietFood>>,
+    onUpdate: (DietFood) -> Unit
 
 ) {
     val isLoading = remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
 
-    Log.d("321321", dietFoods.toString())
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
-                Log.d("333333",selectedItem)
                 val selectedFood = dietFoods.find { it.name == selectedItem }
-                Log.d("123123", selectedFood.toString())
                 selectedFood?.let { food ->
-                    // 네트워크 요청을 직접 실행합니다.
                     val result = RetrofitClient.dietInstance.recommendOtherFood(
-                            FoodNutrient(
-                                    MainApplication.prefs.getValue("userId").toInt(),
-                                    food.name,
-                                    food.calories,
-                                    food.carbohydrate,
-                                    food.protein,
-                                    food.fat
-                            )
+                        FoodNutrient(
+                            MainApplication.prefs.getValue("userId").toInt(),
+                            food.name,
+                            food.calories,
+                            food.carbohydrate,
+                            food.protein,
+                            food.fat
+                        )
                     )
-                    Log.d("123123", result.toString())
                     // 결과를 로그에 기록합니다.
                     Log.d("FetchRecommendation", "Result: $result")
 
@@ -190,12 +186,12 @@ fun FoodDetail(
 private fun DetailHeader(selectedItem: String, showTemp: MutableState<Boolean>) {
     Row {
         Text(
-                selectedItem,
-                color = Color(0xff171A1F),
-                fontFamily = Pretend,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                lineHeight = 26.sp
+            selectedItem,
+            color = Color(0xff171A1F),
+            fontFamily = Pretend,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            lineHeight = 26.sp
         )
         Spacer(modifier = Modifier.weight(1f))
         CloseButton(showTemp)
@@ -206,9 +202,9 @@ private fun DetailHeader(selectedItem: String, showTemp: MutableState<Boolean>) 
 private fun LoadingSpinner() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-                color = Color(0xFF5686FF),
-                modifier = Modifier.size(60.dp),
-                strokeWidth = 6.dp
+            color = Color(0xFF5686FF),
+            modifier = Modifier.size(60.dp),
+            strokeWidth = 6.dp
         )
     }
 }
@@ -217,85 +213,61 @@ private fun LoadingSpinner() {
 @Composable
 private fun InnerText(text: String) {
     Text(
-            text = text,
-            fontFamily = Pretend,
-            fontSize = 14.sp,
-            lineHeight = 22.sp,
-            color = Color(0xFF171A1F)
+        text = text,
+        fontFamily = Pretend,
+        fontSize = 14.sp,
+        lineHeight = 22.sp,
+        color = Color(0xFF171A1F)
     )
 }
 
 @Composable
 private fun OverlayImage(diet: DietFood, onSelect: (DietFood) -> Unit) {
     Box(
-            modifier = Modifier
-                    .height(72.dp)
-                    .width(75.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onSelect(diet) } // Click event added
+        modifier = Modifier
+            .defaultShadow()
+            .height(44.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onSelect(diet) } // Click event added
     ) {
-        Image(
-                painter = painterResource(id = R.drawable.sample_food),
-                contentDescription = diet.name,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-        )
         Box(
-                modifier = Modifier
-                        .matchParentSize()
-                        .background(Color(0xFF171A1F).copy(alpha = 0.7f))
+            modifier = Modifier
+                .matchParentSize()
+                .background(Color(0xFFF5F1FE))
         )
         Text(
-                text = diet.name,
-                color = Color.White,
-                fontSize = 12.sp,
-                fontFamily = Pretend,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.Center)
+            text = diet.name,
+            color = Color(0xff171A1F),
+            fontSize = 14.sp,
+            fontFamily = Pretend,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }
 
 @Composable
 private fun ContentBody(
-        dietFoods: List<DietFood>,
-        centralDiet: DietFood?,
-        diets: MutableState<List<DietFood>>,
-        editable: Boolean,
-        onSelectDiet: (DietFood) -> Unit,
-        onUpdate: (DietFood) -> Unit
+    dietFoods: List<DietFood>,
+    centralDiet: DietFood?,
+    diets: MutableState<List<DietFood>>,
+    editable: Boolean,
+    onSelectDiet: (DietFood) -> Unit,
+    onUpdate: (DietFood) -> Unit
 ) {
     Column {
         Spacer(modifier = Modifier.height(10.dp))
-        Row {
-            centralDiet?.let {
-                Image(
-                        painter = painterResource(id = R.drawable.sample_food),
-                        contentDescription = it.name,
-                        modifier = Modifier
-                                .height(230.dp)
-                                .fillMaxWidth(0.745f)
-                                .clip(RoundedCornerShape(8.dp)),
 
-                        contentScale = ContentScale.Crop
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-            Column {
-                diets.value.take(3).forEach { diet ->
-                    OverlayImage(diet, onSelect = {
-                        onSelectDiet(diet)
-                        Log.d("ContentBody", "Selected Diet: ${diet.name}")
-                    })
-                    Spacer(modifier = Modifier.height(7.dp))
-                }
-
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
         centralDiet?.let {
-            Column {
+            Column(
+                modifier = Modifier
+                    .defaultShadow()
+                    .fillMaxWidth()
+                    .background(Color(0xffF5F1FE))
+                    .clip(RoundedCornerShape(8.dp))
+                    .padding(8.dp)
+            ) {
                 Row {
                     InnerText(text = "탄수화물")
                     Spacer(modifier = Modifier.weight(1f))
@@ -311,15 +283,39 @@ private fun ContentBody(
                     Spacer(modifier = Modifier.weight(1f))
                     InnerText(text = String.format("%.2f g", it.fat))
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+
             }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        if (diets.value.isNotEmpty()) {
+            Text(
+                "대체 식품 추천",
+                color = Color(0xff171A1F),
+                fontFamily = Pretend,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                lineHeight = 26.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Column {
+                diets.value.take(3).forEach { diet ->
+                    OverlayImage(diet, onSelect = {
+                        onSelectDiet(diet)
+                        Log.d("ContentBody", "Selected Diet: ${diet.name}")
+                    })
+                    Spacer(modifier = Modifier.height(7.dp))
+                }
 
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+
+            Spacer(modifier = Modifier.weight(1f))
+            if (editable) {
+                Buttons(onUpdate = { onUpdate(centralDiet!!) }, currentDiet = centralDiet!!)
+            }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-        if (editable) {
-            Buttons(onUpdate = { onUpdate(centralDiet!!) }, currentDiet = centralDiet!!)
-        }
     }
 }
 

@@ -35,11 +35,11 @@ fun FeedbackSection(
 ) {
     Box(
         modifier = Modifier
-            .heightIn(min = 80.dp) // 최소 높이 지정
+            .wrapContentHeight()
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(Color(0xFFF8F9FA))
-            .padding(4.dp)
+            .padding(8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -71,14 +71,6 @@ fun FeedbackSection(
                 fontFamily = Pretend,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text(
-                text = detailMessage,
-                color = Color(0xFF9095A1),
-                fontSize = 10.sp,
-                lineHeight = 16.sp,
-                fontFamily = Pretend,
-                fontWeight = FontWeight.SemiBold,
-            )
         }
     }
 }
@@ -98,7 +90,7 @@ fun TodayFeedBackBox(aiFeedbackViewModel: AIFeedbackViewModel = viewModel()) {
 
     Box(
         modifier = Modifier
-//            .height(230.dp)
+            .wrapContentHeight()
             .fillMaxWidth()
             .shadow(
                 elevation = 2.dp,
