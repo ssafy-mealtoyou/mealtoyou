@@ -9,8 +9,12 @@ data class FoodSearchData(
     val servingUnit: String,
     @SerializedName("serving_size")
     val servingSize: Double,
+    @SerializedName("protein(g)")
     val protein: Double,
+    @SerializedName("energy(kcal)")
     val energy: Double,
+    @SerializedName("fat(g)")
     val fat: Double,
+    @SerializedName("carbohydrate(g)")
     val carbohydrate: Double,
 )
