@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 
 @Service
@@ -138,8 +138,7 @@ public class DietService {
     public Mono<DailyDietsResponseDto> getMyDiet(long userId, String dateString) {
         LocalDateTime startOfDay, endOfDay;
         try {
-            // 문자열을 LocalDateTime 으로 변환
-            LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate date = parseDate(dateString);
             startOfDay = date.atStartOfDay();
             endOfDay = date.atTime(LocalTime.MAX);
         } catch (RuntimeException re) {
@@ -147,59 +146,75 @@ public class DietService {
         }
 
         return dietRepository.findAllByUserIdAndCreateDateTimeBetween(userId, startOfDay, endOfDay)
-                .flatMap(diet -> {
-                    Flux<DietFood> dietFoodFlux = dietFoodRepository.findDietFoodsByDietId(diet.getDietId());
-                    Mono<List<Food>> listMono = dietFoodFlux.collectList()
-                            .flatMap(list -> foodRepository.findFoodsByRidIn(list.stream().map(DietFood::getFoodId).toList())
-                                    .collectList());
-                    return listMono.map(foods ->
-                                    foods.stream().map(food -> DietFoodDto.builder()
-                                            .name(food.getName())
-                                            .imageUrl("temp image url") // TODO: 음식 이미지 가져오기
-                                            .calories(Optional.ofNullable(food.getEnergy()).orElse(0.0))
-                                            .carbohydrate(Optional.ofNullable(food.getCarbohydrate()).orElse(0.0))
-                                            .protein(Optional.ofNullable(food.getProtein()).orElse(0.0))
-                                            .fat(Optional.ofNullable(food.getFat()).orElse(0.0))
-                                            .build()).toList())
-                            .flatMap(dietFoods ->
-                                    requestBMR(userId).flatMap((bmr) -> {
-                                        DietSummaryDto dietInfo = DietSummaryDto.builder()
-                                                .dietId(diet.getDietId())
-                                                .totalCalories(diet.getTotalCalories().intValue())
-                                                .carbohydratePer(calcNutrientsPer(bmr, 0.5, diet.getTotalCarbohydrate(), 4))
-                                                .proteinPer(calcNutrientsPer(bmr, 0.25, diet.getTotalProtein(), 4))
-                                                .fatPer(calcNutrientsPer(bmr, 0.25, diet.getTotalFat(), 9))
-                                                .dietFoods(dietFoods)
-                                                .build();
-                                        return Mono.just(dietInfo);
-                                    })
-                            );
-                })
-                .collectList()
-                .map(diets -> {
-                            double totalCalories = 0.0;
-                            double totalCarbohydrate = 0.0;
-                            double totalProtein = 0.0;
-                            double totalFat = 0.0;
-                            for (DietSummaryDto diet : diets) {
-                                for (DietFoodDto food : diet.dietFoods()) {
-                                    totalCalories += food.calories();
-                                    totalCarbohydrate += food.carbohydrate();
-                                    totalProtein += food.protein();
-                                    totalFat += food.fat();
-                                }
-                            }
-                            return DailyDietsResponseDto.builder()
-                                    .date(dateString)
-                                    .dailyCaloriesBurned(totalCalories)
-                                    .dailyCarbohydrateTaked(totalCarbohydrate)
-                                    .dailyProteinTaked(totalProtein)
-                                    .dailyFatTaked(totalFat)
-                                    .diets(diets)
-                                    .build();
-                        }
-                );
+            .flatMap(diet -> processDiet(userId, diet))
+            .collectList()
+            .map(diets -> createDailyDietsResponseDto(diets, dateString));
     }
+
+    private LocalDate parseDate(String dateString) {
+        return LocalDate.parse(dateString, DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    private Mono<DietSummaryDto> processDiet(long userId, Diet diet) {
+        Flux<DietFood> dietFoodFlux = dietFoodRepository.findDietFoodsByDietId(diet.getDietId());
+        return dietFoodFlux.collectList()
+            .flatMap(list -> foodRepository.findFoodsByRidIn(extractFoodIds(list)).collectList())
+            .map(this::createDietFoodDtos)
+            .flatMap(dietFoods -> calculateNutrients(userId, diet, dietFoods));
+    }
+
+    private List<Long> extractFoodIds(List<DietFood> dietFoods) {
+        return dietFoods.stream().map(DietFood::getFoodId).collect(Collectors.toList());
+    }
+
+    private List<DietFoodDto> createDietFoodDtos(List<Food> foods) {
+        return foods.stream().map(this::createDietFoodDto).collect(Collectors.toList());
+    }
+
+    private DietFoodDto createDietFoodDto(Food food) {
+        return DietFoodDto.builder()
+            .name(food.getName())
+            .imageUrl("temp image url") // TODO: 음식 이미지 가져오기
+            .calories(Optional.ofNullable(food.getEnergy()).orElse(0.0))
+            .carbohydrate(Optional.ofNullable(food.getCarbohydrate()).orElse(0.0))
+            .protein(Optional.ofNullable(food.getProtein()).orElse(0.0))
+            .fat(Optional.ofNullable(food.getFat()).orElse(0.0))
+            .build();
+    }
+
+    private Mono<DietSummaryDto> calculateNutrients(long userId, Diet diet, List<DietFoodDto> dietFoods) {
+        return requestBMR(userId).map(bmr -> createDietSummaryDto(diet, bmr, dietFoods));
+    }
+
+    private DietSummaryDto createDietSummaryDto(Diet diet, double bmr, List<DietFoodDto> dietFoods) {
+        return DietSummaryDto.builder()
+            .dietId(diet.getDietId())
+            .totalCalories(diet.getTotalCalories().intValue())
+            .carbohydratePer(calcNutrientsPer(bmr, 0.5, diet.getTotalCarbohydrate(), 4))
+            .proteinPer(calcNutrientsPer(bmr, 0.25, diet.getTotalProtein(), 4))
+            .fatPer(calcNutrientsPer(bmr, 0.25, diet.getTotalFat(), 9))
+            .dietFoods(dietFoods)
+            .build();
+    }
+
+    private DailyDietsResponseDto createDailyDietsResponseDto(List<DietSummaryDto> diets, String dateString) {
+        double totalCalories = diets.stream().flatMap(diet -> diet.dietFoods().stream()).mapToDouble(DietFoodDto::calories).sum();
+        double totalCarbohydrate = diets.stream().flatMap(diet -> diet.dietFoods().stream()).mapToDouble(DietFoodDto::carbohydrate).sum();
+        double totalProtein = diets.stream().flatMap(diet -> diet.dietFoods().stream()).mapToDouble(DietFoodDto::protein).sum();
+        double totalFat = diets.stream().flatMap(diet -> diet.dietFoods().stream()).mapToDouble(DietFoodDto::fat).sum();
+
+        diets.sort((a, b) -> Math.toIntExact(a.dietId() - b.dietId()));
+
+        return DailyDietsResponseDto.builder()
+            .date(dateString)
+            .dailyCaloriesBurned(totalCalories)
+            .dailyCarbohydrateTaked(totalCarbohydrate)
+            .dailyProteinTaked(totalProtein)
+            .dailyFatTaked(totalFat)
+            .diets(diets)
+            .build();
+    }
+
 
     public Mono<List<CommunityDietDto>> getCommunityDiets(long userId, List<Long> dietIds) {
         return dietRepository.findAllById(dietIds)
