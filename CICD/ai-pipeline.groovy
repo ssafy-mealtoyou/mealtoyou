@@ -25,11 +25,11 @@ pipeline {
                 script {
                     dir('./AI') {
                         sh 'pwd'
-                        sh 'docker stop ai-server || true'
-                        sh 'docker rmi -f ai-server:latest'
-                        sh 'docker rm -f ai-server'
-                        sh 'docker build -t ai-server .'
-                        sh "docker run -d --name ai-server --env-file .deploy --network=infra ai-server"
+                        sh 'docker stop ai-service || true'
+                        sh 'docker rmi -f ai-service:latest'
+                        sh 'docker rm -f ai-service'
+                        sh 'docker build -t ai-service .'
+                        sh "docker run -d --name ai-service --env-file .deploy --network=infra ai-service"
                     }
                 }
             }
