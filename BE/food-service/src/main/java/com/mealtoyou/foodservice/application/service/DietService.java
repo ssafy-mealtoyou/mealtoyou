@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 
 @Service
@@ -152,10 +153,10 @@ public class DietService {
                                     foods.stream().map(food -> DietFoodDto.builder()
                                             .name(food.getName())
                                             .imageUrl("temp image url") // TODO: 음식 이미지 가져오기
-                                            .calories(food.getEnergy())
-                                            .carbohydrate(food.getCarbohydrate())
-                                            .protein(food.getProtein())
-                                            .fat(food.getFat())
+                                            .calories(Optional.ofNullable(food.getEnergy()).orElse(0.0))
+                                            .carbohydrate(Optional.ofNullable(food.getCarbohydrate()).orElse(0.0))
+                                            .protein(Optional.ofNullable(food.getProtein()).orElse(0.0))
+                                            .fat(Optional.ofNullable(food.getFat()).orElse(0.0))
                                             .build()).toList())
                             .flatMap(dietFoods ->
                                     requestBMR(userId).flatMap((bmr) -> {
