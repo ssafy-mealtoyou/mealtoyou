@@ -64,7 +64,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
-fun Drug(drug: Int) {
+fun Drug(drug: Int,name:String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Image(
             painter = painterResource(id = drug),
@@ -72,7 +72,7 @@ fun Drug(drug: Int) {
             modifier = Modifier.size(45.dp)
         )
         Text(
-            text = "비타민",
+            text = name,
             color = Color(0xFF323743),
             fontWeight = FontWeight.SemiBold,
             fontFamily = Pretend,
@@ -268,7 +268,7 @@ fun DrugInfo(
 ) {
 
     val supplements = supplementViewModel.supplementResult.collectAsState().value
-    Log.d("ssss","${supplements}")
+    Log.d("ssss","$supplements")
     LaunchedEffect(Unit) {
         supplementViewModel.supplementScreen()
     }
@@ -313,7 +313,8 @@ fun DrugInfo(
                 }
             }
             if (supplements.isNullOrEmpty()) {
-                Text("영양제 데이터가 없습니다.")
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("영양제 데이터가 없습니다.", fontSize = 14.sp)
             } else {
                 // 완료율 계산 예제: 총 영양제 중에서 takenYn이 true인 영양제의 비율을 표시
                 Log.d("rate", "${supplements.count { it.takenYn }} + ${supplements.size}")
@@ -337,7 +338,7 @@ fun DrugInfo(
                 if (displayedDrugs != null) {
                     displayedDrugs.forEach { drugData ->
                         Spacer(modifier = Modifier.weight(1f))
-                        Drug(drug = if (drugData.takenYn) R.drawable.used_drug else R.drawable.unused_drug)
+                        Drug(drug = if (drugData.takenYn) R.drawable.used_drug else R.drawable.unused_drug,drugData.name)
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
