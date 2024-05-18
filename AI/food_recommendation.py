@@ -10,7 +10,6 @@ from database import SessionLocal, FoodCombination
 from config import Config
 import os
 
-
 # openai API 키 인증
 openai.api_key = Config.OPENAI_API_KEY
 model = "gpt-3.5-turbo"

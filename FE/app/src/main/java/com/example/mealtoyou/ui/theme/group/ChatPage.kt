@@ -159,7 +159,7 @@ fun ChatScreen() {
         }
     }
 
-    val uid = 4
+    val uid = MainApplication.prefs.getValue("userId").toInt()
     Surface(
         modifier = Modifier
             .fillMaxSize()

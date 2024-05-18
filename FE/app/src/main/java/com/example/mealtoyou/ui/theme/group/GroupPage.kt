@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -377,9 +376,7 @@ private fun DetailScreen(name: String, function: () -> Unit) {
     Column {
         MainBar(text = name, infoImg = true)
         Column(modifier = Modifier
-            .verticalScroll(scrollState)
-            .clickable { function.invoke() }) {
-
+            .verticalScroll(scrollState)) {
             Column() {
                 communityData?.let { data ->
                     InfoSection(
@@ -388,7 +385,7 @@ private fun DetailScreen(name: String, function: () -> Unit) {
                         data.weeklyMinGoal,
                         data.cntUsers
                     )
-                    ContentRows(data.weeklyRemainGoal, data.steps, data.caloriesBurned, data.isToday)
+                    ContentRows(data.weeklyRemainGoal, data.steps, data.caloriesBurned, data.isToday,function)
                     Column(Modifier.padding(start = 20.dp, end = 20.dp)) {
                         val count: Int = data.communityDietList.size
                         val pagerState = rememberPagerState(
@@ -426,7 +423,13 @@ private fun InfoSection(
 }
 
 @Composable
-private fun ContentRows(weeklyRemainGoal: Int, steps: Int, caloriesBurned: Int, isToday: Boolean) {
+private fun ContentRows(
+    weeklyRemainGoal: Int,
+    steps: Int,
+    caloriesBurned: Int,
+    isToday: Boolean,
+    function: () -> Unit
+) {
     Row(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp)) {
         ContentBox(Modifier.weight(1f)) {
             FirstContent(
@@ -437,7 +440,7 @@ private fun ContentRows(weeklyRemainGoal: Int, steps: Int, caloriesBurned: Int, 
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
-        ContentBox(Modifier.weight(1f)) { SecondContent() }
+        ContentBox(Modifier.weight(1f)) { SecondContent(function) }
     }
 }
 
@@ -572,77 +575,36 @@ private fun FirstContent(
 
 
 @Composable
-fun SecondContent() {
-    Column {
+fun SecondContent(function: () -> Unit) {
+    Column(modifier = Modifier.clickable { function.invoke() }) {
         Text("그룹 채팅", fontSize = 12.sp, color = Color(0xFF9095A1), lineHeight = 20.sp)
         Spacer(modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .height(32.dp)
-                .wrapContentWidth()
+                .height(50.dp)
+                .fillMaxWidth()
                 .clip(
                     RoundedCornerShape(
-                        topStart = 0.dp,
+                        topStart = 8.dp,
                         topEnd = 8.dp,
-                        bottomEnd = 8.dp,
+                        bottomEnd = 0.dp,
                         bottomStart = 8.dp
                     )
                 )
                 .background(Color(0xFFF3F4F6))
-                .padding(top = 3.dp, start = 10.dp, end = 10.dp)
+                .padding(top = 13.dp, start = 10.dp, end = 10.dp)
         ) {
-            Text(
-                text = "일일 목표 인증",
-                color = Color(0xFF323743),
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 26.sp
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .height(32.dp)
-                .wrapContentWidth()
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 8.dp,
-                        bottomEnd = 8.dp,
-                        bottomStart = 8.dp
-                    )
+            Row {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "채팅방 이동",
+                    color = Color(0xFF323743),
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 26.sp
                 )
-                .background(Color(0xFFF3F4F6))
-                .padding(top = 3.dp, start = 10.dp, end = 10.dp)
-        ) {
-            Text(
-                text = "쿠쿠하세요",
-                color = Color(0xFF323743),
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 26.sp
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .height(32.dp)
-                .wrapContentWidth()
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 8.dp,
-                        bottomEnd = 8.dp,
-                        bottomStart = 8.dp
-                    )
-                )
-                .background(Color(0xFFF3F4F6))
-                .padding(top = 3.dp, start = 10.dp, end = 10.dp)
-        ) {
-            Text(
-                text = "신박하네요?",
-                color = Color(0xFF323743),
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 26.sp
-            )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
         }
         Spacer(modifier = Modifier.weight(1f))
     }

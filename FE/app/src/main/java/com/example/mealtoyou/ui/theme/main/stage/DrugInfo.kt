@@ -313,7 +313,8 @@ fun DrugInfo(
                 }
             }
             if (supplements.isNullOrEmpty()) {
-                Text("영양제 데이터가 없습니다.")
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("영양제 데이터가 없습니다.", fontSize = 14.sp)
             } else {
                 // 완료율 계산 예제: 총 영양제 중에서 takenYn이 true인 영양제의 비율을 표시
                 Log.d("rate", "${supplements.count { it.takenYn }} + ${supplements.size}")

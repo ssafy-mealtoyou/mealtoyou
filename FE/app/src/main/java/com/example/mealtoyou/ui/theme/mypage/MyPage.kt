@@ -340,31 +340,46 @@ fun MyPage(
                         .fillMaxWidth()
                         .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
                 ) {
-                    Text(
-                        text = "로그아웃",
-                        fontFamily = Pretend,
-                        color = Color(0xFF6D31ED),
-                        textDecoration = TextDecoration.Underline,
-                        modifier = Modifier
-                            .clickable {
-                                MainApplication.prefs.removeValue("accessToken")
-                                MainApplication.prefs.removeValue("refreshToken")
-                                MainApplication.prefs.removeValue("userId")
+                    Button(
+                        onClick = {
+                            MainApplication.prefs.removeValue("accessToken")
+                            MainApplication.prefs.removeValue("refreshToken")
+                            MainApplication.prefs.removeValue("userId")
 
-                                // NavController를 사용하여 메인 화면으로 이동
-                                // 이 예제에서는 navController가 이미 설정되어 있고, 사용 가능하다고 가정합니다.
-                                navController.navigate("mainPage") {
-                                    popUpTo("login") {
-                                        inclusive = true
-                                    }
-                                    launchSingleTop = true // 이미 현재 대상이면 새 인스턴스를 생성하지 않음
-                                    restoreState = true // 이전 상태 복원 옵션
+                            // NavController를 사용하여 메인 화면으로 이동
+                            // 이 예제에서는 navController가 이미 설정되어 있고, 사용 가능하다고 가정합니다.
+                            navController.navigate("mainPage") {
+                                popUpTo("login") {
+                                    inclusive = true
                                 }
+                                launchSingleTop = true // 이미 현재 대상이면 새 인스턴스를 생성하지 않음
+                                restoreState = true // 이전 상태 복원 옵션
                             }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(
+                                0xFF6D31ED
+                            )
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+                        modifier = Modifier
                             .height(36.dp)
-                            .width(158.dp)
-                            .padding(vertical = 8.dp),
-                    )
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 10.dp,
+                                shape = RoundedCornerShape(8.dp),
+                                clip = true,
+                                ambientColor = Color(0xFF171A1F).copy(alpha = 0.15f),
+                                spotColor = Color(0xFF171A1F).copy(alpha = 0.15f)
+                            ),
+                    ) {
+                        Text(
+                            text = "로그아웃",
+                            fontFamily = Pretend,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 

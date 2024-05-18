@@ -193,7 +193,14 @@ fun DataDisplayBox(
     bodyData: List<BodyResponseData>?,
     exerciseData: List<ExerciseData>?
 ) {
-    val model = bodyData?.let { bodyModel(it) }
+    val model = bodyData?.let {
+        if (it.isNotEmpty())  {
+            bodyModel(it)
+        }
+        else {
+            null
+        }
+    }
     val exerciseModel = exerciseData?.let{ exerciseModel(it) }
     Box(
         modifier = Modifier
@@ -250,31 +257,42 @@ fun DataDisplayBox(
     }
 }
 fun getBmiCategory(bmi: Double): String {
-    return when {
-        bmi < 18.5 -> "저체중"
-        bmi < 24.9 -> "정상"
-        bmi < 29.9 -> "과체중"
-        else -> "비만"
+    return try {
+        when {
+            bmi < 18.5 -> "저체중"
+            bmi < 24.9 -> "정상"
+            bmi < 29.9 -> "과체중"
+            else -> "비만"
+        }
+    } catch (e : Exception) {
+        "Error"
     }
+
 }
 
 @Composable
 fun BodyInfoRow(bodyData: List<BodyResponseData>?) {
-    val bmiCategory = bodyData?.last()?.let { getBmiCategory(it.bmi) }
-    val bmiValue = bodyData?.last()?.bmi
-    Log.d("bmi","${bmiValue}")
-    val formattedBmi = String.format("%.1f", bmiValue)
-    Row {
-        if (bodyData != null) {
+    if (!bodyData.isNullOrEmpty()) {
+        val bmiCategory = getBmiCategory(bodyData.last().bmi)
+        val bmiValue = bodyData.last().bmi
+        Log.d("bmi","$bmiValue")
+        val formattedBmi = String.format("%.1f", bmiValue)
+        Row {
             InfoColumn("기초 대사량", "${bodyData.last().bmr}kcal")
-        }
-        Spacer(modifier = Modifier.width(17.dp))
-        if (bodyData != null) {
+            Spacer(modifier = Modifier.width(17.dp))
             InfoColumn("bmi 지수", "$formattedBmi ($bmiCategory)")
-        }
 //        Spacer(modifier = Modifier.width(17.dp))
 //        InfoColumn("CID 유형", "표준체중 일반형(I자)")
+        }
     }
+    else {
+        Row {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(text = "데이터가 없습니다.", color = Color.Black)
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    }
+
 }
 
 @Composable
