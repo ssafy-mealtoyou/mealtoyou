@@ -730,7 +730,11 @@ fun FoodItems(
         Color(0xffF5F1FE),
         Color(0xffF0FFE5),
         Color(0xffE5F6FF),
-        Color(0xffFFFAE4)
+        Color(0xffFFFAE4),
+        Color(0xffF5F1FE),
+        Color(0xffF0FFE5),
+        Color(0xffE5F6FF),
+        Color(0xffFFFAE4),
     )
 
 
