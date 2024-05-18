@@ -84,6 +84,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -116,35 +117,38 @@ import kotlin.math.round
 fun IncrementDecrementButtons(
     quantity: Double = 1.0,
     df: DecimalFormat = DecimalFormat("#.#"),
-    onQuantityChange: (Double) -> Unit = {}
+    onQuantityChange: (Double) -> Unit = {},
+    modifier: Modifier
 ) {
     Row(
-        modifier = Modifier.padding(10.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(id = R.drawable.minusg),
             contentDescription = "Minus Button",
             modifier = Modifier
-                .size(30.dp)
+                .size(24.dp)  // 고정 크기
                 .clickable {
                     val newQuantity = if (quantity > 0.1) quantity - 0.1 else quantity
                     onQuantityChange(newQuantity)
                 }
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
-            "${df.format(quantity)} 인분",
+            text = "${df.format(quantity)} 인분",
             color = Color(0xFF171A1F),
-            fontSize = 14.sp,
-            lineHeight = 22.sp
+            fontSize = 10.sp,
+            lineHeight = 22.sp,
+            modifier = Modifier.weight(1f),  // 여기에 weight를 적용하여 텍스트가 변해도 크기가 유지되도록 함
+            textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Image(
             painter = painterResource(id = R.drawable.plusbuttonp),
             contentDescription = "Plus Button",
             modifier = Modifier
-                .size(30.dp)
+                .size(24.dp)  // 고정 크기
                 .clickable {
                     onQuantityChange(quantity + 0.1)
                 }
@@ -173,7 +177,9 @@ fun FoodItemSearch(
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.Transparent)
             ) {
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Box(
                         modifier = Modifier
                             .height(50.dp)
@@ -188,29 +194,36 @@ fun FoodItemSearch(
                         )
                     }
                     Spacer(modifier = Modifier.width(14.dp))
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = name,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = Color(0xFF171A1F)
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "$energy Kcal", fontSize = 10.sp, color = Color(0xFF171A1F)
+                            text = "$energy Kcal",
+                            fontSize = 10.sp,
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(14.dp))
                     Button(
                         onClick = onItemSelected,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                         shape = RoundedCornerShape(12),
                         modifier = Modifier
                             .width(78.dp)
-                            .fillMaxHeight()
-                            .padding(0.dp)
+                            .height(50.dp)
                     ) {
                         Text(
                             text = "선택",
@@ -265,7 +278,9 @@ fun SwipeFoodItem(
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.Transparent)
             ) {
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Box(
                         modifier = Modifier
                             .height(50.dp)
@@ -279,26 +294,35 @@ fun SwipeFoodItem(
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = model.itemName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = Color(0xFF171A1F)
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            text = "${df.format(model.energy)} Kcal",
+                            text = "${df.format(model.energy * model.quantity)} Kcal",
                             fontSize = 10.sp,
-                            color = Color(0xFF171A1F)
+                            color = Color(0xFF171A1F),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.weight(1f))
                     }
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
                     IncrementDecrementButtons(
                         quantity = model.quantity,
-                        onQuantityChange = { q -> onQuantityChange(model.fid, q) }
+                        onQuantityChange = {q -> onQuantityChange(model.fid, q)},
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(50.dp)
                     )
                 }
 
