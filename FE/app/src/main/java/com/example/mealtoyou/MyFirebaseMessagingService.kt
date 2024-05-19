@@ -56,7 +56,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.zzang)
+            .setSmallIcon(R.drawable.icon_main)
             .setContentTitle(message["title"])
             .setContentText(message["body"])
 //            .setAutoCancel(true) //알림 누르면 꺼지게
@@ -66,7 +66,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         var notificationId=0;
         if (message.containsKey("extraInformation")) {
             //영양제면 버튼 추가
-            notificationBuilder.addAction(R.drawable.zzang, "확인", actionPendingIntent)
+            notificationBuilder.addAction(R.drawable.icon_main, "확인", actionPendingIntent)
             notificationId = message["extraInformation"]?.toInt()!!
         }
 
