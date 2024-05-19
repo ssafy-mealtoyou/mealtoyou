@@ -48,6 +48,9 @@ public class CommunityService {
     private final ObjectMapper objectMapper;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
     public Mono<Community> createCommunity(CreateCommunityRequest createCommunityRequest, Long userId) {
         return communityRepository.findByLeaderId(userId)
                 .flatMap(community -> Mono.<Community>error(new CommunityAlreadyExistsException("Community already exists")))
@@ -71,8 +74,15 @@ public class CommunityService {
                             .build();
                     return userCommunityRepository.save(userCommunity)
                             .thenReturn(savedCommunity);
+                })
+                .onErrorResume(error -> {
+                    return communityRepository.findByLeaderId(userId)
+                            .flatMap(community -> communityRepository.delete(community)
+                                    .then(Mono.error(error)))
+                            .subscribeOn(Schedulers.boundedElastic());
                 });
     }
+
 
     public Mono<UserCommunityResponse> getUserCommunityInfo(Long userId) {
         return userCommunityRepository.findByUserId(userId)
