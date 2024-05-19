@@ -180,19 +180,19 @@ fun FoodItemSearch(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .width(50.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.sample_food),
-                            contentDescription = "Sample Food Image",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+//                    Box(
+//                        modifier = Modifier
+//                            .height(50.dp)
+//                            .width(50.dp)
+//                            .clip(RoundedCornerShape(8.dp))
+//                    ) {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.sample_food),
+//                            contentDescription = "Sample Food Image",
+//                            modifier = Modifier.fillMaxSize(),
+//                            contentScale = ContentScale.Crop
+//                        )
+//                    }
                     Spacer(modifier = Modifier.width(14.dp))
                     Column(
                         modifier = Modifier.weight(1f)
