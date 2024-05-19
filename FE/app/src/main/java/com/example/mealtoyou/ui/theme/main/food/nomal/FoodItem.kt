@@ -593,6 +593,7 @@ private fun FoodBottomSheetContent(
                 }
             } ?: run {
                 // 결과가 null인 경우, 예를 들어 "검색 결과가 없습니다"와 같은 메시지 표시
+                Spacer(modifier = Modifier.height(13.dp))
                 Text(text = "검색 결과가 없습니다.")
             }
 //            Spacer(modifier = Modifier.height(15.dp))
@@ -807,7 +808,7 @@ fun FoodItem(
 ) {
     Box(modifier = Modifier
         .defaultShadow()
-        .background(backgroundColor,shape = RoundedCornerShape(8.dp))
+        .background(backgroundColor, shape = RoundedCornerShape(8.dp))
         .height(48.dp)
         .fillMaxWidth()
         .clip(RoundedCornerShape(8.dp))

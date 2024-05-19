@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -21,9 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -65,11 +68,22 @@ fun DietImageAnalyzeDialog(
 
     Column(modifier = Modifier.padding(16.dp)) {
         Button(onClick = { takePicturePreviewLauncher.launch(null) }) {
-            Text("카메라로 사진 찍기")
+            Text(
+                "카메라로 사진 찍기", modifier = Modifier
+                    .width(200.dp)
+                    .align(Alignment.CenterVertically), // 가로로 가운데 정렬
+                textAlign = TextAlign.Center
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = { pickImageLauncher.launch("image/*") }) {
-            Text("갤러리에서 사진 선택")
+            Text(
+                "갤러리에서 사진 선택",
+                modifier = Modifier
+                    .width(200.dp)
+                    .align(Alignment.CenterVertically), // 가로로 가운데 정렬
+                textAlign = TextAlign.Center
+            )
         }
 //        imageBitmap?.let { bitmap ->
 //            Image(bitmap = bitmap.asImageBitmap(), contentDescription = null, modifier = Modifier.size(200.dp))
