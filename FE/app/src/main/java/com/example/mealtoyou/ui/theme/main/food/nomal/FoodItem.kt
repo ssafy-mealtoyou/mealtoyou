@@ -281,18 +281,18 @@ fun SwipeFoodItem(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .width(50.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    ) {
-                        ImageFromUrlOrResource(
-                            imageUrl = model.itemImageUrl,
-                            modifier = Modifier.fillMaxSize(),
-                            defaultImageId = R.drawable.sample_food
-                        )
-                    }
+//                    Box(
+//                        modifier = Modifier
+//                            .height(50.dp)
+//                            .width(50.dp)
+//                            .clip(RoundedCornerShape(8.dp))
+//                    ) {
+//                        ImageFromUrlOrResource(
+//                            imageUrl = model.itemImageUrl,
+//                            modifier = Modifier.fillMaxSize(),
+//                            defaultImageId = R.drawable.sample_food
+//                        )
+//                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(
                         modifier = Modifier.weight(1f)
@@ -400,21 +400,15 @@ private fun FoodBottomSheetContent(
     // Composable 함수 내부
     val coroutineScope = rememberCoroutineScope()
 
-    fun updateSwipeFoodItemList(resultList: List<FoodDetectionResponseItem>) {
-        Log.d("analyzeImageResult 1", resultList.toString())
-        resultList.forEach { foodDetectionResponseItem ->
-            if (foodDetectionResponseItem.className == "0" ||
-                foodDetectionResponseItem.className == "00000000" ||
-                foodDetectionResponseItem.foodName == "그릇"
-            )
-                return
-            Log.d("analyzeImageResult 2", foodDetectionResponseItem.foodName)
-            // 각각의 결과에 대해 foodSearchViewModel의 foodSearch 함수를 호출
-            // 이 예제에서는 foodDetectionResponseItem의 name을 키워드로 사용
-            foodSearchViewModel.foodSearch(foodDetectionResponseItem.foodName) { list ->
-                Log.d("analyzeImageResult 3", list.toString())
-                if (!list.isNullOrEmpty()) {
-                    val foodItem: FoodSearchData = list[0]
+    fun updateSwipeFoodItemList(resultList: List<FoodDetectionResponseItem>) = coroutineScope.launch {
+        resultList.filterNot {
+            it.className == "0" || it.className == "00000000" || it.foodName == "그릇"
+        }.forEach { foodDetectionResponseItem ->
+            val list = foodSearchViewModel.foodSearchAsync(foodDetectionResponseItem.foodName)
+            Log.d("analyzeImageResult 3", list.toString())
+            if (!list.isNullOrEmpty()) {
+                val foodItem: FoodSearchData = list.last()
+                if (swipeFoodItemList.none { it.fid == foodItem.id }) {
                     swipeFoodItemList.add(
                         SwipeFoodItemModel(
                             fid = foodItem.id,
@@ -496,7 +490,10 @@ private fun FoodBottomSheetContent(
                         dashLength = 10f,
                         gapLength = 10f
                     )
-                    .clickable { showDialog = true },
+                    .clickable {
+                        foodSearchViewModel.resetFoodSearchResult()
+                        showDialog = true
+                   },
                 contentAlignment = Alignment.Center  // 상하좌우 가운데 정렬
 
             ) {
@@ -561,6 +558,7 @@ private fun FoodBottomSheetContent(
                     onDone = {
                         // 여기에 서버로 데이터를 전송하는 코드를 추가합니다.
                         Log.d("foodSearchKeyword", textState.value)
+                        foodSearchViewModel.resetFoodSearchResult()
                         foodSearchViewModel.foodSearch(textState.value)
                     }
                 ),
@@ -691,7 +689,7 @@ fun SwipeFoodItems(
     Box {
         Column {
             LazyColumn(modifier = Modifier.height(230.dp), state = lazyListState) {
-                items(swipeFoodItemModelList, key = { it }) { item ->
+                items(swipeFoodItemModelList, key = { it -> it.fid }) { item ->
                     SwipeFoodItem(
                         model = item,
                         onRemoveItem = { id -> removeItem(id) },

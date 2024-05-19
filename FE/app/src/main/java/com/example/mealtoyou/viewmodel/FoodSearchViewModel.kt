@@ -18,4 +18,15 @@ class FoodSearchViewModel: ViewModel() {
             onResult(result) // 콜백을 통해 결과를 반환
         }
     }
+
+    suspend fun foodSearchAsync(keyword: String): MutableList<FoodSearchData>? {
+        val result = FoodSearchRepository.sendFoodSearchData(keyword)
+        foodSearchResult.value = result
+        return result
+    }
+
+    // foodSearchResult를 초기화하는 함수
+    fun resetFoodSearchResult() {
+        foodSearchResult.value = null
+    }
 }
