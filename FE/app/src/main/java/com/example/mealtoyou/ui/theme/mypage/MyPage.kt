@@ -64,6 +64,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.mealtoyou.MainApplication
 import com.example.mealtoyou.R
 import com.example.mealtoyou.data.UserHealthInfoUpdateData
@@ -150,7 +151,7 @@ fun MyPage(
                 Row {
                     Spacer(modifier = Modifier.weight(1f))
                     Image(
-                        painter = painterResource(id = R.drawable.main_image),
+                        painter = rememberImagePainter(data = MainApplication.prefs.getValue("profile")),
                         contentDescription = "Sample Food Image",
                         modifier = Modifier
                             .height(211.dp)

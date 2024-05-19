@@ -47,10 +47,21 @@ fun LoginPage(navController: NavHostController, googleSignInClient: GoogleSignIn
                             if (loginSuccess) {
                                 // 로그인 성공 처리
                                 Log.d("Login", "로그인 성공")
-                                Log.d("Login accessToken",MainApplication.prefs.getValue("accessToken"))
+                                Log.d(
+                                    "Login accessToken",
+                                    MainApplication.prefs.getValue("accessToken")
+                                )
+                                MainApplication.prefs.setValue(
+                                    "profile",
+                                    account.photoUrl.toString()
+                                )
                                 FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
                                     if (!task.isSuccessful) {
-                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                        Log.w(
+                                            "FCM",
+                                            "Fetching FCM registration token failed",
+                                            task.exception
+                                        )
                                         return@addOnCompleteListener
                                     }
                                     val token = task.result
