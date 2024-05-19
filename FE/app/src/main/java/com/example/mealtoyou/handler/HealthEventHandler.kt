@@ -109,62 +109,57 @@ class HealthEventHandler(private val lifecycleOwner: LifecycleOwner, private val
     }
 
 
-    fun readExerciseData(): Pair<Int, Int> {
-        lateinit var result: Pair<Int, Int>
-        // 비동기 코루틴 스코프에서 데이터를 읽습니다.
-        lifecycleOwner.lifecycleScope.launch {
-            // 권한 확인
-            val permissions = setOf(
-                // 걸음 수 데이터 읽기 권한
-                HealthPermission.createReadPermission(StepsRecord::class),
-                HealthPermission.createReadPermission(TotalCaloriesBurnedRecord::class)
+    suspend fun readExerciseData(): Pair<Int, Int>? {
+        // 권한 확인
+        val permissions = setOf(
+            // 걸음 수 데이터 읽기 권한
+            HealthPermission.createReadPermission(StepsRecord::class),
+            HealthPermission.createReadPermission(TotalCaloriesBurnedRecord::class)
+        )
+
+        val granted = healthConnectClient.permissionController.getGrantedPermissions(permissions)
+        return if (permissions == granted) {
+            val stepRequest = ReadRecordsRequest(
+                recordType = StepsRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(startOfToday, Instant.now())
             )
-
-            val granted =
-                healthConnectClient.permissionController.getGrantedPermissions(permissions)
-            if (permissions == granted) {
-                val stepRequest = ReadRecordsRequest(
-                    recordType = StepsRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startOfToday, Instant.now()
-                    )
+            val caloriesRequest = ReadRecordsRequest(
+                recordType = TotalCaloriesBurnedRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(startOfToday, Instant.now())
+            )
+            try {
+                val stepResponse = healthConnectClient.readRecords(stepRequest)
+                val caloriesResponse = healthConnectClient.readRecords(caloriesRequest)
+                val steps = stepResponse.records.firstOrNull()?.count ?: 0
+                val stepStartDate = stepResponse.records.firstOrNull()?.startTime?.atZone(zoneId)
+                    ?.toLocalDate() ?: LocalDate.now(zoneId) // null 경우 처리
+                val caloriesBurned = caloriesResponse.records.firstOrNull()?.energy?.inKilocalories ?: 0.0
+                val caloriesStartDate = caloriesResponse.records.firstOrNull()?.startTime?.atZone(zoneId)
+                    ?.toLocalDate() ?: LocalDate.now(zoneId) // null 경우 처리
+                Log.d("start", "$startOfToday")
+                val exerciseData = ExerciseData(steps, stepStartDate, caloriesBurned, caloriesStartDate)
+                Log.d(
+                    "data", "Exercise Data - Steps: ${exerciseData.steps} (${exerciseData.steps::class.simpleName}), " +
+                            "Step Start Date: ${exerciseData.stepStartDate} (${exerciseData.stepStartDate::class.simpleName}), " +
+                            "Calories Burned: ${exerciseData.caloriesBurned} (${exerciseData.caloriesBurned::class.simpleName}), " +
+                            "Calories Start Date: ${exerciseData.caloriesStartDate} (${exerciseData.caloriesStartDate::class.simpleName})"
                 )
-                val caloriesRequest = ReadRecordsRequest(
-                    recordType = TotalCaloriesBurnedRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startOfToday, Instant.now()
-                    )
-                )
-                try {
-                    val stepResponse = healthConnectClient.readRecords(stepRequest)
-                    val caloriesResponse = healthConnectClient.readRecords(caloriesRequest)
-                    val steps = stepResponse.records.firstOrNull()?.count ?: 0
-                    val stepStartDate = stepResponse.records.firstOrNull()?.startTime?.atZone(zoneId)  // Instant를 ZoneId에 맞는 ZonedDateTime으로 변환
-                        ?.toLocalDate()?:LocalDate.now(zoneId)// null 경우 처리
-                    val caloriesBurned = caloriesResponse.records.firstOrNull()?.energy?.inKilocalories ?: 0.0
-                    val caloriesStartDate = caloriesResponse.records.firstOrNull()?.startTime?.atZone(zoneId)  // Instant를 ZoneId에 맞는 ZonedDateTime으로 변환
-                        ?.toLocalDate()?:LocalDate.now(zoneId)// null 경우 처리
-                    Log.d("start","${startOfToday}")
-                    val exerciseData = ExerciseData(steps,stepStartDate,caloriesBurned,caloriesStartDate)
-                    Log.d("data", "Exercise Data - Steps: ${exerciseData.steps} (${exerciseData.steps::class.simpleName}), Step Start Date: ${exerciseData.stepStartDate} (${exerciseData.stepStartDate::class.simpleName}), Calories Burned: ${exerciseData.caloriesBurned} (${exerciseData.caloriesBurned::class.simpleName}), Calories Start Date: ${exerciseData.caloriesStartDate} (${exerciseData.caloriesStartDate::class.simpleName})")
-
-                    Log.d("health","${exerciseData.steps} + ${exerciseData.stepStartDate} + ${exerciseData.caloriesBurned} + ${exerciseData.caloriesStartDate}")
-                    sendExerciseData(exerciseData = exerciseData)
-                    result = Pair(steps.toInt(), caloriesBurned.toInt())
-                } catch (e: Exception) {
-                    Log.e("HealthData", "Error reading health data: ${e.message}")
-                }
-            } else {
-                Log.e("HealthData", "Required permissions not granted")
+                Log.d("health", "${exerciseData.steps} + ${exerciseData.stepStartDate} + ${exerciseData.caloriesBurned} + ${exerciseData.caloriesStartDate}")
+                sendExerciseData(exerciseData = exerciseData)
+                Pair(steps.toInt(), caloriesBurned.toInt())
+            } catch (e: Exception) {
+                Log.e("HealthData", "Error reading health data: ${e.message}")
+                null
             }
+        } else {
+            Log.e("HealthData", "Required permissions not granted")
+            null
         }
-        return result
     }
+
     private suspend fun sendExerciseData(exerciseData: ExerciseData) {
         try {
-            val response = RetrofitClient.healthInstance.postExerciseData(
-                exerciseData
-            )
+            val response = RetrofitClient.healthInstance.postExerciseData(exerciseData)
             if (response.isSuccessful) {
                 Log.d("API", "Data sent successfully")
             } else {

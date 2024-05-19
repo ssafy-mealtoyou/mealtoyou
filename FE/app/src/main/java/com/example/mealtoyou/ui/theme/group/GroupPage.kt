@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -544,14 +545,15 @@ private fun FirstContent(
 
         Button(
             onClick = {
-                healthEventHandlerState.value?.readExerciseData()
-                    ?.let { (newSteps, newCaloriesBurned) ->
+                lifecycleOwner.lifecycleScope.launch {
+                    healthEventHandlerState.value?.readExerciseData()?.let { (newSteps, newCaloriesBurned) ->
                         if (newSteps != currentSteps || newCaloriesBurned != currentCaloriesBurned) {
                             setCurrentSteps(newSteps)
                             setCurrentCaloriesBurned(newCaloriesBurned)
                         }
                         viewModel.dailyGoalCheck(newSteps, newCaloriesBurned)
                     }
+                }
             },
             enabled = buttonEnabledState.value,
             shape = RoundedCornerShape(8.dp),
