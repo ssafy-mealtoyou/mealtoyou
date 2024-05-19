@@ -111,40 +111,36 @@ class CommunityAllViewModel : ViewModel() {
     private val _dailyGoalCheck = MutableStateFlow<String?>(null)
     val dailyGoalCheck: StateFlow<String?> = _dailyGoalCheck
 
-    fun dailyGoalCheck(steps: Int, caloriesBurned: Int): Unit {
+    fun dailyGoalCheck(steps: Int, caloriesBurned: Int) {
         viewModelScope.launch {
             try {
                 _dailyGoalCheck.value = "loading"
-                val response =
-                    communityApiService.dailyGoalCheck(
-                        MainApplication.prefs.getValue("accessToken"),
-                        steps, caloriesBurned
-                    )
+                val response = communityApiService.dailyGoalCheck(
+                    MainApplication.prefs.getValue("accessToken"),
+                    steps, caloriesBurned
+                )
 
                 if (response.isSuccessful) {
                     val data = response.body()
-                    _dailyGoalCheck.value = data
+                    _dailyGoalCheck.value = data ?: "fail"
                     Log.d("message", data.toString())
                 } else {
-                    // 실패한 경우에 대한 처리
-                    val errorMessage =
-                        "Error: ${response.code()} ${response.message()}"
-                    // 에러 메시지 처리
+                    val errorMessage = "Error: ${response.code()} ${response.message()}"
                     Log.e("error1", errorMessage)
+                    _dailyGoalCheck.value = "fail"
                 }
             } catch (e: HttpException) {
-                // HTTP 예외 처리 (예: 404, 500 등)
                 val errorMessage = "HTTP Error: ${e.code()} ${e.message()}"
-                // 에러 메시지 처리
                 Log.e("error2", errorMessage)
+                _dailyGoalCheck.value = "fail"
             } catch (e: Exception) {
-                // 네트워크 오류 등 예외 처리
                 val errorMessage = "Error: ${e.message}"
-                // 에러 메시지 처리
                 Log.e("error3", errorMessage)
+                _dailyGoalCheck.value = "fail"
             }
         }
     }
+
 
     fun checkStatus() {
         viewModelScope.launch {
@@ -376,8 +372,10 @@ private fun DetailScreen(name: String, function: () -> Unit) {
     }
     Column {
         MainBar(text = name, infoImg = true)
-        Column(modifier = Modifier
-            .verticalScroll(scrollState)) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+        ) {
             Column() {
                 communityData?.let { data ->
                     InfoSection(
@@ -386,7 +384,13 @@ private fun DetailScreen(name: String, function: () -> Unit) {
                         data.weeklyMinGoal,
                         data.cntUsers
                     )
-                    ContentRows(data.weeklyRemainGoal, data.steps, data.caloriesBurned, data.isToday,function)
+                    ContentRows(
+                        data.weeklyRemainGoal,
+                        data.steps,
+                        data.caloriesBurned,
+                        data.isToday,
+                        function
+                    )
                     Column(Modifier.padding(start = 20.dp, end = 20.dp)) {
                         val count: Int = data.communityDietList.size
                         val pagerState = rememberPagerState(
@@ -459,7 +463,7 @@ private fun FirstContent(
     val healthConnectClientState = remember { mutableStateOf<HealthConnectClient?>(null) }
     val healthEventHandlerState = remember { mutableStateOf<HealthEventHandler?>(null) }
     val viewModel: CommunityAllViewModel = viewModel()
-    val dailyGoalCheck = viewModel.dailyGoalCheck.collectAsState().value
+    val dailyGoalCheckState by viewModel.dailyGoalCheck.collectAsState()
 
     // steps와 caloriesBurned를 상태로 저장
     val (currentSteps, setCurrentSteps) = remember { mutableIntStateOf(steps) }
@@ -483,24 +487,20 @@ private fun FirstContent(
             healthEventHandlerState.value = null
         }
     }
-    LaunchedEffect(dailyGoalCheck) {
-        if (dailyGoalCheck == "success") {
-            if (weeklyRemainGoalState.value > 0) {
-                weeklyRemainGoalState.value -= 1
-//                if (weeklyRemainGoalState.value == 0) {
-//                    buttonTextState.value = "목표 인증 완료"
-//                    buttonEnabledState.value = false
-//                }
-                buttonTextState.value = "목표 인증 완료"
-                buttonEnabledState.value = false
+    LaunchedEffect(dailyGoalCheckState) {
+        when (dailyGoalCheckState) {
+            "success" -> {
+                if (weeklyRemainGoalState.value > 0) {
+                    weeklyRemainGoalState.value -= 1
+                    buttonTextState.value = "목표 인증 완료"
+                    buttonEnabledState.value = false
+                }
+                Toast.makeText(context, "목표 인증 완료", Toast.LENGTH_SHORT).show()
             }
-            // 토스트 메시지 표시
-            Toast.makeText(context, "목표 인증 완료", Toast.LENGTH_SHORT).show()
-        } else if (dailyGoalCheck == "fail") {
-            // 토스트 메시지 표시
-            Toast.makeText(context, "목표 인증 실패", Toast.LENGTH_SHORT).show()
+            "fail" -> {
+                Toast.makeText(context, "목표 인증 실패", Toast.LENGTH_SHORT).show()
+            }
         }
-
     }
 
     Column {
@@ -546,13 +546,14 @@ private fun FirstContent(
         Button(
             onClick = {
                 lifecycleOwner.lifecycleScope.launch {
-                    healthEventHandlerState.value?.readExerciseData()?.let { (newSteps, newCaloriesBurned) ->
-                        if (newSteps != currentSteps || newCaloriesBurned != currentCaloriesBurned) {
-                            setCurrentSteps(newSteps)
-                            setCurrentCaloriesBurned(newCaloriesBurned)
+                    healthEventHandlerState.value?.readExerciseData()
+                        ?.let { (newSteps, newCaloriesBurned) ->
+                            if (newSteps != currentSteps || newCaloriesBurned != currentCaloriesBurned) {
+                                setCurrentSteps(newSteps)
+                                setCurrentCaloriesBurned(newCaloriesBurned)
+                            }
+                            viewModel.dailyGoalCheck(newSteps, newCaloriesBurned)
                         }
-                        viewModel.dailyGoalCheck(newSteps, newCaloriesBurned)
-                    }
                 }
             },
             enabled = buttonEnabledState.value,
