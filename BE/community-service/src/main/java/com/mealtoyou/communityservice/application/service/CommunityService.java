@@ -243,7 +243,7 @@ public class CommunityService {
                                     // JSON 형식인지 확인하고, JSON을 CommunityDietResponse 객체의 리스트로 변환
                                     List<CommunityDietResponse> responses = objectMapper.readValue(result, new TypeReference<>() {
                                     });
-                                    log.info("CommunityDietResponse: {}", responses.get(0));
+//                                    log.info("CommunityDietResponse: {}", responses.get(0));
                                     return Mono.just(responses);
                                 } catch (JsonProcessingException e) {
                                     // JSON 형식이 아닌 경우 처리
