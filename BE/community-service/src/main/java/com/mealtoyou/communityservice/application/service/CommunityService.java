@@ -29,6 +29,7 @@ import org.springframework.data.redis.core.ReactiveValueOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -72,12 +73,13 @@ public class CommunityService {
                     return userCommunityRepository.save(userCommunity)
                             .thenReturn(savedCommunity);
                 })
-                .onErrorResume(error -> {
-                    return communityRepository.findByLeaderId(userId)
-                            .flatMap(community -> communityRepository.delete(community)
-                                    .then(Mono.error(error)))
-                            .subscribeOn(Schedulers.boundedElastic());
-                });
+                .onErrorResume(error ->
+                        communityRepository.findByLeaderId(userId)
+                                .flatMap(community -> communityRepository.delete(community)
+                                        .then(Mono.error(new RuntimeException("Community creation failed and rolled back", error))))
+                                .subscribeOn(Schedulers.boundedElastic())
+                                .then(Mono.error(error))
+                );
     }
 
 
