@@ -197,7 +197,12 @@ public class CommunityService {
                             .communityId(communityId)
                             .build();
                     return userCommunityRepository.save(newUserCommunity)
-                            .flatMap(result -> Mono.just("success"));
+                            .flatMap(result -> Mono.just("success"))
+                            .then(communityRepository.findById(communityId))
+                            .flatMap(community -> {
+                                community.increaseCnt();
+                                return communityRepository.save(community).then(Mono.just("success"));
+                            });
                 }));
     }
 
