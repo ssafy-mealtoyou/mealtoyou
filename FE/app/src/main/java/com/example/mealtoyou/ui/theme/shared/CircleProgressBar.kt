@@ -51,6 +51,10 @@ fun CircleProgressBar(value:Float, size: Dp, text: String) {
 
 @Composable
 fun CircleProgressBarThick(value:Float, size: Dp, dailyCaloriesBurned: Double) {
+    val cal =
+    if((2000 - dailyCaloriesBurned).toInt() < 0) "+" + ((2000 - dailyCaloriesBurned).toInt() * -1).toString()
+    else (2000 - dailyCaloriesBurned).toInt().toString()
+
     Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
         CircularProgressIndicator(
             progress = { 1.0f },
@@ -75,7 +79,7 @@ fun CircleProgressBarThick(value:Float, size: Dp, dailyCaloriesBurned: Double) {
                 textAlign = TextAlign.Center // 텍스트 내에서 가운데 정렬
             )
             Text(
-                text = (2000 - dailyCaloriesBurned).toInt().toString() + "kcal",
+                text = cal + "kcal",
                 fontWeight = FontWeight.Bold,
                 fontFamily = Pretend,
                 lineHeight = 30.sp,
