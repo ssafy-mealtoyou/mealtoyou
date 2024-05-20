@@ -1,11 +1,14 @@
 package com.mealtoyou.communityservice.infrastructure.adpator;
 
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealtoyou.communityservice.application.dto.CommunityDietDTO;
+import com.mealtoyou.communityservice.domain.model.CommunityDiet;
+import com.mealtoyou.communityservice.domain.repository.CommunityDietRepository;
 import com.mealtoyou.communityservice.infrastructure.kafka.KafkaMessageEnable;
 import com.mealtoyou.communityservice.infrastructure.kafka.KafkaMessageListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -13,9 +16,22 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class MessageProcessingAdaptor {
 
-    @KafkaMessageListener(topic = "requests1")
-    public String processMessage1(String message) {
-        return message + "1번 MSA입니다.";
+    private final CommunityDietRepository communityDietRepository;
+    private final ObjectMapper objectMapper;
+
+    @KafkaMessageListener(topic = "diet")
+    public Mono<CommunityDiet> processMessage1(String message) {
+        CommunityDietDTO communityDietDTO = null;
+        try {
+            communityDietDTO = objectMapper.readValue(message, CommunityDietDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        CommunityDiet communityDiet = CommunityDiet.builder()
+                .communityId(communityDietDTO.getCommunityId())
+                .dietId(communityDietDTO.getDietId())
+                .build();
+        return communityDietRepository.save(communityDiet);
     }
 
     @KafkaMessageListener(topic = "requests2")
@@ -23,13 +39,4 @@ public class MessageProcessingAdaptor {
         return message + "2번 MSA입니다.";
     }
 
-//    @KafkaMessageListener(topic = "getPerson")
-//    public Flux<Person> personFlux(String message) {
-//        return personService.getAllPeople();
-//    }
-//
-//    @KafkaMessageListener(topic = "insertPerson")
-//    public Mono<Person> personMono(String message) {
-//        return personService.createPerson(Person.builder().name("bono bono").build());
-//    }
 }

@@ -1,0 +1,38 @@
+package com.mealtoyou.alarmservice.infrastructure.scheduler;
+
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.mealtoyou.alarmservice.application.service.FcmService;
+import com.mealtoyou.alarmservice.application.service.SchedulerService;
+
+import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
+
+@Component
+@EnableScheduling
+@RequiredArgsConstructor
+public class IntermittentScheduler {
+	private final FcmService fcmService;
+	private final SchedulerService schedulerService;
+
+	@Scheduled(cron = "0 * * * * *")
+	private void noticeIntermittentStart() {
+		schedulerService.noticeIntermittentStart()
+			.collectList()
+			.flatMapMany(tokens -> Flux.fromIterable(tokens)
+				.flatMap(token -> fcmService.sendMessageByToken("", token, false)))
+			.then()
+			.subscribe();
+	}
+
+	@Scheduled(cron = "0 * * * * *")
+	private void noticeIntermittentEnd() {
+		schedulerService.noticeIntermittentEnd()
+			.collectList()
+			.flatMapMany(tokens -> Flux.fromIterable(tokens)
+				.flatMap(token -> fcmService.sendMessageByToken("", token, false)))
+			.then().subscribe();
+	}
+}

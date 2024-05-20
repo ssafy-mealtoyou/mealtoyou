@@ -75,7 +75,7 @@ public class CustomOAuth2SuccessHandler extends RedirectServerAuthenticationSucc
                 }).subscribeOn(Schedulers.boundedElastic())
                 .then(Mono.defer(() -> {
                     // 리다이렉트할 URL 생성
-                    String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:8080/user-service/google/callback")
+                    String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:8082/user-service/google/callback?code=" + 1234)
                             .build()
                             .encode(StandardCharsets.UTF_8)
                             .toUriString();
