@@ -1,12 +1,12 @@
 package com.example.mealtoyou.ui.theme.main.food.nomal
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,18 +20,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.mealtoyou.ui.theme.Pretend
+import com.example.mealtoyou.ui.theme.diet.Diet
+import com.example.mealtoyou.ui.theme.diet.DietFood
 import com.example.mealtoyou.ui.theme.main.food.NormalContent
 import com.example.mealtoyou.ui.theme.main.food.detail.FoodDetail
 
 @Composable
-fun RecommendationBox() {
+fun RecommendationBox(editable: Boolean) {
+    val height = if (editable) 450.dp else 400.dp
+
     Box(
         modifier = Modifier
-            .height(450.dp)
-            .fillMaxWidth()
-            .padding(bottom = 20.dp, top = 8.dp)
+            .height(height)
+            .wrapContentWidth()
+            .padding(bottom = 20.dp, top = 8.dp, start = 20.dp, end = 20.dp)
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(8.dp),
@@ -41,20 +44,58 @@ fun RecommendationBox() {
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White)
     ) {
-        RecommendationContent()
+        RecommendationContent(editable, null)
     }
 }
 
 @Composable
-fun RecommendationContent() {
+fun RecommendationContent(editable: Boolean, diet: Diet?) {
     val showTemp = remember { mutableStateOf(false) }
     val selectedItem = remember { mutableStateOf("") }
+    val diets = remember { mutableStateOf<List<DietFood>>(emptyList()) }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(contentAlignment = Alignment.Center) {
         if (showTemp.value) {
-            FoodDetail(selectedItem.value, showTemp)
+            if (diet != null) {
+                diet.dietFoods?.let { dietFoods ->
+                    FoodDetail(
+                        dietFoods = dietFoods,
+                        selectedItem = selectedItem.value,
+                        showTemp = showTemp,
+                        editable = editable,
+                        diets = diets,
+                        onUpdate = { updatedDiet ->
+                            // Update the list of diets with the updatedDiet
+                            val updatedList = diet.dietFoods!!.toMutableList()
+                            val index = updatedList.indexOfFirst { it.name == selectedItem.value }
+                            if (index >= 0) {
+                                updatedList[index] = updatedDiet
+                                diet.dietFoods = updatedList
+
+                                val totalCalories = updatedList.sumOf { it.calories }.toInt()
+                                val totalCarbohydrate = updatedList.sumOf { it.carbohydrate }
+                                val totalProtein = updatedList.sumOf { it.protein }
+                                val totalFat = updatedList.sumOf { it.fat }
+
+                                val totalMacros = (totalCarbohydrate * 4) + (totalProtein * 4) + (totalFat * 9)
+                                val carbohydratePer = ((totalCarbohydrate * 4) / totalMacros * 100).toInt()
+                                val proteinPer = ((totalProtein * 4) / totalMacros * 100).toInt()
+                                val fatPer = ((totalFat * 9) / totalMacros * 100).toInt()
+
+                                diet.totalCalories = totalCalories
+                                diet.carbohydratePer = carbohydratePer
+                                diet.proteinPer = proteinPer
+                                diet.fatPer = fatPer
+                            }
+                        }
+                    )
+                }
+            }
         } else {
-            NormalContent(showTemp, selectedItem)
+            if (diet != null) {
+                Log.d("......",diet.toString())
+                NormalContent(showTemp, selectedItem, editable, diet)
+            }
         }
     }
 }

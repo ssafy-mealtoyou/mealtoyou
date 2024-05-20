@@ -17,12 +17,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun VerticalProgressBar(progress: Float, color: Color, width: Dp, height: Dp) {
+fun VerticalProgressBar(progress: Float, color: Color, width: Dp, height: Dp, bgColor: Color = Color(0xFFF3F4F6)) {
     Box(
         modifier = Modifier
             .height(height)
             .width(width)
-            .background(Color(0xFFF3F4F6), shape = RoundedCornerShape(8.dp))
+            .background(bgColor, shape = RoundedCornerShape(8.dp))
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val drawHeight = size.height * progress

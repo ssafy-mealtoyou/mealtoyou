@@ -33,11 +33,11 @@ public class RequestProcessor {
     private final KafkaProxyCreator kafkaProxyCreator;
     private final ObjectMapper objectMapper;
 
-    private void fluxConvertAndSend(Flux<?> fluxResult, String key) {
+    private void fluxConvertAndSend(Flux<?> fluxResult, KafkaKey key) {
         fluxResult.collectList().subscribe(
                 item -> {
                     try {
-                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, objectMapper.writeValueAsString(item));
+                        kafkaTemplate.send(key.getKafkaResponseTopic(), key.getUuid(), objectMapper.writeValueAsString(item));
                     } catch (JsonProcessingException e) {
                         log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
@@ -45,12 +45,12 @@ public class RequestProcessor {
                 error -> log.error("Error processing the Mono for key: {}", key, error));
     }
 
-    private void monoConvertAndSend(Mono<?> monoResult, String key) {
+    private void monoConvertAndSend(Mono<?> monoResult, KafkaKey key) {
         monoResult.subscribe(
                 item -> {
                     try {
                         String message = objectMapper.writeValueAsString(item);
-                        kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, message);
+                        kafkaTemplate.send(key.getKafkaResponseTopic(), key.getUuid(), message);
                     } catch (JsonProcessingException e) {
                         log.error("JSON formatting error for key: {} with item: {}", key, item, e);
                     }
@@ -71,14 +71,15 @@ public class RequestProcessor {
             String key = record.key();
             try {
                 Object result = method.invoke(service, message);
+                KafkaKey kafkaKey = objectMapper.readValue(key, KafkaKey.class);
                 if (result instanceof String stringResult) {
-                    kafkaTemplate.send(kafkaTopicUtils.getResponseTopic(), key, stringResult);
+                    kafkaTemplate.send(kafkaKey.getKafkaResponseTopic(), kafkaKey.getUuid(), stringResult);
                 } else if (result instanceof Flux<?> fluxResult) {
-                    fluxConvertAndSend(fluxResult, key);
+                    fluxConvertAndSend(fluxResult, kafkaKey);
                 } else if (result instanceof Mono<?> monoResult) {
-                    monoConvertAndSend(monoResult, key);
+                    monoConvertAndSend(monoResult, kafkaKey);
                 }
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         });

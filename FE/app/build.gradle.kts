@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.gms.google-services")
+    id("kotlin-parcelize") // add
 }
 
 android {
@@ -30,6 +32,8 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -50,6 +54,39 @@ android {
 }
 
 dependencies {
+    implementation("androidx.work:work-runtime-ktx:2.7.1")
+// Health Connect 라이브러리
+    implementation("androidx.health.connect:connect-client:1.0.0-alpha06")
+
+// Core library
+    implementation("androidx.core:core-ktx:1.7.0")
+
+// Jetpack Compose UI
+    implementation("androidx.compose.ui:ui:1.3.0")
+
+// Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
+
+// Lifecycle components
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+// AppCompat library
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
+// Material3 for Jetpack Compose
+    implementation("androidx.compose.material3:material3:1.0.0-alpha13")
+
+// ConstraintLayout
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+// Retrofit for network operations
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0")) // 이는 Firebase의 최신 버전을 보장합니다.
+    implementation("com.google.firebase:firebase-analytics")
+//    implementation("com.google.firebase:firebase-admin:9.1.1")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -65,6 +102,11 @@ dependencies {
     implementation(libs.compose.m3)
     implementation(libs.core)
     implementation(libs.views)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.browser)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,4 +114,22 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation (libs.okhttp)
+    implementation (libs.squareup.logging.interceptor)
+    implementation (libs.gson)
+//    implementation("io.coil-kt:coil-compose:1.4.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // The view calendar library
+    implementation("com.kizitonwose.calendar:view:2.5.1")
+    // The compose calendar library
+    implementation("com.kizitonwose.calendar:compose:2.5.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
+    implementation("com.firebaseui:firebase-ui-auth:8.0.2")
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0")
+
 }
