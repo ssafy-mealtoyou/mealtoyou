@@ -10,8 +10,8 @@
 2️⃣ [개발 환경](#2-개발-환경)<br/>
 3️⃣ [서비스 화면](#3-서비스-화면) <br/>
 4️⃣ [주요 기능](#4-주요-기능) <br/>
-5️⃣ [설계 문서](#6-설계-문서) <br/>
-6️⃣ [팀원 소개](#7-팀원-소개) <br/>
+5️⃣ [설계 문서](#5-설계-문서) <br/>
+6️⃣ [팀원 소개](#6-팀원-소개) <br/>
 
 ## 1. 프로젝트 소개
 
@@ -28,16 +28,17 @@
 ![Python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![fastapi](https://img.shields.io/badge/fastapi-black?style=for-the-badge&logo=fastapi&logoColor=#009485)
 ![scikitlearn](https://img.shields.io/badge/scikitlearn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)
-![jupyter](https://img.shields.io/badge/jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white)
-![googlecolab](https://img.shields.io/badge/googlecolab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white)
-![Yolov9](https://img.shields.io/badge/Yolov9-000000?style=for-the-badge&logo=yolov9) 
+![Yolov9](https://img.shields.io/badge/Yolov9-000000?style=for-the-badge&logo=yolov9)
 
 #### Backend
 
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-236DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-brown?style=for-the-badge&logo=JSON%20web%20tokens)
+![Netty](https://img.shields.io/badge/Netty-000000?style=for-the-badge&logo=Netty)
+![Spring Security](https://img.shields.io/badge/springsecurity-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![Webflux](https://img.shields.io/badge/webflux-000000?style=for-the-badge&logo=webflux)
+![r2dbc](https://img.shields.io/badge/r2dbc-6DB33F?style=for-the-badge&logo=r2dbc)
 
 #### Frontend
 
@@ -63,11 +64,14 @@
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![apachekafka](https://img.shields.io/badge/apachekafka-231F20?style=for-the-badge&logo=apachekafka&logoColor=white)
+![jenkins](https://img.shields.io/badge/jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white)
 
 #### IDE
 
 ![androidstudio](https://img.shields.io/badge/androidstudio-3DDC84.svg?style=for-the-badge&logo=androidstudio&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
+![Pycharm](https://img.shields.io/badge/Pycharm-000000?style=for-the-badge&logo=Pycharm&logoColor=white)
+![Datagrip](https://img.shields.io/badge/datagrip-000000?style=for-the-badge&logo=datagrip&logoColor=white)
 
 #### Management Tool
 
