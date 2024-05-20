@@ -50,3 +50,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+application-oauth.yml
+mealtoyou.json
+google-services.json

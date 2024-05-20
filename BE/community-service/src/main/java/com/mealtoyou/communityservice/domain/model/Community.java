@@ -40,4 +40,8 @@ public class Community {
     @Column("weekly_min_goal")
     private Integer weeklyMinGoal;
 
+    public void increaseCnt() {
+        cntUsers++;
+    }
+
 }
