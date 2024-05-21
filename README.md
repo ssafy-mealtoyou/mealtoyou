@@ -145,7 +145,7 @@
 
 <img src='./readme/erd.png' width='750px' height='550px'>
 
-### 아키텍처
+### 아키텍처 다이어그램
 
 <img src='./readme/architecture.jpg' width='750px' height='550px'>
 
